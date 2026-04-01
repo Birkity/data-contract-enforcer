@@ -5,8 +5,8 @@ info:
   title: Week 3 Extractions Contract
   version: 1.0.0
   owner: week7-contract-generator
-  description: Generated from the live Week 3 extraction output using profiling-based
-    inference. The contract reflects the real source file currently present in outputs/week3/extractions.jsonl.
+  description: Generated from the live Week 3 extraction output using profiling-based inference. The contract
+    reflects the canonical JSONL file currently present in outputs/week3/extractions.jsonl.
 servers:
   local:
     type: local
@@ -14,195 +14,294 @@ servers:
     format: jsonl
 terms:
   usage: Internal inter-system data contract generated from observed Week 3 output.
-  limitations: Generated from the current live Week 3 export, which still uses a legacy
-    summary schema.
+  limitations: Lineage context reflects the current Week 4 snapshot shape and may be incomplete.
 observations:
-  generated_at: '2026-04-01T12:49:35.697538+00:00'
+  generated_at: '2026-04-01T15:24:35.018086+00:00'
   record_count: 50
-  profiled_row_count: 50
-  flatten_mode: record_level_fallback
-  repeated_field: null
+  profiled_row_count: 402
+  flatten_mode: exploded_repeated_items
+  repeated_field: extracted_facts
   observed_keys:
-  - document_id
-  - source_filename
-  - strategy_used
-  - confidence_score
-  - escalation_triggered
-  - escalation_reason
-  - estimated_cost
-  - processing_time_s
-  - flagged_for_review
-  warnings:
-  - The current Week 3 file does not contain extracted_facts[]. Profiling will fall
-    back to one row per record instead of one row per fact.
-  - 'The current source uses a legacy summary schema and is missing canonical fields:
-    doc_id, entities, extracted_facts, source_hash, source_path'
-  - This contract was generated from record-level summary rows because extracted_facts[]
-    was not present in the live Week 3 file.
+  - doc_id
+  - source_path
+  - source_hash
+  - extracted_facts
+  - entities
+  - extraction_model
+  - processing_time_ms
+  - token_count
+  - extracted_at
+  warnings: []
 schema:
-  document_id:
+  doc_id:
     type: string
+    description: Primary identifier for the extracted document record.
     required: true
-    pattern: ^[a-f0-9]{12}$
-    description: Identifier emitted by the current Week 3 pipeline for the processed
-      document.
+    format: uuid
     profile:
       dtype: string
       null_fraction: 0.0
       cardinality_estimate: 40
       sample_values:
-      - 88145efb1c21
-      - 276fc7bc8deb
-      - 977015043cfd
-      - c7d87eb9189d
-      - acac5a3feda8
-  source_filename:
+      - fe37b8a8-5a66-5802-a021-aeedd736a227
+      - 22f7512d-0e44-5029-b4dc-eb77b3093c19
+      - d23841d2-a27f-5505-921d-a18c162e575c
+      - e46ecb86-9442-5a4e-b39f-5e5d7816a4f2
+      - 8bdbfef0-65c6-58a8-8682-52e92a3b84b1
+  source_path:
     type: string
+    description: Original source path or URL for the document.
     required: true
-    description: Original source filename for the processed document.
     profile:
       dtype: string
       null_fraction: 0.0
-      cardinality_estimate: 40
+      cardinality_estimate: 39
       sample_values:
-      - CBE ANNUAL REPORT 2023-24.pdf
-      - Audit Report - 2023.pdf
-      - fta_performance_survey_final_report_2022.pdf
-      - tax_expenditure_ethiopia_2021_22.pdf
-      - Annual_Report_JUNE-2023.pdf
-  strategy_used:
+      - E:\10 Academy\Week 3\document-intelligence-refinery\data\CBE ANNUAL REPORT 2023-24.pdf
+      - E:\10 Academy\Week 3\document-intelligence-refinery\data\Audit Report - 2023.pdf
+      - E:\10 Academy\Week 3\document-intelligence-refinery\data\fta_performance_survey_final_report_2022.pdf
+      - E:\10 Academy\Week 3\document-intelligence-refinery\data\tax_expenditure_ethiopia_2021_22.pdf
+      - E:\10 Academy\Week 3\document-intelligence-refinery\data\Annual_Report_JUNE-2023.pdf
+  source_hash:
     type: string
+    description: SHA-256 content hash of the source document.
     required: true
-    enum:
-    - layout_aware
-    - vision_augmented
-    - ocr_heavy
-    description: Extraction strategy selected by the Week 3 pipeline for this document.
+    pattern: ^[a-f0-9]{64}$
     profile:
       dtype: string
       null_fraction: 0.0
-      cardinality_estimate: 3
+      cardinality_estimate: 38
       sample_values:
-      - layout_aware
-      - vision_augmented
-      - ocr_heavy
-  confidence_score:
-    type: number
+      - cafb11ca016fe4870c945fc2f8fe8b5fcc86bf6ee56da5327d4fd446456a7050
+      - 62213e3af42b0198d66aa799a8b0df5eb9c6cc1473ff222b5268c72c8cd08ee0
+      - 4dcf8792cc25a98826f4c9d28da108716744c49e444273983e06a6d72bb90154
+      - 212dc42370e200d430dcbd690970f879b0b82558edb1b5eaef04be9e1b51fa8a
+      - c9ddc16ac77d590e2ac35f8885ccfe17921549b110b480059ba95df7f5529fd0
+  entities_count:
+    type: integer
+    description: Number of entities linked to the document record.
     required: true
-    minimum: 0.0
-    maximum: 1.0
-    description: Document-level confidence score for the current extraction output.
-      This must remain a 0.0-1.0 numeric value; changing it to 0-100 is a breaking
-      change.
     profile:
-      dtype: number
+      dtype: integer
       null_fraction: 0.0
-      cardinality_estimate: 14
+      cardinality_estimate: 18
       sample_values:
-      - '1.0'
-      - '0.15'
-      - '0.55'
-      - '0.9'
-      - '0.727'
+      - '6'
+      - '0'
+      - '18'
+      - '48'
+      - '127'
       observed_min: 0.0
-      observed_max: 1.0
-      observed_mean: 0.549294
-      observed_stddev: 0.40967
-      observed_p50: 0.72645
-      observed_p95: 1.0
-  escalation_triggered:
-    type: boolean
-    required: true
-    description: Whether the document was escalated for additional handling.
-    profile:
-      dtype: boolean
-      null_fraction: 0.0
-      cardinality_estimate: 2
-      sample_values:
-      - 'False'
-      - 'True'
-  escalation_reason:
+      observed_max: 127.0
+      observed_mean: 50.925373
+      observed_stddev: 45.068852
+      observed_p50: 47.0
+      observed_p95: 127.0
+  extraction_model:
     type: string
-    enum:
-    - 'page-level escalation: 3 pages below 0.4 confidence'
-    description: Recorded reason for escalation when escalation was triggered.
-    profile:
-      dtype: string
-      null_fraction: 0.76
-      cardinality_estimate: 1
-      sample_values:
-      - 'page-level escalation: 3 pages below 0.4 confidence'
-  estimated_cost:
-    type: string
+    description: Extraction strategy or model label used to produce the record.
     required: true
-    enum:
-    - medium
-    - high
-    description: Cost tier assigned to the extraction run.
     profile:
       dtype: string
       null_fraction: 0.0
-      cardinality_estimate: 2
+      cardinality_estimate: 12
       sample_values:
-      - medium
-      - high
-  processing_time_s:
-    type: number
+      - layout_aware+regex
+      - vision_augmented
+      - layout_aware+regex+table_parse
+      - layout_aware+llm_assisted+regex
+      - layout_aware
+  processing_time_ms:
+    type: integer
+    description: End-to-end extraction processing time in milliseconds.
     required: true
-    description: Observed processing time in seconds for the extraction run.
     profile:
-      dtype: number
+      dtype: integer
       null_fraction: 0.0
       cardinality_estimate: 49
       sample_values:
-      - '36.2052'
-      - '0.3413'
-      - '30.5978'
-      - '19.8513'
-      - '43.0423'
-      observed_min: 0.0071
-      observed_max: 279.256
-      observed_mean: 27.084928
-      observed_stddev: 60.393889
-      observed_p50: 0.53805
-      observed_p95: 170.8967
-  flagged_for_review:
-    type: boolean
+      - '36205'
+      - '341'
+      - '30598'
+      - '19851'
+      - '43042'
+      observed_min: 7.0
+      observed_max: 279256.0
+      observed_mean: 61470.497512
+      observed_stddev: 76363.127334
+      observed_p50: 17800.0
+      observed_p95: 196699.0
+  token_count_input:
+    type: integer
+    description: Approximate input token count used by the extraction workflow.
     required: true
-    description: Whether the pipeline flagged the document for manual review.
     profile:
-      dtype: boolean
+      dtype: integer
       null_fraction: 0.0
-      cardinality_estimate: 2
+      cardinality_estimate: 21
       sample_values:
-      - 'False'
-      - 'True'
-quality:
-  type: SodaChecks
-  specification:
-    checks for week3_extractions:
-    - row_count >= 1
-    - missing_count(document_id) = 0
-    - missing_count(source_filename) = 0
-    - missing_count(strategy_used) = 0
-    - missing_count(confidence_score) = 0
-    - min(confidence_score) >= 0.0
-    - max(confidence_score) <= 1.0
-    - missing_count(escalation_triggered) = 0
-    - missing_count(estimated_cost) = 0
-    - missing_count(processing_time_s) = 0
-    - missing_count(flagged_for_review) = 0
+      - '122'
+      - '0'
+      - '87'
+      - '237'
+      - '935'
+      observed_min: 0.0
+      observed_max: 1015.0
+      observed_mean: 451.313433
+      observed_stddev: 420.228986
+      observed_p50: 161.0
+      observed_p95: 1015.0
+  token_count_output:
+    type: integer
+    description: Approximate output token count produced by the extraction workflow.
+    required: true
+    profile:
+      dtype: integer
+      null_fraction: 0.0
+      cardinality_estimate: 15
+      sample_values:
+      - '59'
+      - '0'
+      - '37'
+      - '85'
+      - '176'
+      observed_min: 0.0
+      observed_max: 256.0
+      observed_mean: 123.81592
+      observed_stddev: 80.439881
+      observed_p50: 115.0
+      observed_p95: 256.0
+  extracted_at:
+    type: string
+    description: Timestamp when the extraction record was produced.
+    required: true
+    format: date-time
+    profile:
+      dtype: string
+      null_fraction: 0.0
+      cardinality_estimate: 40
+      sample_values:
+      - '2026-03-05T13:46:05.529684+00:00'
+      - '2026-03-03T09:47:15.326679+00:00'
+      - '2026-03-06T14:14:23.835591+00:00'
+      - '2026-03-07T16:44:23.038222+00:00'
+      - '2026-03-03T09:47:13.815549+00:00'
+  fact_fact_id:
+    type: string
+    description: Primary identifier for the extracted fact.
+    format: uuid
+    profile:
+      dtype: string
+      null_fraction: 0.069652
+      cardinality_estimate: 66
+      sample_values:
+      - 250be8e7-6ba8-5c43-9c06-0acaeaf76d78
+      - b67a2714-7e98-547c-9a81-bbd4553488f7
+      - b4b9e0e8-ca74-5a03-b2f0-7274e7c9bb11
+      - 1234f7bf-4f80-5e75-aac1-a3266dd265f2
+      - d29f28f9-ed84-5bb8-b1c5-fcdd830f3106
+  fact_text:
+    type: string
+    description: Plain-English extracted fact text.
+    profile:
+      dtype: string
+      null_fraction: 0.069652
+      cardinality_estimate: 216
+      sample_values:
+      - 'The various foreign currencies to which the Group is exposed to are summarized below: 30'
+      - 'AED: 1,069'
+      - 'CAD: 701'
+      - 'CHF: 1,554'
+      - 'DJF: 64,331'
+  fact_entity_refs_count:
+    type: number
+    description: Number of entity references linked from the extracted fact.
+    profile:
+      dtype: number
+      null_fraction: 0.069652
+      cardinality_estimate: 3
+      sample_values:
+      - '0.0'
+      - '2.0'
+      - '1.0'
+      observed_min: 0.0
+      observed_max: 2.0
+      observed_mean: 0.930481
+      observed_stddev: 0.754242
+      observed_p50: 1.0
+      observed_p95: 2.0
+  fact_entity_refs:
+    type: string
+    description: Entity identifiers referenced by the extracted fact.
+    profile:
+      dtype: string
+      null_fraction: 0.368159
+      cardinality_estimate: 68
+      sample_values:
+      - 1b1901ce-f026-59d7-9973-df8feb2f6b4a|0f104242-c4df-5346-b36a-5c6b18cbd882
+      - b326fc93-8b0a-5888-887b-e9f426046b55
+      - d0b9ddc6-905e-529d-a390-396adcbe508c
+      - 480c5067-3a62-511a-a2cb-22679752a0a2|da1d5d6a-dcc3-5f71-b5b4-ba03b99c4855
+      - 480c5067-3a62-511a-a2cb-22679752a0a2|7eb9f84d-77b7-57d8-996a-6cf9bce0a6b6
+  fact_confidence:
+    type: number
+    description: Confidence value for the extracted fact. This must remain in the 0.0-1.0 range.
+    minimum: 0.0
+    maximum: 1.0
+    profile:
+      dtype: number
+      null_fraction: 0.069652
+      cardinality_estimate: 6
+      sample_values:
+      - '1.0'
+      - '0.55'
+      - '0.7'
+      - '0.9'
+      - '0.75'
+      observed_min: 0.55
+      observed_max: 1.0
+      observed_mean: 0.806364
+      observed_stddev: 0.113985
+      observed_p50: 0.75
+      observed_p95: 1.0
+  fact_page_ref:
+    type: number
+    description: Source page number associated with the extracted fact.
+    profile:
+      dtype: number
+      null_fraction: 0.069652
+      cardinality_estimate: 21
+      sample_values:
+      - '81.0'
+      - '1.0'
+      - '18.0'
+      - '76.0'
+      - '88.0'
+      observed_min: 1.0
+      observed_max: 88.0
+      observed_mean: 29.173797
+      observed_stddev: 32.7689
+      observed_p50: 10.0
+      observed_p95: 81.0
+  fact_source_excerpt:
+    type: string
+    description: Supporting excerpt copied from the source document for the extracted fact.
+    profile:
+      dtype: string
+      null_fraction: 0.069652
+      cardinality_estimate: 98
+      sample_values:
+      - 'The various foreign currencies to which the Group is exposed to are summarized below: 30'
+      - 'AED: 1,069'
+      - 'CAD: 701'
+      - 'CHF: 1,554'
+      - 'DJF: 64,331'
 lineage:
-  source_snapshot: outputs/week4/lineage_snapshots.jsonl
-  snapshot_format: whole-file-json
-  snapshot_summary:
-    dataset_count: 25
-    transformation_count: 13
-    edge_count: 30
-  upstream: []
+  source_snapshot:
+    path: outputs/week4/lineage_snapshots.jsonl
+    load_mode: whole-file-json
   downstream: []
   notes:
-  - No explicit Week 3 consumer nodes were found in the provided Week 4 lineage snapshot.
-  - The latest lineage file is a dbt-style graph with datasets, transformations, and
-    edges, so blast-radius details will become stronger after Week 4 is migrated to
-    the canonical snapshot schema.
+  - Week 4 lineage is currently a dbt-style whole-file graph, not the canonical Week 7 node/edge snapshot.
+  - No explicit consumer for the Week 3 extraction output was found in the current lineage file, so downstream
+    blast radius is recorded as unknown.

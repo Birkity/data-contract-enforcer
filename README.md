@@ -1,46 +1,75 @@
 # Data Contract Enforcer
 
-This repository now has the **Phase 1 ContractGenerator** in place for TRP Week 7.
+This repository currently contains:
 
-## What is implemented
+- completed Phase 0 analysis and domain notes
+- regenerated **Phase 1 ContractGenerator**
+- regenerated **Phase 2 ValidationRunner**
+- real Week 1 to Week 5 output snapshots under `outputs/`
+
+## Current Phase 1 deliverables
 
 - `contracts/generator.py`
 - `generated_contracts/week3_extractions.yaml`
 - `reports/phase_0.md`
 - `reports/phase_1.md`
+- `contracts/runner.py`
+- `validation_reports/thursday_baseline.json`
+- `validation_reports/injected_violation.json`
+- `violation_log/violations.jsonl`
+- `schema_snapshots/baselines.json`
+- `reports/phase_2.md`
 - `DOMAIN_NOTES.md`
 
-## Phase 1 scope
+## What Phase 1 does
 
-The current implementation is intentionally scoped to **ContractGenerator only**.
+The generator is scoped to **ContractGenerator only**.
 
 It:
 
-- reads real Week 3 JSONL data
-- profiles the observed columns with pandas
+- reads the real Week 3 extraction snapshot from `outputs/week3/extractions.jsonl`
+- validates that the source file is present and non-empty
+- prints the record count and one sample record
+- explodes `extracted_facts[]` into one profiled row per fact
+- profiles observed columns with pandas
 - generates a human-readable Bitol-style YAML contract
-- injects lineage context from the provided Week 4 lineage file
+- injects lineage notes from `outputs/week4/lineage_snapshots.jsonl`
+- runs a quality check before finishing
 
-It does **not** implement:
+It does **not**:
+
+- run validation
+- create violation reports
+- perform blame attribution
+- call an LLM or use Ollama during generation
+
+## Current Phase 2 deliverables
+
+Phase 2 is now restored with:
 
 - `contracts/runner.py`
-- ValidationRunner logic
-- blame attribution
-- schema evolution diffing
-- later-phase AI enforcement
+- `validation_reports/thursday_baseline.json`
+- `validation_reports/injected_violation.json`
+- `violation_log/violations.jsonl`
+- `schema_snapshots/baselines.json`
+- `reports/phase_2.md`
 
-## Main command
+The runner:
 
-Run the generator from the repo root:
+- loads the generated contract
+- flattens Week 3 data the same way as the generator
+- runs structural checks first
+- runs statistical checks second
+- creates a clean baseline report
+- detects the injected confidence-scale violation
+- logs all non-pass results in structured JSONL format
+
+## Run Phase 1
+
+From the repo root:
 
 ```powershell
-.\.venv\Scripts\python.exe contracts/generator.py --source outputs/week3/extractions.jsonl --output generated_contracts
-```
-
-The lineage input defaults to:
-
-```text
-outputs/week4/lineage_snapshots.jsonl
+.\.venv\Scripts\python.exe contracts/generator.py --source outputs/week3/extractions.jsonl --lineage outputs/week4/lineage_snapshots.jsonl --output generated_contracts
 ```
 
 The generated contract is written to:
@@ -49,47 +78,38 @@ The generated contract is written to:
 generated_contracts/week3_extractions.yaml
 ```
 
-## Real-data behavior
-
-The generator is designed to handle both:
-
-- canonical Week 3 records with `extracted_facts[]`
-- the current live Week 3 legacy summary format in this repo
-
-Right now the live Week 3 file is still the legacy summary format, so the generator:
-
-- loads all records
-- prints the record count and a sample record
-- warns about missing canonical fields
-- falls back to **one profiled row per record** because `extracted_facts[]` is not present
-
 ## Current Week 3 observations
 
-From the live `outputs/week3/extractions.jsonl` file used by the generator:
+Using the current canonical Week 3 file:
 
-- 50 records were loaded
-- `confidence_score` stays within `0.0` to `1.0`
-- observed confidence mean is `0.549294`
-- current fields are:
-  - `document_id`
-  - `source_filename`
-  - `strategy_used`
-  - `confidence_score`
-  - `escalation_triggered`
-  - `escalation_reason`
-  - `estimated_cost`
-  - `processing_time_s`
-  - `flagged_for_review`
+- `50` extraction records were loaded
+- flattening produced `402` profiled rows
+- `extracted_facts[]` is the repeated field used for profiling
+- `374` fact-level confidence values were observed
+- fact confidence range is `0.55` to `1.0`
+- fact confidence mean is `0.8063636363636363`
+
+## Current Phase 2 observations
+
+From the regenerated validation runs:
+
+- clean baseline report: `37` checks, all passed
+- injected violation report: `37` checks, `2` failed
+- the injected failure is correctly caught on `fact_confidence`
+- the two detected failures are:
+  - `week3-extractions.fact_confidence.range`
+  - `week3-extractions.fact_confidence.drift`
+- rerunning without cleanup appends new non-pass entries to `violation_log/violations.jsonl`
 
 ## Lineage caveat
 
-The current `outputs/week4/lineage_snapshots.jsonl` file is still a non-canonical dbt-style graph stored as a single JSON document.
+The current Week 4 lineage file is still a dbt-style whole-file JSON graph, not the canonical Week 7 node/edge snapshot format.
 
-The generator still loads it and injects lineage context, but it records that:
+Phase 1 still loads it and records lineage context, but the generated contract honestly notes that:
 
-- no explicit Week 3 consumer nodes were found
-- downstream blast-radius detail will improve once Week 4 is migrated to the canonical snapshot schema
+- no explicit downstream consumer of the Week 3 extraction output was found
+- blast-radius detail will improve once Week 4 lineage is migrated
 
 ## Local models
 
-Your local Ollama models are noted, but **Phase 1 does not require model calls**. The generator is deterministic and does not invoke LLMs.
+Your available Ollama/cloud models are useful for later AI-assisted phases, but this Phase 1 generator is deterministic and does not invoke them.
