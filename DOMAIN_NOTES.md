@@ -7,7 +7,7 @@ This document covers **Phase 0 only** for TRP Week 7: Data Contract Enforcer. I 
 - `outputs/week1/intent_records.jsonl`
 - `outputs/week2/verdicts.jsonl`
 - `outputs/week3/extractions.jsonl`
-- `outputs/week4/lineage_snapshot.jsonl`
+- `outputs/week4/lineage_snapshots.jsonl`
 - `outputs/week5/events.jsonl`
 - `outputs/traces/runs.jsonl`
 
@@ -17,8 +17,8 @@ The biggest theme in my own data is not "missing data" so much as **schema drift
 
 - `Week 1` is the strongest match. I have 16 intent records. The top-level keys match the canonical schema: `intent_id`, `description`, `code_refs`, `governance_tags`, and `created_at`. A representative record references `.orchestration/active_intents.yaml` and `src/hooks/types.ts`, with `confidence` values in the 0.91 to 0.98 range.
 - `Week 2` is structurally close as well. I have 3 verdict records with the expected top-level keys: `verdict_id`, `target_ref`, `rubric_id`, `rubric_version`, `scores`, `overall_verdict`, `overall_score`, `confidence`, and `evaluated_at`. The sample record is a real self-audit against the Week 2 Automaton Auditor rubric.
-- `Week 3` is not in canonical extraction shape. I only have 25 records, which is below the manual's `>= 50` threshold, and the schema is record-level summary output: `document_id`, `source_filename`, `strategy_used`, `confidence_score`, `escalation_triggered`, `escalation_reason`, `estimated_cost`, `processing_time_s`, and `flagged_for_review`. It does **not** contain `extracted_facts[]`, `entities[]`, or a record-level `doc_id/source_path/source_hash/extracted_at` structure.
-- `Week 4` is also not in canonical shape. The challenge doc expects `outputs/week4/lineage_snapshots.jsonl`, but my real file is `outputs/week4/lineage_snapshot.jsonl`. It is also not JSONL. It is a single JSON document with top-level keys `datasets`, `edges`, and `transformations`. This is still useful lineage evidence, but it does not match the canonical Week 7 snapshot schema.
+- `Week 3` is still not in canonical extraction shape, but the volume issue is improved. I now have 50 records, so the manual's `>= 50` threshold is met. The schema is still record-level summary output: `document_id`, `source_filename`, `strategy_used`, `confidence_score`, `escalation_triggered`, `escalation_reason`, `estimated_cost`, `processing_time_s`, and `flagged_for_review`. It does **not** contain `extracted_facts[]`, `entities[]`, or a record-level `doc_id/source_path/source_hash/extracted_at` structure.
+- `Week 4` is also not in canonical shape. I now have the canonical filename `outputs/week4/lineage_snapshots.jsonl`, but the content is still not JSONL. It is a single pretty-printed JSON document with top-level keys `datasets`, `edges`, and `transformations`. This is still useful lineage evidence, but it does not match the canonical Week 7 snapshot schema.
 - `Week 5` clears the volume threshold easily with 1198 event records, but the schema is a lean event-stream format: `stream_id`, `event_type`, `event_version`, `payload`, and `recorded_at`. The canonical Week 7 event contract expects richer event-sourcing metadata such as `event_id`, `aggregate_id`, `aggregate_type`, `sequence_number`, `metadata`, `schema_version`, and `occurred_at`.
 - `LangSmith traces` are present and strong on volume: 153 records. They have consistent token arithmetic, but they are not a perfect canonical fit either. My trace export includes `run_type` values such as `prompt` and `parser`, while the challenge schema limits `run_type` to `llm`, `chain`, `tool`, `retriever`, or `embedding`.
 
@@ -79,7 +79,7 @@ The challenge doc frames Week 4 as a cartographer lineage system where Week 3 fa
 - facts that should be "high confidence" on a normalized scale become absurdly high numeric values
 - any ranking, filtering, or weighting logic that relies on confidence will over-trust those records
 
-In my current repo there is an additional complication: my real Week 4 file is not yet the canonical Week 4 graph that consumes Week 3 extraction records. It is a dataset/transformation lineage document from a dbt-style environment. So the exact Week 3 to Week 4 propagation path is **not directly represented in the current artifacts**. That gap itself is important evidence for Phase 0: I cannot truthfully say the current Week 4 file already encodes the Week 3 extraction lineage the challenge assumes.
+In my current repo there is an additional complication: my real Week 4 file at `outputs/week4/lineage_snapshots.jsonl` is not yet the canonical Week 4 graph that consumes Week 3 extraction records. It is a dataset/transformation lineage document from a dbt-style environment. So the exact Week 3 to Week 4 propagation path is **not directly represented in the current artifacts**. That gap itself is important evidence for Phase 0: I cannot truthfully say the current Week 4 file already encodes the Week 3 extraction lineage the challenge assumes.
 
 ### Contract clause that should catch the failure
 
@@ -116,7 +116,7 @@ The Practitioner Manual asks me to compute:
 min, max, mean of extracted_facts[].confidence
 ```
 
-I could not do that directly because my real Week 3 output does not currently contain `extracted_facts[]`. The canonical confidence field is missing entirely.
+I could not do that directly because my real Week 3 output still does not currently contain `extracted_facts[]`. The canonical confidence field is missing entirely, even after refreshing the file to 50 real records.
 
 Observed result from the canonical path:
 
@@ -124,10 +124,10 @@ Observed result from the canonical path:
 extracted_facts[].confidence values found: 0
 ```
 
-I did, however, measure the real record-level field that exists in my current Week 3 data, `confidence_score`, across 25 records:
+I did, however, measure the real record-level field that exists in my current Week 3 data, `confidence_score`, across 50 records:
 
 ```text
-min=0.150 max=1.000 mean=0.664
+min=0.000 max=1.000 mean=0.549294
 ```
 
 This tells me two things:
@@ -313,7 +313,7 @@ The most common failure mode is not "the contract was never written." It is that
 That failure mode is visible in my own repo right now:
 
 - Week 3 output drifted into a record-summary schema that no longer matches the canonical extraction contract
-- Week 4 lineage exists, but in a different structure and file name than the Week 7 architecture expects
+- Week 4 lineage exists at the expected filename now, but in a different structure than the Week 7 architecture expects
 - Week 5 events are rich and numerous, but they do not expose the canonical event-sourcing envelope that Week 7 wants to validate
 
 This is exactly how contract systems fail in real teams. Nobody wakes up intending to break the contract. The system changes locally, the consumers keep assuming the old shape, and the mismatch becomes normal until a downstream failure finally exposes it.

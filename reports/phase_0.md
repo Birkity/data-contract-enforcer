@@ -26,7 +26,7 @@ Key requirements taken from those docs:
 - `outputs/week1/intent_records.jsonl`
 - `outputs/week2/verdicts.jsonl`
 - `outputs/week3/extractions.jsonl`
-- `outputs/week4/lineage_snapshot.jsonl`
+- `outputs/week4/lineage_snapshots.jsonl`
 - `outputs/week5/events.jsonl`
 - `outputs/traces/runs.jsonl`
 
@@ -64,8 +64,8 @@ Assessment: structurally usable, but sparse. This is not a formal Phase 0 blocke
 ### Week 3
 
 - file exists
-- 25 records
-- below the required minimum of 50
+- 50 records
+- meets the required minimum of 50
 - current schema is summary-style output, not canonical extraction output
 
 Observed real keys:
@@ -94,19 +94,19 @@ Missing canonical keys include:
 
 Observed statistics on the real field that exists:
 
-- `confidence_score` min = `0.150`
+- `confidence_score` min = `0.000`
 - `confidence_score` max = `1.000`
-- `confidence_score` mean = `0.664`
+- `confidence_score` mean = `0.549294`
 
 Canonical `extracted_facts[].confidence` count found: `0`
 
-Assessment: Phase 0 blocker. Needs both more real data and schema migration.
+Assessment: the volume requirement is now satisfied, but schema migration is still required before the canonical Week 7 extraction contract can run.
 
 ### Week 4
 
 - canonical file expected by the docs: `outputs/week4/lineage_snapshots.jsonl`
-- actual file present: `outputs/week4/lineage_snapshot.jsonl`
-- actual file is a single JSON document, not JSONL
+- canonical filename now exists
+- current file content is still a single pretty-printed JSON document, not JSONL
 - top-level keys are `datasets`, `edges`, and `transformations`
 
 Observed graph evidence:
@@ -117,7 +117,7 @@ Observed graph evidence:
 - sample edge: `source.ecom.raw_customers -> sql:models/staging/stg_customers.sql`
 - sample transformation source file: `models/marts/customers.sql`
 
-Assessment: Phase 0 blocker. The file is useful lineage evidence, but it is not at the required path and does not match the canonical snapshot schema.
+Assessment: Phase 0 blocker. The file is useful lineage evidence and now lives at the expected path, but it still does not match the canonical snapshot schema or JSONL format.
 
 ### Week 5
 
@@ -172,7 +172,8 @@ What was done in this phase:
 3. Compared each real output to the canonical Week 7 schema.
 4. Calculated real Week 3 confidence statistics using the field that actually exists.
 5. Verified the current LangSmith trace export volume and basic invariants.
-6. Wrote the Phase 0 artifacts:
+6. Refreshed `outputs/week3/extractions.jsonl` from the real Week 3 system so the file now contains 50 real records while preserving the source system's current schema shape.
+7. Wrote the Phase 0 artifacts:
    - `DOMAIN_NOTES.md`
    - `README.md`
    - `reports/phase_0.md`
@@ -234,10 +235,9 @@ Impact:
 
 The main blockers are:
 
-1. `outputs/week3/extractions.jsonl` is below the required minimum volume.
-2. Week 3, Week 4, and Week 5 do not match the canonical Week 7 schemas.
-3. `outputs/week4/lineage_snapshots.jsonl` does not exist at the canonical path.
-4. `outputs/migrate/` and the required migration scripts do not yet exist.
+1. Week 3, Week 4, and Week 5 do not match the canonical Week 7 schemas.
+2. `outputs/week4/lineage_snapshots.jsonl` is not valid JSONL and does not expose canonical snapshot records.
+3. `outputs/migrate/` and the required migration scripts do not yet exist.
 
 ## Recommendation
 

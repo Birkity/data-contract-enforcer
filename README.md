@@ -17,8 +17,8 @@ This repository is currently focused on **Phase 0** of TRP Week 7: understanding
 
 - `Week 1` is structurally close to the canonical Week 7 schema.
 - `Week 2` is structurally close, but the record count is small.
-- `Week 3` is below the required minimum volume and does not match the canonical extraction schema.
-- `Week 4` exists, but the current lineage file is not at the canonical filename and is not in the canonical JSONL snapshot shape.
+- `Week 3` now meets the minimum volume requirement, but it still does not match the canonical extraction schema.
+- `Week 4` now exists at the canonical filename, but the content is still not in the canonical JSONL snapshot shape.
 - `Week 5` has enough volume, but the event envelope does not match the canonical Week 7 event schema.
 - `LangSmith traces` are present and exceed the minimum count, but the exported trace schema still needs contract-aware normalization.
 
@@ -33,7 +33,7 @@ This repo is **not ready for a clean Phase 1 start yet**. The Week 7 manual says
 - `outputs/week1/intent_records.jsonl`
 - `outputs/week2/verdicts.jsonl`
 - `outputs/week3/extractions.jsonl`
-- `outputs/week4/lineage_snapshot.jsonl`
+- `outputs/week4/lineage_snapshots.jsonl`
 - `outputs/week5/events.jsonl`
 - `outputs/traces/runs.jsonl`
 
