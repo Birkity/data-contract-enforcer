@@ -1,0 +1,248 @@
+{
+  "generated_at": "2026-04-01T15:42:41.657497+00:00",
+  "source_report": "validation_reports\\injected_violation.json",
+  "contract_path": "generated_contracts\\week3_extractions.yaml",
+  "lineage_path": "outputs\\week4\\lineage_snapshots.jsonl",
+  "repo_roots": [
+    "E:\\10 Academy\\Week 3\\document-intelligence-refinery"
+  ],
+  "violation_log_entry_count": 4,
+  "attributions": [
+    {
+      "violation_id": "c9e5fe2c-6ea1-4341-97bd-2fbf87bcf56d",
+      "check_id": "week3-extractions.fact_confidence.range",
+      "detected_at": "2026-04-01T15:24:58.197122+00:00",
+      "field": "fact_confidence",
+      "producer_system": "week3-document-intelligence-refinery",
+      "dataset_path": "outputs/week3/extractions.jsonl",
+      "status": "FAIL",
+      "severity": "CRITICAL",
+      "message": "fact_confidence is outside the configured range. Breaking change detected.",
+      "records_failing": 374,
+      "sample_failing": [
+        "100.0",
+        "100.0",
+        "100.0",
+        "100.0",
+        "100.0"
+      ],
+      "matching_violation_log_entries": 2,
+      "candidate_files": [
+        "src/agents/fact_table.py",
+        "src/models/schemas.py",
+        "src/strategies/vision.py",
+        "src/strategies/ocr.py",
+        "src/strategies/base.py"
+      ],
+      "blame_chain": [
+        {
+          "file_path": "src/agents/fact_table.py",
+          "repo_root": "E:\\10 Academy\\Week 3\\document-intelligence-refinery",
+          "commit_hash": "033135cc46c7b8889cb8bf4f6607f940469bed5b",
+          "author": "Birkity",
+          "author_email": "birkity.yishak.m@gmail.com",
+          "commit_timestamp": "2026-03-07T15:06:52+00:00",
+          "commit_message": "feat: Add centralized configuration and OCR extraction strategy",
+          "confidence_score": 0.942,
+          "path_relevance": 0.94,
+          "lineage_distance": 0,
+          "rationale": "This file assigns and persists fact-level confidence values for extracted facts.",
+          "recent_commit_count": 1,
+          "line_blame_hits": 13,
+          "rank": 1
+        },
+        {
+          "file_path": "src/models/schemas.py",
+          "repo_root": "E:\\10 Academy\\Week 3\\document-intelligence-refinery",
+          "commit_hash": "033135cc46c7b8889cb8bf4f6607f940469bed5b",
+          "author": "Birkity",
+          "author_email": "birkity.yishak.m@gmail.com",
+          "commit_timestamp": "2026-03-07T15:06:52+00:00",
+          "commit_message": "feat: Add centralized configuration and OCR extraction strategy",
+          "confidence_score": 0.719,
+          "path_relevance": 0.77,
+          "lineage_distance": 0,
+          "rationale": "This file defines the Week 3 fact schema and enforces the confidence field as a 0.0-1.0 float.",
+          "recent_commit_count": 0,
+          "line_blame_hits": 9,
+          "rank": 2
+        },
+        {
+          "file_path": "src/strategies/vision.py",
+          "repo_root": "E:\\10 Academy\\Week 3\\document-intelligence-refinery",
+          "commit_hash": "033135cc46c7b8889cb8bf4f6607f940469bed5b",
+          "author": "Birkity",
+          "author_email": "birkity.yishak.m@gmail.com",
+          "commit_timestamp": "2026-03-07T15:06:52+00:00",
+          "commit_message": "feat: Add centralized configuration and OCR extraction strategy",
+          "confidence_score": 0.718,
+          "path_relevance": 0.65,
+          "lineage_distance": 0,
+          "rationale": "This file sets concrete confidence values for one extraction strategy.",
+          "recent_commit_count": 1,
+          "line_blame_hits": 16,
+          "rank": 3
+        },
+        {
+          "file_path": "src/strategies/ocr.py",
+          "repo_root": "E:\\10 Academy\\Week 3\\document-intelligence-refinery",
+          "commit_hash": "033135cc46c7b8889cb8bf4f6607f940469bed5b",
+          "author": "Birkity",
+          "author_email": "birkity.yishak.m@gmail.com",
+          "commit_timestamp": "2026-03-07T15:06:52+00:00",
+          "commit_message": "feat: Add centralized configuration and OCR extraction strategy",
+          "confidence_score": 0.647,
+          "path_relevance": 0.73,
+          "lineage_distance": 0,
+          "rationale": "This file matched the failing field and message tokens and appears related to the producer-side logic.",
+          "recent_commit_count": 0,
+          "line_blame_hits": 9,
+          "rank": 4
+        },
+        {
+          "file_path": "src/strategies/base.py",
+          "repo_root": "E:\\10 Academy\\Week 3\\document-intelligence-refinery",
+          "commit_hash": "1a3aae070f5d41a56f10f12ce83ad4017bb7138e",
+          "author": "Birkity",
+          "author_email": "birkity.yishak.m@gmail.com",
+          "commit_timestamp": "2026-03-04T12:36:25+00:00",
+          "commit_message": "feat: Implement database layer and extraction strategies for Document Intelligence Refinery",
+          "confidence_score": 0.6,
+          "path_relevance": 0.59,
+          "lineage_distance": 0,
+          "rationale": "This file defines the base extraction confidence contract used by Week 3 strategies.",
+          "recent_commit_count": 0,
+          "line_blame_hits": 9,
+          "rank": 5
+        }
+      ],
+      "lineage_context": {
+        "lineage_shape": "dbt-whole-file",
+        "load_mode": "whole-file-json",
+        "matched_nodes": [],
+        "upstream_candidates": []
+      },
+      "blast_radius": {
+        "affected_nodes": [],
+        "affected_pipelines": [],
+        "summary": "The current Week 4 lineage snapshot is a dbt-style graph and does not expose an explicit consumer for the Week 3 extraction dataset. Known blast radius is therefore limited to the monitored Week 3 interface and any unseen consumers.",
+        "lineage_confidence": "low"
+      }
+    },
+    {
+      "violation_id": "fec974b9-5399-40d7-9426-dadf6c9eb6cf",
+      "check_id": "week3-extractions.fact_confidence.drift",
+      "detected_at": "2026-04-01T15:24:58.197122+00:00",
+      "field": "fact_confidence",
+      "producer_system": "week3-document-intelligence-refinery",
+      "dataset_path": "outputs/week3/extractions.jsonl",
+      "status": "FAIL",
+      "severity": "HIGH",
+      "message": "fact_confidence mean drifted 700.4 stddev from baseline.",
+      "records_failing": 374,
+      "sample_failing": [],
+      "matching_violation_log_entries": 2,
+      "candidate_files": [
+        "src/agents/fact_table.py",
+        "src/models/schemas.py",
+        "src/strategies/vision.py",
+        "src/strategies/ocr.py",
+        "src/strategies/base.py"
+      ],
+      "blame_chain": [
+        {
+          "file_path": "src/agents/fact_table.py",
+          "repo_root": "E:\\10 Academy\\Week 3\\document-intelligence-refinery",
+          "commit_hash": "033135cc46c7b8889cb8bf4f6607f940469bed5b",
+          "author": "Birkity",
+          "author_email": "birkity.yishak.m@gmail.com",
+          "commit_timestamp": "2026-03-07T15:06:52+00:00",
+          "commit_message": "feat: Add centralized configuration and OCR extraction strategy",
+          "confidence_score": 0.942,
+          "path_relevance": 0.94,
+          "lineage_distance": 0,
+          "rationale": "This file assigns and persists fact-level confidence values for extracted facts.",
+          "recent_commit_count": 1,
+          "line_blame_hits": 13,
+          "rank": 1
+        },
+        {
+          "file_path": "src/models/schemas.py",
+          "repo_root": "E:\\10 Academy\\Week 3\\document-intelligence-refinery",
+          "commit_hash": "033135cc46c7b8889cb8bf4f6607f940469bed5b",
+          "author": "Birkity",
+          "author_email": "birkity.yishak.m@gmail.com",
+          "commit_timestamp": "2026-03-07T15:06:52+00:00",
+          "commit_message": "feat: Add centralized configuration and OCR extraction strategy",
+          "confidence_score": 0.719,
+          "path_relevance": 0.77,
+          "lineage_distance": 0,
+          "rationale": "This file defines the Week 3 fact schema and enforces the confidence field as a 0.0-1.0 float.",
+          "recent_commit_count": 0,
+          "line_blame_hits": 9,
+          "rank": 2
+        },
+        {
+          "file_path": "src/strategies/vision.py",
+          "repo_root": "E:\\10 Academy\\Week 3\\document-intelligence-refinery",
+          "commit_hash": "033135cc46c7b8889cb8bf4f6607f940469bed5b",
+          "author": "Birkity",
+          "author_email": "birkity.yishak.m@gmail.com",
+          "commit_timestamp": "2026-03-07T15:06:52+00:00",
+          "commit_message": "feat: Add centralized configuration and OCR extraction strategy",
+          "confidence_score": 0.718,
+          "path_relevance": 0.65,
+          "lineage_distance": 0,
+          "rationale": "This file sets concrete confidence values for one extraction strategy.",
+          "recent_commit_count": 1,
+          "line_blame_hits": 16,
+          "rank": 3
+        },
+        {
+          "file_path": "src/strategies/ocr.py",
+          "repo_root": "E:\\10 Academy\\Week 3\\document-intelligence-refinery",
+          "commit_hash": "033135cc46c7b8889cb8bf4f6607f940469bed5b",
+          "author": "Birkity",
+          "author_email": "birkity.yishak.m@gmail.com",
+          "commit_timestamp": "2026-03-07T15:06:52+00:00",
+          "commit_message": "feat: Add centralized configuration and OCR extraction strategy",
+          "confidence_score": 0.647,
+          "path_relevance": 0.73,
+          "lineage_distance": 0,
+          "rationale": "This file matched the failing field and message tokens and appears related to the producer-side logic.",
+          "recent_commit_count": 0,
+          "line_blame_hits": 9,
+          "rank": 4
+        },
+        {
+          "file_path": "src/strategies/base.py",
+          "repo_root": "E:\\10 Academy\\Week 3\\document-intelligence-refinery",
+          "commit_hash": "1a3aae070f5d41a56f10f12ce83ad4017bb7138e",
+          "author": "Birkity",
+          "author_email": "birkity.yishak.m@gmail.com",
+          "commit_timestamp": "2026-03-04T12:36:25+00:00",
+          "commit_message": "feat: Implement database layer and extraction strategies for Document Intelligence Refinery",
+          "confidence_score": 0.6,
+          "path_relevance": 0.59,
+          "lineage_distance": 0,
+          "rationale": "This file defines the base extraction confidence contract used by Week 3 strategies.",
+          "recent_commit_count": 0,
+          "line_blame_hits": 9,
+          "rank": 5
+        }
+      ],
+      "lineage_context": {
+        "lineage_shape": "dbt-whole-file",
+        "load_mode": "whole-file-json",
+        "matched_nodes": [],
+        "upstream_candidates": []
+      },
+      "blast_radius": {
+        "affected_nodes": [],
+        "affected_pipelines": [],
+        "summary": "The current Week 4 lineage snapshot is a dbt-style graph and does not expose an explicit consumer for the Week 3 extraction dataset. Known blast radius is therefore limited to the monitored Week 3 interface and any unseen consumers.",
+        "lineage_confidence": "low"
+      }
+    }
+  ]
+}

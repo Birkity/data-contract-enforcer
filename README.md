@@ -5,12 +5,16 @@ This repository currently contains:
 - completed Phase 0 analysis and domain notes
 - regenerated **Phase 1 ContractGenerator**
 - regenerated **Phase 2 ValidationRunner**
+- generated **dbt-compatible contract counterparts**
 - real Week 1 to Week 5 output snapshots under `outputs/`
 
 ## Current Phase 1 deliverables
 
 - `contracts/generator.py`
 - `generated_contracts/week3_extractions.yaml`
+- `generated_contracts/week3_extractions_dbt.yml`
+- `generated_contracts/week5_events.yaml`
+- `generated_contracts/week5_events_dbt.yml`
 - `reports/phase_0.md`
 - `reports/phase_1.md`
 - `contracts/runner.py`
@@ -33,6 +37,7 @@ It:
 - explodes `extracted_facts[]` into one profiled row per fact
 - profiles observed columns with pandas
 - generates a human-readable Bitol-style YAML contract
+- generates a parallel dbt-compatible `schema.yml` counterpart with equivalent tests
 - injects lineage notes from `outputs/week4/lineage_snapshots.jsonl`
 - runs a quality check before finishing
 
@@ -76,7 +81,26 @@ The generated contract is written to:
 
 ```text
 generated_contracts/week3_extractions.yaml
+generated_contracts/week3_extractions_dbt.yml
+generated_contracts/week5_events.yaml
+generated_contracts/week5_events_dbt.yml
 ```
+
+## Contract verification status
+
+The generated contract artifacts have been verified at the file and YAML-structure level:
+
+- all four generated contract files exist
+- all four parse successfully as YAML
+- the Bitol contracts include schema clauses and lineage metadata
+- the dbt counterparts include `version: 2`, a `models` block, column definitions, and generated tests
+- key checks are present, including the Week 3 `fact_confidence` range test and the Week 5 `event_id` uniqueness/UUID checks
+
+What is **not** yet verified in this environment:
+
+- `dbt test` runtime execution
+
+The reason is simple: the `dbt` CLI is not installed in this local environment, so artifact generation is verified, but live dbt execution is still pending.
 
 ## Current Week 3 observations
 

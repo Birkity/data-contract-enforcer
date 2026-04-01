@@ -1,0 +1,947 @@
+version: 2
+models:
+- name: week5_events
+  description: dbt-compatible counterpart for generated contract week5-events built from outputs/week5/events.jsonl.
+  meta:
+    generated_from_contract: week5-events
+    generated_at: '2026-04-01T18:28:58.831645+00:00'
+    source_path: outputs/week5/events.jsonl
+    lineage_notes:
+    - Week 4 lineage is currently a dbt-style whole-file graph, not the canonical Week 7 node/edge snapshot.
+    - No explicit consumer for the current source dataset was found in the current lineage file, so downstream
+      blast radius is recorded as unknown.
+  columns:
+  - name: event_id
+    description: Primary identifier for the event record.
+    tests:
+    - not_null
+    - unique
+    - dbt_expectations.expect_column_values_to_match_regex:
+        regex: ^[0-9a-fA-F-]{36}$
+  - name: event_type
+    description: Business event type emitted by the event-sourcing platform.
+    tests:
+    - not_null
+  - name: aggregate_id
+    description: Identifier for the aggregate instance the event belongs to.
+    tests:
+    - not_null
+    - dbt_expectations.expect_column_values_to_match_regex:
+        regex: ^[0-9a-fA-F-]{36}$
+  - name: aggregate_type
+    description: Aggregate class or domain entity name for the event stream.
+    tests:
+    - not_null
+    - accepted_values:
+        values:
+        - AgentSession
+        - ComplianceCheck
+        - CreditAnalysis
+        - DocumentPackage
+        - FraudScreening
+        - Loan
+  - name: sequence_number
+    description: Monotonic sequence number within the aggregate stream.
+    tests:
+    - not_null
+  - name: schema_version
+    description: Version of the payload schema used to serialize the event.
+    tests:
+    - not_null
+    - accepted_values:
+        values:
+        - '1.0'
+        - '2.0'
+  - name: occurred_at
+    description: Business timestamp when the event occurred.
+    tests:
+    - not_null
+    - dbt_expectations.expect_column_values_to_match_regex:
+        regex: ^[0-9]{4}-[0-9]{2}-[0-9]{2}T
+  - name: recorded_at
+    description: Persistence timestamp when the event was stored.
+    tests:
+    - not_null
+    - dbt_expectations.expect_column_values_to_match_regex:
+        regex: ^[0-9]{4}-[0-9]{2}-[0-9]{2}T
+  - name: metadata_causation_id
+    description: Identifier of the event or command that triggered this event.
+    tests:
+    - dbt_expectations.expect_column_values_to_match_regex:
+        regex: ^[0-9a-fA-F-]{36}$
+  - name: metadata_correlation_id
+    description: Correlation identifier used to tie related events together.
+    tests:
+    - not_null
+    - dbt_expectations.expect_column_values_to_match_regex:
+        regex: ^[0-9a-fA-F-]{36}$
+  - name: metadata_user_id
+    description: User or system principal associated with the event.
+    tests:
+    - not_null
+  - name: metadata_source_service
+    description: Service or subsystem that emitted the event.
+    tests:
+    - not_null
+    - accepted_values:
+        values:
+        - agentic-governance-ledger
+  - name: payload_application_id
+    description: Observed field for payload application id in the source dataset.
+  - name: payload_applicant_id
+    description: Observed field for payload applicant id in the source dataset.
+  - name: payload_requested_amount_usd
+    description: Observed field for payload requested amount usd in the source dataset.
+  - name: payload_loan_purpose
+    description: Observed field for payload loan purpose in the source dataset.
+    tests:
+    - accepted_values:
+        values:
+        - acquisition
+        - equipment_financing
+        - expansion
+        - real_estate
+        - refinancing
+        - working_capital
+  - name: payload_loan_term_months
+    description: Observed field for payload loan term months in the source dataset.
+  - name: payload_submission_channel
+    description: Observed field for payload submission channel in the source dataset.
+    tests:
+    - accepted_values:
+        values:
+        - agent
+        - branch
+        - mobile
+        - web
+  - name: payload_contact_email
+    description: Observed field for payload contact email in the source dataset.
+  - name: payload_contact_name
+    description: Observed field for payload contact name in the source dataset.
+  - name: payload_submitted_at
+    description: Observed field for payload submitted at in the source dataset.
+    tests:
+    - dbt_expectations.expect_column_values_to_match_regex:
+        regex: ^[0-9]{4}-[0-9]{2}-[0-9]{2}T
+  - name: payload_application_reference
+    description: Observed field for payload application reference in the source dataset.
+  - name: payload_required_document_types_count
+    description: Observed field for payload required document types count in the source dataset.
+  - name: payload_required_document_types
+    description: Observed field for payload required document types in the source dataset.
+    tests:
+    - accepted_values:
+        values:
+        - application_proposal|income_statement|balance_sheet
+  - name: payload_deadline
+    description: Observed field for payload deadline in the source dataset.
+  - name: payload_requested_by
+    description: Observed field for payload requested by in the source dataset.
+  - name: payload_package_id
+    description: Observed field for payload package id in the source dataset.
+  - name: payload_required_documents_count
+    description: Observed field for payload required documents count in the source dataset.
+  - name: payload_required_documents
+    description: Observed field for payload required documents in the source dataset.
+    tests:
+    - accepted_values:
+        values:
+        - application_proposal|income_statement|balance_sheet
+  - name: payload_created_at
+    description: Observed field for payload created at in the source dataset.
+    tests:
+    - dbt_expectations.expect_column_values_to_match_regex:
+        regex: ^[0-9]{4}-[0-9]{2}-[0-9]{2}T
+  - name: payload_document_id
+    description: Observed field for payload document id in the source dataset.
+  - name: payload_document_type
+    description: Observed field for payload document type in the source dataset.
+    tests:
+    - accepted_values:
+        values:
+        - application_proposal
+        - balance_sheet
+        - income_statement
+  - name: payload_document_format
+    description: Observed field for payload document format in the source dataset.
+    tests:
+    - accepted_values:
+        values:
+        - pdf
+        - xlsx
+  - name: payload_filename
+    description: Observed field for payload filename in the source dataset.
+  - name: payload_file_path
+    description: Observed field for payload file path in the source dataset.
+  - name: payload_file_size_bytes
+    description: Observed field for payload file size bytes in the source dataset.
+  - name: payload_file_hash
+    description: Observed field for payload file hash in the source dataset.
+    tests:
+    - accepted_values:
+        values:
+        - 3a3a2439911766f6
+        - 8eb66e9cbdaaa5ba
+        - a86210f5fdceb84f
+        - d794b166001141a2
+  - name: payload_fiscal_year
+    description: Observed field for payload fiscal year in the source dataset.
+  - name: payload_uploaded_at
+    description: Observed field for payload uploaded at in the source dataset.
+    tests:
+    - dbt_expectations.expect_column_values_to_match_regex:
+        regex: ^[0-9]{4}-[0-9]{2}-[0-9]{2}T
+  - name: payload_uploaded_by
+    description: Observed field for payload uploaded by in the source dataset.
+    tests:
+    - accepted_values:
+        values:
+        - applicant
+  - name: payload_added_at
+    description: Observed field for payload added at in the source dataset.
+    tests:
+    - dbt_expectations.expect_column_values_to_match_regex:
+        regex: ^[0-9]{4}-[0-9]{2}-[0-9]{2}T
+  - name: payload_session_id
+    description: Observed field for payload session id in the source dataset.
+  - name: payload_agent_type
+    description: Observed field for payload agent type in the source dataset.
+    tests:
+    - accepted_values:
+        values:
+        - compliance
+        - credit_analysis
+        - decision_orchestrator
+        - document_processing
+        - fraud_detection
+  - name: payload_agent_id
+    description: Observed field for payload agent id in the source dataset.
+    tests:
+    - accepted_values:
+        values:
+        - compliance-agent-1
+        - credit-agent-1
+        - doc-agent-1
+        - fraud-agent-1
+        - orchestrator-1
+  - name: payload_model_version
+    description: Observed field for payload model version in the source dataset.
+    tests:
+    - accepted_values:
+        values:
+        - claude-sonnet-4-20250514
+  - name: payload_langgraph_graph_version
+    description: Observed field for payload langgraph graph version in the source dataset.
+    tests:
+    - accepted_values:
+        values:
+        - 1.0.0-sim
+  - name: payload_context_source
+    description: Observed field for payload context source in the source dataset.
+    tests:
+    - accepted_values:
+        values:
+        - fresh
+  - name: payload_context_token_count
+    description: Observed field for payload context token count in the source dataset.
+  - name: payload_started_at
+    description: Observed field for payload started at in the source dataset.
+    tests:
+    - dbt_expectations.expect_column_values_to_match_regex:
+        regex: ^[0-9]{4}-[0-9]{2}-[0-9]{2}T
+  - name: payload_inputs_validated_count
+    description: Observed field for payload inputs validated count in the source dataset.
+  - name: payload_inputs_validated
+    description: Observed field for payload inputs validated in the source dataset.
+    tests:
+    - accepted_values:
+        values:
+        - application_id|company_profile|regulation_set_version
+        - application_id|credit_stream|fraud_stream|compliance_stream
+        - application_id|document_ids|applicant_registry_access
+        - application_id|document_package_id|applicant_id
+        - application_id|extracted_facts_events|registry_access
+  - name: payload_validation_duration_ms
+    description: Observed field for payload validation duration ms in the source dataset.
+  - name: payload_validated_at
+    description: Observed field for payload validated at in the source dataset.
+    tests:
+    - dbt_expectations.expect_column_values_to_match_regex:
+        regex: ^[0-9]{4}-[0-9]{2}-[0-9]{2}T
+  - name: payload_node_name
+    description: Observed field for payload node name in the source dataset.
+  - name: payload_node_sequence
+    description: Observed field for payload node sequence in the source dataset.
+  - name: payload_input_keys_count
+    description: Observed field for payload input keys count in the source dataset.
+  - name: payload_input_keys
+    description: Observed field for payload input keys in the source dataset.
+  - name: payload_output_keys_count
+    description: Observed field for payload output keys count in the source dataset.
+  - name: payload_output_keys
+    description: Observed field for payload output keys in the source dataset.
+  - name: payload_llm_called
+    description: Observed field for payload llm called in the source dataset.
+    tests:
+    - accepted_values:
+        values:
+        - 'False'
+        - 'True'
+  - name: payload_llm_tokens_input
+    description: Observed field for payload llm tokens input in the source dataset.
+  - name: payload_llm_tokens_output
+    description: Observed field for payload llm tokens output in the source dataset.
+  - name: payload_llm_cost_usd
+    description: Observed field for payload llm cost usd in the source dataset.
+  - name: payload_duration_ms
+    description: Observed field for payload duration ms in the source dataset.
+  - name: payload_executed_at
+    description: Observed field for payload executed at in the source dataset.
+    tests:
+    - dbt_expectations.expect_column_values_to_match_regex:
+        regex: ^[0-9]{4}-[0-9]{2}-[0-9]{2}T
+  - name: payload_page_count
+    description: Observed field for payload page count in the source dataset.
+  - name: payload_detected_format
+    description: Observed field for payload detected format in the source dataset.
+    tests:
+    - accepted_values:
+        values:
+        - pdf
+  - name: payload_pipeline_version
+    description: Observed field for payload pipeline version in the source dataset.
+    tests:
+    - accepted_values:
+        values:
+        - week3-v1.0
+  - name: payload_extraction_model
+    description: Observed field for payload extraction model in the source dataset.
+    tests:
+    - accepted_values:
+        values:
+        - mineru-1.0
+  - name: payload_tool_name
+    description: Observed field for payload tool name in the source dataset.
+    tests:
+    - accepted_values:
+        values:
+        - query_applicant_registry
+        - week3_extraction_pipeline
+  - name: payload_tool_input_summary
+    description: Observed field for payload tool input summary in the source dataset.
+  - name: payload_tool_output_summary
+    description: Observed field for payload tool output summary in the source dataset.
+  - name: payload_tool_duration_ms
+    description: Observed field for payload tool duration ms in the source dataset.
+  - name: payload_called_at
+    description: Observed field for payload called at in the source dataset.
+    tests:
+    - dbt_expectations.expect_column_values_to_match_regex:
+        regex: ^[0-9]{4}-[0-9]{2}-[0-9]{2}T
+  - name: payload_facts_total_revenue
+    description: Observed field for payload facts total revenue in the source dataset.
+  - name: payload_facts_gross_profit
+    description: Observed field for payload facts gross profit in the source dataset.
+  - name: payload_facts_operating_expenses
+    description: Observed field for payload facts operating expenses in the source dataset.
+  - name: payload_facts_operating_income
+    description: Observed field for payload facts operating income in the source dataset.
+  - name: payload_facts_ebitda
+    description: Observed field for payload facts ebitda in the source dataset.
+  - name: payload_facts_depreciation_amortization
+    description: Observed field for payload facts depreciation amortization in the source dataset.
+  - name: payload_facts_interest_expense
+    description: Observed field for payload facts interest expense in the source dataset.
+  - name: payload_facts_income_before_tax
+    description: Observed field for payload facts income before tax in the source dataset.
+  - name: payload_facts_tax_expense
+    description: Observed field for payload facts tax expense in the source dataset.
+  - name: payload_facts_net_income
+    description: Observed field for payload facts net income in the source dataset.
+  - name: payload_facts_total_assets
+    description: Observed field for payload facts total assets in the source dataset.
+  - name: payload_facts_current_assets
+    description: Observed field for payload facts current assets in the source dataset.
+  - name: payload_facts_cash_and_equivalents
+    description: Observed field for payload facts cash and equivalents in the source dataset.
+  - name: payload_facts_accounts_receivable
+    description: Observed field for payload facts accounts receivable in the source dataset.
+  - name: payload_facts_inventory
+    description: Observed field for payload facts inventory in the source dataset.
+  - name: payload_facts_total_liabilities
+    description: Observed field for payload facts total liabilities in the source dataset.
+  - name: payload_facts_current_liabilities
+    description: Observed field for payload facts current liabilities in the source dataset.
+  - name: payload_facts_long_term_debt
+    description: Observed field for payload facts long term debt in the source dataset.
+  - name: payload_facts_total_equity
+    description: Observed field for payload facts total equity in the source dataset.
+  - name: payload_facts_operating_cash_flow
+    description: Observed field for payload facts operating cash flow in the source dataset.
+  - name: payload_facts_investing_cash_flow
+    description: Observed field for payload facts investing cash flow in the source dataset.
+  - name: payload_facts_financing_cash_flow
+    description: Observed field for payload facts financing cash flow in the source dataset.
+  - name: payload_facts_free_cash_flow
+    description: Observed field for payload facts free cash flow in the source dataset.
+  - name: payload_facts_debt_to_equity
+    description: Observed field for payload facts debt to equity in the source dataset.
+  - name: payload_facts_current_ratio
+    description: Observed field for payload facts current ratio in the source dataset.
+  - name: payload_facts_debt_to_ebitda
+    description: Observed field for payload facts debt to ebitda in the source dataset.
+  - name: payload_facts_interest_coverage
+    description: Observed field for payload facts interest coverage in the source dataset.
+  - name: payload_facts_gross_margin
+    description: Observed field for payload facts gross margin in the source dataset.
+  - name: payload_facts_net_margin
+    description: Observed field for payload facts net margin in the source dataset.
+  - name: payload_facts_fiscal_year_end
+    description: Observed field for payload facts fiscal year end in the source dataset.
+    tests:
+    - accepted_values:
+        values:
+        - '2024-12-31'
+  - name: payload_facts_currency
+    description: Observed field for payload facts currency in the source dataset.
+    tests:
+    - accepted_values:
+        values:
+        - USD
+  - name: payload_facts_gaap_compliant
+    description: Observed field for payload facts gaap compliant in the source dataset.
+    tests:
+    - accepted_values:
+        values:
+        - 'True'
+  - name: payload_facts_field_confidence_total_revenue
+    description: Confidence value for the extracted fact. This must remain in the 0.0-1.0 range.
+    tests:
+    - dbt_expectations.expect_column_values_to_be_between:
+        min_value: 0.0
+        max_value: 1.0
+  - name: payload_facts_field_confidence_net_income
+    description: Confidence value for the extracted fact. This must remain in the 0.0-1.0 range.
+    tests:
+    - dbt_expectations.expect_column_values_to_be_between:
+        min_value: 0.0
+        max_value: 1.0
+  - name: payload_facts_field_confidence_total_assets
+    description: Confidence value for the extracted fact. This must remain in the 0.0-1.0 range.
+    tests:
+    - dbt_expectations.expect_column_values_to_be_between:
+        min_value: 0.0
+        max_value: 1.0
+  - name: payload_facts_page_references_total_revenue
+    description: Observed field for payload facts page references total revenue in the source dataset.
+    tests:
+    - accepted_values:
+        values:
+        - page 1, table 1, row 1
+  - name: payload_facts_page_references_net_income
+    description: Observed field for payload facts page references net income in the source dataset.
+    tests:
+    - accepted_values:
+        values:
+        - page 1, table 1, row 9
+  - name: payload_facts_extraction_notes_count
+    description: Observed field for payload facts extraction notes count in the source dataset.
+  - name: payload_facts_balance_sheet_balances
+    description: Observed field for payload facts balance sheet balances in the source dataset.
+    tests:
+    - accepted_values:
+        values:
+        - 'True'
+  - name: payload_facts_balance_discrepancy_usd
+    description: Observed field for payload facts balance discrepancy usd in the source dataset.
+  - name: payload_raw_text_length
+    description: Observed field for payload raw text length in the source dataset.
+  - name: payload_tables_extracted
+    description: Observed field for payload tables extracted in the source dataset.
+  - name: payload_processing_ms
+    description: Observed field for payload processing ms in the source dataset.
+  - name: payload_completed_at
+    description: Observed field for payload completed at in the source dataset.
+    tests:
+    - dbt_expectations.expect_column_values_to_match_regex:
+        regex: ^[0-9]{4}-[0-9]{2}-[0-9]{2}T
+  - name: payload_overall_confidence
+    description: Confidence value for the extracted fact. This must remain in the 0.0-1.0 range.
+    tests:
+    - dbt_expectations.expect_column_values_to_be_between:
+        min_value: 0.0
+        max_value: 1.0
+  - name: payload_is_coherent
+    description: Observed field for payload is coherent in the source dataset.
+    tests:
+    - accepted_values:
+        values:
+        - 'True'
+  - name: payload_anomalies_count
+    description: Observed field for payload anomalies count in the source dataset.
+  - name: payload_critical_missing_fields_count
+    description: Observed field for payload critical missing fields count in the source dataset.
+  - name: payload_reextraction_recommended
+    description: Observed field for payload reextraction recommended in the source dataset.
+    tests:
+    - accepted_values:
+        values:
+        - 'False'
+  - name: payload_auditor_notes
+    description: Observed field for payload auditor notes in the source dataset.
+    tests:
+    - accepted_values:
+        values:
+        - Financial statements appear internally consistent. Balance sheet balances. Revenue consistent
+          with prior year trajectory.
+  - name: payload_assessed_at
+    description: Observed field for payload assessed at in the source dataset.
+    tests:
+    - dbt_expectations.expect_column_values_to_match_regex:
+        regex: ^[0-9]{4}-[0-9]{2}-[0-9]{2}T
+  - name: payload_documents_processed
+    description: Observed field for payload documents processed in the source dataset.
+  - name: payload_has_quality_flags
+    description: Observed field for payload has quality flags in the source dataset.
+    tests:
+    - accepted_values:
+        values:
+        - 'False'
+  - name: payload_quality_flag_count
+    description: Observed field for payload quality flag count in the source dataset.
+  - name: payload_ready_at
+    description: Observed field for payload ready at in the source dataset.
+    tests:
+    - dbt_expectations.expect_column_values_to_match_regex:
+        regex: ^[0-9]{4}-[0-9]{2}-[0-9]{2}T
+  - name: payload_events_written_count
+    description: Observed field for payload events written count in the source dataset.
+  - name: payload_output_summary
+    description: Observed field for payload output summary in the source dataset.
+  - name: payload_written_at
+    description: Observed field for payload written at in the source dataset.
+    tests:
+    - dbt_expectations.expect_column_values_to_match_regex:
+        regex: ^[0-9]{4}-[0-9]{2}-[0-9]{2}T
+  - name: payload_total_nodes_executed
+    description: Observed field for payload total nodes executed in the source dataset.
+  - name: payload_total_llm_calls
+    description: Observed field for payload total llm calls in the source dataset.
+  - name: payload_total_tokens_used
+    description: Observed field for payload total tokens used in the source dataset.
+  - name: payload_total_cost_usd
+    description: Observed field for payload total cost usd in the source dataset.
+  - name: payload_total_duration_ms
+    description: Observed field for payload total duration ms in the source dataset.
+  - name: payload_next_agent_triggered
+    description: Observed field for payload next agent triggered in the source dataset.
+    tests:
+    - accepted_values:
+        values:
+        - compliance
+        - credit_analysis
+        - decision_orchestrator
+        - fraud_detection
+  - name: payload_requested_at
+    description: Observed field for payload requested at in the source dataset.
+    tests:
+    - dbt_expectations.expect_column_values_to_match_regex:
+        regex: ^[0-9]{4}-[0-9]{2}-[0-9]{2}T
+  - name: payload_priority
+    description: Observed field for payload priority in the source dataset.
+    tests:
+    - accepted_values:
+        values:
+        - NORMAL
+  - name: payload_opened_at
+    description: Observed field for payload opened at in the source dataset.
+    tests:
+    - dbt_expectations.expect_column_values_to_match_regex:
+        regex: ^[0-9]{4}-[0-9]{2}-[0-9]{2}T
+  - name: payload_fiscal_years_loaded_count
+    description: Observed field for payload fiscal years loaded count in the source dataset.
+  - name: payload_fiscal_years_loaded
+    description: Observed field for payload fiscal years loaded in the source dataset.
+    tests:
+    - accepted_values:
+        values:
+        - 2022|2023|2024
+  - name: payload_has_prior_loans
+    description: Observed field for payload has prior loans in the source dataset.
+    tests:
+    - accepted_values:
+        values:
+        - 'True'
+  - name: payload_has_defaults
+    description: Observed field for payload has defaults in the source dataset.
+    tests:
+    - accepted_values:
+        values:
+        - 'False'
+  - name: payload_revenue_trajectory
+    description: Observed field for payload revenue trajectory in the source dataset.
+    tests:
+    - accepted_values:
+        values:
+        - DECLINING
+        - GROWTH
+        - RECOVERING
+        - STABLE
+        - VOLATILE
+  - name: payload_data_hash
+    description: Observed field for payload data hash in the source dataset.
+  - name: payload_consumed_at
+    description: Observed field for payload consumed at in the source dataset.
+    tests:
+    - dbt_expectations.expect_column_values_to_match_regex:
+        regex: ^[0-9]{4}-[0-9]{2}-[0-9]{2}T
+  - name: payload_document_ids_consumed_count
+    description: Observed field for payload document ids consumed count in the source dataset.
+  - name: payload_document_ids_consumed
+    description: Observed field for payload document ids consumed in the source dataset.
+  - name: payload_facts_summary
+    description: Observed field for payload facts summary in the source dataset.
+  - name: payload_quality_flags_present
+    description: Observed field for payload quality flags present in the source dataset.
+    tests:
+    - accepted_values:
+        values:
+        - 'False'
+  - name: payload_decision_risk_tier
+    description: Observed field for payload decision risk tier in the source dataset.
+    tests:
+    - accepted_values:
+        values:
+        - HIGH
+        - LOW
+        - MEDIUM
+  - name: payload_decision_recommended_limit_usd
+    description: Observed field for payload decision recommended limit usd in the source dataset.
+  - name: payload_decision_confidence
+    description: Confidence value for the extracted fact. This must remain in the 0.0-1.0 range.
+    tests:
+    - dbt_expectations.expect_column_values_to_be_between:
+        min_value: 0.0
+        max_value: 1.0
+  - name: payload_decision_rationale
+    description: Observed field for payload decision rationale in the source dataset.
+  - name: payload_decision_key_concerns_count
+    description: Observed field for payload decision key concerns count in the source dataset.
+  - name: payload_decision_key_concerns
+    description: Observed field for payload decision key concerns in the source dataset.
+  - name: payload_decision_data_quality_caveats_count
+    description: Observed field for payload decision data quality caveats count in the source dataset.
+  - name: payload_decision_policy_overrides_applied_count
+    description: Observed field for payload decision policy overrides applied count in the source dataset.
+  - name: payload_model_deployment_id
+    description: Observed field for payload model deployment id in the source dataset.
+  - name: payload_input_data_hash
+    description: Observed field for payload input data hash in the source dataset.
+  - name: payload_analysis_duration_ms
+    description: Observed field for payload analysis duration ms in the source dataset.
+  - name: payload_regulatory_basis_count
+    description: Observed field for payload regulatory basis count in the source dataset.
+  - name: payload_triggered_by_event_id
+    description: Observed field for payload triggered by event id in the source dataset.
+  - name: payload_screening_model_version
+    description: Observed field for payload screening model version in the source dataset.
+    tests:
+    - accepted_values:
+        values:
+        - claude-sonnet-4-20250514
+  - name: payload_initiated_at
+    description: Observed field for payload initiated at in the source dataset.
+    tests:
+    - dbt_expectations.expect_column_values_to_match_regex:
+        regex: ^[0-9]{4}-[0-9]{2}-[0-9]{2}T
+  - name: payload_fraud_score
+    description: Observed field for payload fraud score in the source dataset.
+  - name: payload_risk_level
+    description: Observed field for payload risk level in the source dataset.
+    tests:
+    - accepted_values:
+        values:
+        - LOW
+        - MEDIUM
+  - name: payload_anomalies_found
+    description: Observed field for payload anomalies found in the source dataset.
+  - name: payload_recommendation
+    description: Observed field for payload recommendation in the source dataset.
+    tests:
+    - accepted_values:
+        values:
+        - APPROVE
+        - DECLINE
+        - PROCEED
+        - REFER
+  - name: payload_regulation_set_version
+    description: Observed field for payload regulation set version in the source dataset.
+    tests:
+    - accepted_values:
+        values:
+        - 2026-Q1
+  - name: payload_rules_to_evaluate_count
+    description: Observed field for payload rules to evaluate count in the source dataset.
+  - name: payload_rules_to_evaluate
+    description: Observed field for payload rules to evaluate in the source dataset.
+    tests:
+    - accepted_values:
+        values:
+        - REG-001|REG-002|REG-003|REG-004|REG-005|REG-006
+  - name: payload_rule_id
+    description: Observed field for payload rule id in the source dataset.
+    tests:
+    - accepted_values:
+        values:
+        - REG-001
+        - REG-002
+        - REG-003
+        - REG-004
+        - REG-005
+        - REG-006
+  - name: payload_rule_name
+    description: Observed field for payload rule name in the source dataset.
+    tests:
+    - accepted_values:
+        values:
+        - Bank Secrecy Act (BSA)
+        - CRA Consideration
+        - Jurisdiction Eligibility
+        - Legal Entity Eligibility
+        - OFAC Sanctions
+        - Operating History
+  - name: payload_rule_version
+    description: Observed field for payload rule version in the source dataset.
+    tests:
+    - accepted_values:
+        values:
+        - 2026-Q1-v1
+  - name: payload_evidence_hash
+    description: Observed field for payload evidence hash in the source dataset.
+  - name: payload_evaluation_notes
+    description: Observed field for payload evaluation notes in the source dataset.
+    tests:
+    - accepted_values:
+        values:
+        - 'Bank Secrecy Act (BSA): Clear.'
+        - 'Jurisdiction Eligibility: Clear.'
+        - 'Legal Entity Eligibility: Clear.'
+        - 'OFAC Sanctions: Clear.'
+        - 'Operating History: Clear.'
+  - name: payload_evaluated_at
+    description: Observed field for payload evaluated at in the source dataset.
+    tests:
+    - dbt_expectations.expect_column_values_to_match_regex:
+        regex: ^[0-9]{4}-[0-9]{2}-[0-9]{2}T
+  - name: payload_note_type
+    description: Observed field for payload note type in the source dataset.
+    tests:
+    - accepted_values:
+        values:
+        - CRA_CONSIDERATION
+  - name: payload_note_text
+    description: Observed field for payload note text in the source dataset.
+    tests:
+    - accepted_values:
+        values:
+        - Applicant jurisdiction qualifies for CRA consideration.
+  - name: payload_rules_evaluated
+    description: Observed field for payload rules evaluated in the source dataset.
+  - name: payload_rules_passed
+    description: Observed field for payload rules passed in the source dataset.
+  - name: payload_rules_failed
+    description: Observed field for payload rules failed in the source dataset.
+  - name: payload_rules_noted
+    description: Observed field for payload rules noted in the source dataset.
+  - name: payload_has_hard_block
+    description: Observed field for payload has hard block in the source dataset.
+    tests:
+    - accepted_values:
+        values:
+        - 'False'
+        - 'True'
+  - name: payload_overall_verdict
+    description: Observed field for payload overall verdict in the source dataset.
+    tests:
+    - accepted_values:
+        values:
+        - BLOCKED
+        - CLEAR
+        - CONDITIONAL
+  - name: payload_all_analyses_complete
+    description: Observed field for payload all analyses complete in the source dataset.
+    tests:
+    - accepted_values:
+        values:
+        - 'True'
+  - name: payload_orchestrator_session_id
+    description: Observed field for payload orchestrator session id in the source dataset.
+    tests:
+    - accepted_values:
+        values:
+        - sess-dec-19e0d79e
+        - sess-dec-21c739cd
+        - sess-dec-ca7fdd98
+        - sess-dec-cb6f3ee5
+        - sess-dec-d320af39
+        - sess-dec-eca00f34
+        - sess-dec-ed8b5b06
+  - name: payload_confidence
+    description: Confidence value for the extracted fact. This must remain in the 0.0-1.0 range.
+    tests:
+    - dbt_expectations.expect_column_values_to_be_between:
+        min_value: 0.0
+        max_value: 1.0
+  - name: payload_approved_amount_usd
+    description: Observed field for payload approved amount usd in the source dataset.
+    tests:
+    - accepted_values:
+        values:
+        - '1286000.0'
+        - '202000.0'
+        - '2410000.0'
+        - '913000.0'
+  - name: payload_conditions_count
+    description: Observed field for payload conditions count in the source dataset.
+  - name: payload_conditions
+    description: Observed field for payload conditions in the source dataset.
+    tests:
+    - accepted_values:
+        values:
+        - Monthly financial reporting required
+        - Monthly financial reporting required|Personal guarantee from principal
+  - name: payload_executive_summary
+    description: Observed field for payload executive summary in the source dataset.
+    tests:
+    - accepted_values:
+        values:
+        - Approval recommended. DECLINING trajectory. Compliance clear. Fraud screening low risk.
+        - Approval recommended. GROWTH trajectory. Compliance clear. Fraud screening low risk.
+        - Approval recommended. RECOVERING trajectory. Compliance clear. Fraud screening low risk.
+        - Decline recommended. DECLINING trajectory. Compliance clear. Fraud screening low risk.
+        - Decline recommended. RECOVERING trajectory. Compliance clear. Fraud screening low risk.
+        - Human review recommended. GROWTH trajectory. Compliance clear. Fraud screening low risk.
+  - name: payload_key_risks_count
+    description: Observed field for payload key risks count in the source dataset.
+  - name: payload_contributing_sessions_count
+    description: Observed field for payload contributing sessions count in the source dataset.
+  - name: payload_model_versions_orchestrator
+    description: Observed field for payload model versions orchestrator in the source dataset.
+    tests:
+    - accepted_values:
+        values:
+        - claude-sonnet-4-20250514
+  - name: payload_generated_at
+    description: Observed field for payload generated at in the source dataset.
+    tests:
+    - accepted_values:
+        values:
+        - '2026-02-25T11:38:31.510018'
+        - '2026-02-27T17:34:36.472985'
+        - '2026-02-28T18:01:41.522812'
+        - '2026-03-07T12:51:23.570977'
+        - '2026-03-12T08:55:12.532957'
+        - '2026-03-13T05:01:11.488846'
+        - '2026-03-14T10:37:37.546836'
+    - dbt_expectations.expect_column_values_to_match_regex:
+        regex: ^[0-9]{4}-[0-9]{2}-[0-9]{2}T
+  - name: payload_interest_rate_pct
+    description: Observed field for payload interest rate pct in the source dataset.
+  - name: payload_term_months
+    description: Observed field for payload term months in the source dataset.
+  - name: payload_approved_by
+    description: Observed field for payload approved by in the source dataset.
+    tests:
+    - accepted_values:
+        values:
+        - auto
+  - name: payload_effective_date
+    description: Observed field for payload effective date in the source dataset.
+    tests:
+    - accepted_values:
+        values:
+        - '2026-03-23'
+  - name: payload_approved_at
+    description: Observed field for payload approved at in the source dataset.
+    tests:
+    - accepted_values:
+        values:
+        - '2026-02-25T11:38:41.510018'
+        - '2026-02-27T17:34:46.472985'
+        - '2026-02-28T18:01:51.522812'
+        - '2026-03-13T05:01:21.488846'
+    - dbt_expectations.expect_column_values_to_match_regex:
+        regex: ^[0-9]{4}-[0-9]{2}-[0-9]{2}T
+  - name: payload_failure_reason
+    description: Observed field for payload failure reason in the source dataset.
+    tests:
+    - accepted_values:
+        values:
+        - Bank Secrecy Act (BSA) check failed.
+        - Jurisdiction Eligibility check failed.
+        - OFAC Sanctions check failed.
+  - name: payload_is_hard_block
+    description: Observed field for payload is hard block in the source dataset.
+    tests:
+    - accepted_values:
+        values:
+        - 'False'
+        - 'True'
+  - name: payload_remediation_available
+    description: Observed field for payload remediation available in the source dataset.
+    tests:
+    - accepted_values:
+        values:
+        - 'False'
+        - 'True'
+  - name: payload_remediation_description
+    description: Observed field for payload remediation description in the source dataset.
+  - name: payload_decline_reasons_count
+    description: Observed field for payload decline reasons count in the source dataset.
+  - name: payload_decline_reasons
+    description: Observed field for payload decline reasons in the source dataset.
+    tests:
+    - accepted_values:
+        values:
+        - 'Compliance hard block: REG-002'
+        - 'Compliance hard block: REG-003'
+        - Insufficient debt service coverage|High leverage
+  - name: payload_declined_by
+    description: Observed field for payload declined by in the source dataset.
+    tests:
+    - accepted_values:
+        values:
+        - auto
+        - compliance-system
+  - name: payload_adverse_action_notice_required
+    description: Observed field for payload adverse action notice required in the source dataset.
+    tests:
+    - accepted_values:
+        values:
+        - 'True'
+  - name: payload_adverse_action_codes_count
+    description: Observed field for payload adverse action codes count in the source dataset.
+  - name: payload_adverse_action_codes
+    description: Observed field for payload adverse action codes in the source dataset.
+    tests:
+    - accepted_values:
+        values:
+        - COMPLIANCE_BLOCK
+        - HIGH_DEBT_BURDEN
+  - name: payload_declined_at
+    description: Observed field for payload declined at in the source dataset.
+    tests:
+    - accepted_values:
+        values:
+        - '2026-02-25T14:06:12.558475'
+        - '2026-03-03T00:00:17.500460'
+        - '2026-03-12T08:55:22.532957'
+        - '2026-03-14T10:37:47.546836'
+    - dbt_expectations.expect_column_values_to_match_regex:
+        regex: ^[0-9]{4}-[0-9]{2}-[0-9]{2}T
+  - name: payload_key_risks
+    description: Observed field for payload key risks in the source dataset.
+    tests:
+    - accepted_values:
+        values:
+        - Revenue trend requires monitoring
