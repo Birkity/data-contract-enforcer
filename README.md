@@ -86,6 +86,22 @@ generated_contracts/week5_events.yaml
 generated_contracts/week5_events_dbt.yml
 ```
 
+## Contract verification status
+
+The generated contract artifacts have been verified at the file and YAML-structure level:
+
+- all four generated contract files exist
+- all four parse successfully as YAML
+- the Bitol contracts include schema clauses and lineage metadata
+- the dbt counterparts include `version: 2`, a `models` block, column definitions, and generated tests
+- key checks are present, including the Week 3 `fact_confidence` range test and the Week 5 `event_id` uniqueness/UUID checks
+
+What is **not** yet verified in this environment:
+
+- `dbt test` runtime execution
+
+The reason is simple: the `dbt` CLI is not installed in this local environment, so artifact generation is verified, but live dbt execution is still pending.
+
 ## Current Week 3 observations
 
 Using the current canonical Week 3 file:
