@@ -158,13 +158,6 @@ def parse_datetime(value: Any) -> bool:
         return False
 
 
-def series_stats(series: pd.Series) -> tuple[float | None, float | None, float | None]:
-    clean = pd.to_numeric(series, errors="coerce").dropna()
-    if clean.empty:
-        return None, None, None
-    return float(clean.min()), float(clean.max()), float(clean.mean())
-
-
 def structural_checks(
     contract_id: str, df: pd.DataFrame, schema: dict[str, dict[str, Any]]
 ) -> list[dict[str, Any]]:
@@ -576,7 +569,15 @@ def main() -> int:
     if baselines.get("written_at") is None or not baselines.get("columns"):
         write_baselines(baselines_path, df)
 
-    print(json.dumps({k: report[k] for k in ("report_id", "total_checks", "passed", "failed", "warned", "errored")}, indent=2))
+    print(
+        json.dumps(
+            {
+                key: report[key]
+                for key in ("report_id", "total_checks", "passed", "failed", "warned", "errored")
+            },
+            indent=2,
+        )
+    )
     return 0
 
 

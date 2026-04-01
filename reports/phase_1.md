@@ -2,60 +2,27 @@
 
 ## Scope
 
-This report covers **TRP Week 7 Phase 1 only**.
-
-Implemented:
+This report covers **TRP Week 7 Phase 1 only**:
 
 - `contracts/generator.py`
 - `generated_contracts/week3_extractions.yaml`
 
-Not implemented in this phase:
+This phase does **not** implement:
 
-- ValidationRunner
-- blame attribution
-- schema evolution snapshots and diffing
-- later AI-specific enforcement
+- validation
+- violation injection
+- attribution
+- schema evolution analysis
+- AI-assisted enforcement
 
-## Goal
+## What I used
 
-Build a working ContractGenerator that uses **real data** to infer a readable contract instead of hardcoding a schema by hand.
-
-The primary input for this phase was:
+I rebuilt Phase 1 against the current real inputs:
 
 - `outputs/week3/extractions.jsonl`
-
-The required lineage input was:
-
 - `outputs/week4/lineage_snapshots.jsonl`
 
-## Implementation methodology
-
-### 1. Load and inspect the live Week 3 data
-
-The generator starts by loading the Week 3 JSONL file record by record.
-
-It prints:
-
-- the number of records loaded
-- a sample record from the file
-
-It also performs a light schema sanity check.
-
-This is important because the current Week 3 file in this repo is **not** the canonical Week 7 extraction schema. Instead of failing immediately, the generator records warnings and continues with a profile-driven fallback path.
-
-Observed live Week 3 keys:
-
-- `document_id`
-- `source_filename`
-- `strategy_used`
-- `confidence_score`
-- `escalation_triggered`
-- `escalation_reason`
-- `estimated_cost`
-- `processing_time_s`
-- `flagged_for_review`
-
-Missing canonical Week 7 extraction keys:
+The Week 3 file is now in canonical Week 7-style shape with:
 
 - `doc_id`
 - `source_path`
@@ -67,208 +34,202 @@ Missing canonical Week 7 extraction keys:
 - `token_count`
 - `extracted_at`
 
-### 2. Flatten data for profiling
+The Week 4 lineage file is still a non-canonical dbt-style whole-file JSON graph. I used it anyway and made the generator record that limitation explicitly in the output contract.
 
-The generator supports two shapes:
+## What I implemented
 
-- canonical nested records with `extracted_facts[]`
-- legacy flat records with only scalar fields
+I recreated:
 
-Flattening strategy:
+- `contracts/generator.py`
 
-- if `extracted_facts[]` exists, explode it and create one profiling row per fact
-- preserve base document-level fields in every exploded row
-- prefix nested fact fields with `fact_`
-- flatten nested dictionaries into underscore-separated field names
+The generator does the following:
 
-For the current live data, `extracted_facts[]` does **not** exist.
+1. Loads the Week 3 JSONL file
+2. Prints the record count and one sample record
+3. Flattens nested structures for profiling
+4. Explodes `extracted_facts[]` so profiling happens at fact level
+5. Preserves document-level fields like `doc_id`, `source_path`, and token counts on every flattened row
+6. Profiles each observed column with pandas
+7. Converts the profiles into a readable Bitol-style YAML contract
+8. Loads the Week 4 lineage file and injects downstream lineage context or honest lineage notes
+9. Runs a quality check before finishing
 
-So the generator used a deliberate fallback:
+## Flattening methodology
 
-- one profiling row per source record
-- base scalar fields preserved as-is
-- warnings written into the generated contract so the limitation is visible
+The most important design choice in this phase is flattening.
 
-### 3. Profile each column with pandas
+Why:
 
-For every column, the generator computes:
+- the contract needs to reason about fact-level confidence
+- confidence lives inside `extracted_facts[]`
+- a record-level profile would hide the distribution and null behavior of real fact rows
 
-- dtype
+How:
+
+- the generator identifies `extracted_facts` as the repeated field
+- one output row is created per extracted fact
+- base document fields are copied onto each flattened fact row
+- nested dictionaries are flattened with prefixes such as:
+  - `token_count_input`
+  - `token_count_output`
+  - `fact_fact_id`
+  - `fact_confidence`
+  - `fact_page_ref`
+  - `fact_source_excerpt`
+- list fields become count fields, and scalar lists are also joined into a pipe-delimited string when useful
+
+Result:
+
+- `50` source extraction records
+- `402` profiled rows after flattening
+
+## Profiling methodology
+
+For each column, the generator computes:
+
+- logical dtype
 - null fraction
 - cardinality estimate
 - sample values
-- numeric stats when applicable:
-  - min
-  - max
-  - mean
-  - stddev
-  - p50
-  - p95
+- numeric distribution statistics when the field is numeric
 
-The generator stores this profile in memory first, then uses it to build the YAML contract.
+Numeric fields include:
 
-### 4. Translate profiles into contract clauses
+- `entities_count`
+- `processing_time_ms`
+- `token_count_input`
+- `token_count_output`
+- `fact_entity_refs_count`
+- `fact_confidence`
+- `fact_page_ref`
 
-The generator does not hardcode the live Week 3 schema.
+The generator stores:
 
-Instead, it derives field clauses from the profile:
+- `observed_min`
+- `observed_max`
+- `observed_mean`
+- `observed_stddev`
+- `observed_p50`
+- `observed_p95`
 
-- non-null columns become `required: true`
-- numeric confidence fields get:
-  - `type: number`
+## Contract generation logic
+
+The YAML clause generation is profile-driven rather than hardcoded to one static schema file.
+
+Rules implemented:
+
+- `null_fraction == 0.0` becomes `required: true`
+- numeric columns become `type: integer` or `type: number`
+- `_id` fields become `format: uuid` only when the observed values really match UUID format
+- `_at` fields become `format: date-time` only when the values parse cleanly
+- `source_hash` becomes a 64-hex regex pattern when the observed values support it
+- fields containing `confidence` get:
   - `minimum: 0.0`
   - `maximum: 1.0`
-  - a breaking-change description
-- safe low-cardinality strings become enums
-- string IDs get patterns when the observed values support them
-- every field receives a human-readable description
-- every field includes a compact `profile` block so the contract is understandable without reopening pandas output
+  - a description that explicitly calls the range out as meaningful
+- low-cardinality string enums are only emitted when the coverage is small and safe
 
-One important real-data decision:
+This kept the contract readable and honest to the real data instead of forcing brittle schema claims.
 
-- `document_id` ends with `_id`, but the observed values are **not UUIDs**
-- they match a 12-character hex pattern instead
-- the generator therefore emits `pattern: ^[a-f0-9]{12}$` rather than a false `format: uuid`
+## Generated contract summary
 
-That keeps the contract faithful to the real file instead of generating a misleading rule.
+The generator wrote:
 
-### 5. Inject lineage context from Week 4
+- `generated_contracts/week3_extractions.yaml`
 
-The generator loads the latest lineage payload from:
+Key contract observations:
+
+- contract id: `week3-extractions`
+- record count: `50`
+- profiled row count: `402`
+- repeated field: `extracted_facts`
+- no structural warnings were needed for the Week 3 input
+
+Important generated clauses include:
+
+- `doc_id`
+  - required
+  - UUID-formatted
+- `source_hash`
+  - required
+  - constrained by SHA-256 regex
+- `extracted_at`
+  - required
+  - date-time formatted
+- `fact_confidence`
+  - numeric
+  - constrained to `0.0` through `1.0`
+- `processing_time_ms`
+  - required integer with observed runtime statistics
+
+## Real profiling results
+
+From the current Week 3 file:
+
+- extraction records: `50`
+- fact rows with confidence: `374`
+- fact confidence min: `0.55`
+- fact confidence max: `1.0`
+- fact confidence mean: `0.8063636363636363`
+
+Other useful observations:
+
+- `doc_id` is valid UUID format
+- `source_hash` values match SHA-256 shape
+- `processing_time_ms` ranges from `7` to `279256`
+- some extraction rows contain no facts, so a small share of flattened rows have null fact-level fields
+
+## Lineage injection
+
+The generator loads:
 
 - `outputs/week4/lineage_snapshots.jsonl`
 
-It supports both:
+What happened:
 
-- a proper JSONL snapshot file
-- the current single-document JSON fallback that exists in this repo
+- the file successfully loaded as `whole-file-json`
+- it exposes a dbt-style structure with `datasets` and `edges`
+- it does not expose a direct canonical Week 3 downstream mapping
 
-Because the current lineage file is still a dbt-style graph with:
+So the contract records:
 
-- `datasets`
-- `transformations`
-- `edges`
+- `downstream: []`
+- a note explaining that the current lineage source is not yet the canonical Week 7 snapshot shape
+- a note explaining that downstream blast radius is currently unknown from this file alone
 
-and no explicit Week 3 extraction nodes, the generator records:
+This is intentional. I did not invent downstream consumers that are not present in the real lineage file.
 
-- snapshot format
-- dataset / transformation / edge counts
-- an empty downstream consumer list
-- explicit notes explaining why the lineage link is currently weak
+## Quality check
 
-This was intentional. I did not invent downstream consumers that do not exist in the source lineage file.
+After generation, I reopened the YAML and checked that:
 
-### 6. Write and quality-check the YAML
+- a schema block exists
+- every field has a description
+- confidence clauses enforce `0.0` to `1.0`
+- lineage context exists
 
-The generator writes:
+The generator completed successfully and printed:
 
-- `generated_contracts/week3_extractions.yaml`
+- `Contract quality check passed.`
 
-Then it reopens the file and verifies:
+## Assumptions
 
-- the YAML parses correctly
-- a schema section exists
-- the confidence rule is present and uses the `0.0` to `1.0` range
-- field descriptions are present
-- a lineage section exists
+- the current canonical Week 3 file is the source of truth for Phase 1
+- fact-level profiling is more useful than record-level profiling for this dataset
+- the current Week 4 lineage file is authoritative even though it is not yet in canonical Week 7 shape
+- local Ollama models are not required for this deterministic generation step
 
-## Generated contract outcome
+## Limitations
 
-The generator completed successfully on the live data and produced:
+- lineage injection is limited by the current Week 4 file shape
+- the generator profiles only what is present in the real data, so sparse fields are described conservatively
+- some document-level fields are repeated across flattened fact rows by design
 
-- `generated_contracts/week3_extractions.yaml`
+## Why this implementation is a good fit
 
-The contract includes:
+This rebuild keeps Phase 1 aligned with the real project state:
 
-- 9 profiled schema fields
-- a valid confidence range clause on `confidence_score`
-- enums for safe categorical fields such as `strategy_used` and `estimated_cost`
-- a lineage section grounded in the real Week 4 file
-- warnings about the current legacy Week 3 shape
-
-## Key profiling results
-
-From the live Week 3 input used during generation:
-
-- record count: `50`
-- profiling row count: `50`
-- flatten mode: `record_level_fallback`
-
-Confidence:
-
-- min: `0.0`
-- max: `1.0`
-- mean: `0.549294`
-- p95: `1.0`
-
-Processing time:
-
-- min: `0.0071`
-- max: `279.256`
-- mean: `27.084928`
-
-Categorical distributions:
-
-- `strategy_used`: `layout_aware=25`, `ocr_heavy=15`, `vision_augmented=10`
-- `estimated_cost`: `medium=25`, `high=25`
-- `escalation_triggered`: `False=38`, `True=12`
-- `flagged_for_review`: `False=31`, `True=19`
-
-## Anomalies found
-
-### Legacy Week 3 shape
-
-The biggest anomaly is structural:
-
-- the live file is not the canonical nested extraction schema
-- there is no `extracted_facts[]`
-- there is no `entities[]`
-
-That means the generator could not produce a fact-level contract yet. It produced the strongest honest record-level contract possible from the actual data.
-
-### Non-UUID document IDs
-
-`document_id` looks like an ID field semantically, but the observed values are 12-character hexadecimal strings rather than UUIDs.
-
-This matters because blindly forcing `format: uuid` would create a false contract.
-
-### Duplicate document IDs
-
-There are:
-
-- 50 rows
-- 40 unique `document_id` values
-
-So the current live file contains repeated document IDs. Because of that, the generator correctly did **not** mark `document_id` as unique.
-
-### Weak lineage coupling
-
-The current Week 4 lineage file is useful as graph evidence, but it does not contain explicit Week 3 extraction consumers.
-
-The generator therefore injected lineage carefully and transparently instead of inventing downstream nodes.
-
-## Assumptions made
-
-### Assumption 1
-
-If `extracted_facts[]` exists in future inputs, it is the preferred repeated structure and should be exploded into one row per fact.
-
-### Assumption 2
-
-If the input remains in the current legacy shape, one record per row is the safest fallback for profiling and contract generation.
-
-### Assumption 3
-
-The current Week 4 lineage file should be treated as valid lineage context input even though it is not yet in canonical Week 7 snapshot format.
-
-### Assumption 4
-
-Phase 1 should remain deterministic. Your available local Ollama models were not used because this phase does not require LLM inference.
-
-## Why this approach was chosen
-
-The main design goal was honesty.
-
-This generator does not pretend the current Week 3 data is already canonical. It profiles what is truly present, emits a useful contract immediately, and preserves the evidence needed for later migration work.
-
-That gives you a working Phase 1 deliverable now without hiding the upstream schema gaps that still matter for later phases.
+- it uses the migrated canonical Week 3 data
+- it profiles confidence where confidence actually lives
+- it produces a readable contract instead of a raw statistical dump
+- it carries forward lineage context without pretending the current Week 4 graph is richer than it is

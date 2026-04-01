@@ -1,7 +1,6 @@
 import argparse
 import json
 import re
-import sys
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
@@ -14,13 +13,12 @@ UUID_RE = re.compile(
     r"^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$",
     re.IGNORECASE,
 )
-HEX12_RE = re.compile(r"^[0-9a-f]{12}$", re.IGNORECASE)
 SHA256_RE = re.compile(r"^[0-9a-f]{64}$", re.IGNORECASE)
 
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(
-        description="Generate a Bitol-style contract YAML from real JSONL data."
+        description="Generate a Bitol-style data contract from a real JSONL dataset."
     )
     parser.add_argument(
         "--source",
@@ -40,9 +38,13 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument(
         "--contract-id",
         default=None,
-        help="Optional output contract slug. Defaults to '<parent>_<stem>'.",
+        help="Optional contract id override. Defaults to '<parent>-<stem>'.",
     )
     return parser.parse_args()
+
+
+def now_iso() -> str:
+    return datetime.now(timezone.utc).isoformat()
 
 
 def load_jsonl(path: Path) -> list[dict[str, Any]]:
@@ -91,7 +93,11 @@ def load_latest_lineage_snapshot(path: Path) -> tuple[dict[str, Any], str]:
 def make_contract_slug(source_path: Path, explicit_slug: str | None) -> str:
     if explicit_slug:
         return explicit_slug.strip()
-    return f"{source_path.parent.name}_{source_path.stem}"
+    return f"{source_path.parent.name}-{source_path.stem}"
+
+
+def make_output_filename(source_path: Path) -> str:
+    return f"{source_path.parent.name}_{source_path.stem}.yaml"
 
 
 def preview_record(record: dict[str, Any]) -> str:
@@ -103,18 +109,11 @@ def inspect_records(records: list[dict[str, Any]]) -> dict[str, Any]:
     warnings: list[str] = []
     observed_keys = list(first.keys())
 
-    if not any("extracted_facts" in record for record in records):
-        warnings.append(
-            "The current Week 3 file does not contain extracted_facts[]. "
-            "Profiling will fall back to one row per record instead of one row per fact."
-        )
-
     canonical_markers = {"doc_id", "source_path", "source_hash", "extracted_facts", "entities"}
     missing_markers = sorted(marker for marker in canonical_markers if marker not in observed_keys)
     if missing_markers:
         warnings.append(
-            "The current source uses a legacy summary schema and is missing canonical fields: "
-            + ", ".join(missing_markers)
+            "The current Week 3 file is missing canonical fields: " + ", ".join(missing_markers)
         )
 
     print(f"Loaded {len(records)} records.")
@@ -140,14 +139,9 @@ def flatten_scalar_value(target: dict[str, Any], key: str, value: Any) -> None:
         return
 
     if isinstance(value, list):
-        if not value:
-            target[f"{key}_count"] = 0
-            return
-        if all(not isinstance(item, (dict, list)) for item in value):
-            target[f"{key}_count"] = len(value)
-            target[key] = "|".join(str(item) for item in value)
-            return
         target[f"{key}_count"] = len(value)
+        if value and all(not isinstance(item, (dict, list)) for item in value):
+            target[key] = "|".join(str(item) for item in value)
         return
 
     target[key] = value
@@ -202,21 +196,9 @@ def flatten_for_profile(records: list[dict[str, Any]]) -> tuple[pd.DataFrame, di
     return df, metadata
 
 
-def is_boolean_dtype(dtype_str: str) -> bool:
-    return dtype_str == "bool"
-
-
-def is_integer_dtype(dtype_str: str) -> bool:
-    return dtype_str.startswith("int") or dtype_str.startswith("Int")
-
-
-def is_numeric_dtype(series: pd.Series) -> bool:
-    return pd.api.types.is_numeric_dtype(series) and not pd.api.types.is_bool_dtype(series)
-
-
-def sample_values(series: pd.Series, limit: int = 5) -> list[str]:
-    seen: set[str] = set()
+def render_sample_values(series: pd.Series, limit: int = 5) -> list[str]:
     samples: list[str] = []
+    seen: set[str] = set()
     for value in series.dropna():
         rendered = str(value)
         if rendered in seen:
@@ -228,25 +210,28 @@ def sample_values(series: pd.Series, limit: int = 5) -> list[str]:
     return samples
 
 
-def full_unique_values(series: pd.Series, limit: int = 10) -> list[str] | None:
-    values = [str(value) for value in pd.Series(series.dropna().unique()).tolist()]
-    if not values or len(values) > limit:
-        return None
-    return values
-
-
 def numeric_stats(series: pd.Series) -> dict[str, float]:
     clean = pd.to_numeric(series.dropna(), errors="coerce").dropna()
     if clean.empty:
         return {}
     return {
-        "min": float(clean.min()),
-        "max": float(clean.max()),
-        "mean": float(clean.mean()),
-        "stddev": float(clean.std(ddof=1)) if len(clean) > 1 else 0.0,
-        "p50": float(clean.quantile(0.50)),
-        "p95": float(clean.quantile(0.95)),
+        "observed_min": round(float(clean.min()), 6),
+        "observed_max": round(float(clean.max()), 6),
+        "observed_mean": round(float(clean.mean()), 6),
+        "observed_stddev": round(float(clean.std(ddof=1)) if len(clean) > 1 else 0.0, 6),
+        "observed_p50": round(float(clean.quantile(0.50)), 6),
+        "observed_p95": round(float(clean.quantile(0.95)), 6),
     }
+
+
+def infer_logical_type(series: pd.Series) -> str:
+    if pd.api.types.is_bool_dtype(series):
+        return "boolean"
+    if pd.api.types.is_integer_dtype(series) and not pd.api.types.is_bool_dtype(series):
+        return "integer"
+    if pd.api.types.is_numeric_dtype(series) and not pd.api.types.is_bool_dtype(series):
+        return "number"
+    return "string"
 
 
 def values_match(series: pd.Series, pattern: re.Pattern[str]) -> bool:
@@ -254,262 +239,214 @@ def values_match(series: pd.Series, pattern: re.Pattern[str]) -> bool:
     return bool(values) and all(pattern.match(value) for value in values)
 
 
+def parse_datetime(value: Any) -> bool:
+    if value is None:
+        return False
+    text = str(value)
+    try:
+        datetime.fromisoformat(text.replace("Z", "+00:00"))
+        return True
+    except ValueError:
+        return False
+
+
+def unique_string_values(series: pd.Series, limit: int = 8) -> list[str] | None:
+    values = [str(value) for value in series.dropna().unique().tolist()]
+    if not values or len(values) > limit:
+        return None
+    return sorted(values)
+
+
 def profile_column(series: pd.Series, column_name: str) -> dict[str, Any]:
+    logical_type = infer_logical_type(series)
     profile: dict[str, Any] = {
-        "name": column_name,
-        "dtype": str(series.dtype),
-        "null_fraction": float(series.isna().mean()),
+        "dtype": logical_type,
+        "null_fraction": round(float(series.isna().mean()), 6),
         "cardinality_estimate": int(series.dropna().nunique()),
-        "sample_values": sample_values(series),
-        "non_null_count": int(series.notna().sum()),
-        "is_unique": bool(series.isna().sum() == 0 and series.nunique(dropna=True) == len(series)),
+        "sample_values": render_sample_values(series),
     }
 
-    if is_numeric_dtype(series):
-        profile["stats"] = numeric_stats(series)
-
-    safe_enum = full_unique_values(series)
-    if safe_enum is not None and not is_numeric_dtype(series) and not pd.api.types.is_bool_dtype(series):
-        profile["enum_values"] = safe_enum
-
-    if values_match(series, UUID_RE):
-        profile["pattern_hint"] = "uuid"
-    elif values_match(series, SHA256_RE):
-        profile["pattern_hint"] = "sha256"
-    elif values_match(series, HEX12_RE):
-        profile["pattern_hint"] = "hex12"
+    if logical_type in {"integer", "number"}:
+        profile.update(numeric_stats(series))
 
     return profile
 
 
-def profile_dataframe(df: pd.DataFrame) -> dict[str, dict[str, Any]]:
-    return {column: profile_column(df[column], column) for column in df.columns}
-
-
-def infer_contract_type(profile: dict[str, Any]) -> str:
-    dtype_str = profile["dtype"]
-    if is_boolean_dtype(dtype_str):
-        return "boolean"
-    if is_integer_dtype(dtype_str):
-        return "integer"
-    if "float" in dtype_str:
-        return "number"
-    return "string"
-
-
-def human_readable_dtype(profile: dict[str, Any]) -> str:
-    dtype_str = profile["dtype"]
-    if is_boolean_dtype(dtype_str):
-        return "boolean"
-    if is_integer_dtype(dtype_str):
-        return "integer"
-    if "float" in dtype_str:
-        return "number"
-    return "string"
-
-
-def humanize_field_name(name: str) -> str:
-    return name.replace("_", " ")
-
-
-def field_description(name: str, profile: dict[str, Any]) -> str:
-    mapping = {
-        "document_id": "Identifier emitted by the current Week 3 pipeline for the processed document.",
-        "source_filename": "Original source filename for the processed document.",
-        "strategy_used": "Extraction strategy selected by the Week 3 pipeline for this document.",
-        "confidence_score": (
-            "Document-level confidence score for the current extraction output. "
-            "This must remain a 0.0-1.0 numeric value; changing it to 0-100 is a breaking change."
-        ),
-        "escalation_triggered": "Whether the document was escalated for additional handling.",
-        "escalation_reason": "Recorded reason for escalation when escalation was triggered.",
-        "estimated_cost": "Cost tier assigned to the extraction run.",
-        "processing_time_s": "Observed processing time in seconds for the extraction run.",
-        "flagged_for_review": "Whether the pipeline flagged the document for manual review.",
+def describe_field(column_name: str) -> str:
+    descriptions = {
         "doc_id": "Primary identifier for the extracted document record.",
         "source_path": "Original source path or URL for the document.",
-        "source_hash": "Content hash of the source document.",
+        "source_hash": "SHA-256 content hash of the source document.",
+        "entities_count": "Number of entities linked to the document record.",
+        "extraction_model": "Extraction strategy or model label used to produce the record.",
+        "processing_time_ms": "End-to-end extraction processing time in milliseconds.",
+        "token_count_input": "Approximate input token count used by the extraction workflow.",
+        "token_count_output": "Approximate output token count produced by the extraction workflow.",
+        "extracted_at": "Timestamp when the extraction record was produced.",
+        "fact_fact_id": "Primary identifier for the extracted fact.",
+        "fact_text": "Plain-English extracted fact text.",
+        "fact_entity_refs_count": "Number of entity references linked from the extracted fact.",
+        "fact_entity_refs": "Entity identifiers referenced by the extracted fact.",
+        "fact_confidence": "Confidence value for the extracted fact. This must remain in the 0.0-1.0 range.",
+        "fact_page_ref": "Source page number associated with the extracted fact.",
+        "fact_source_excerpt": "Supporting excerpt copied from the source document for the extracted fact.",
     }
-    if name in mapping:
-        return mapping[name]
-
-    if name.endswith("_id"):
-        return f"Identifier for {humanize_field_name(name[:-3])}."
-    if name.endswith("_at"):
-        return f"Timestamp for {humanize_field_name(name[:-3])}."
-    if "confidence" in name:
-        return (
-            f"Confidence value for {humanize_field_name(name)}. "
-            "This must remain in the 0.0-1.0 range."
-        )
-    if profile["dtype"] == "bool":
-        return f"Boolean flag for {humanize_field_name(name)}."
-    return f"Observed field for {humanize_field_name(name)} in the source dataset."
+    if column_name in descriptions:
+        return descriptions[column_name]
+    return f"Observed field for {column_name.replace('_', ' ')} in the source dataset."
 
 
-def build_profile_block(profile: dict[str, Any]) -> dict[str, Any]:
-    block: dict[str, Any] = {
-        "dtype": human_readable_dtype(profile),
-        "null_fraction": round(profile["null_fraction"], 6),
-        "cardinality_estimate": profile["cardinality_estimate"],
+def build_schema_clause(column_name: str, series: pd.Series) -> dict[str, Any]:
+    profile = profile_column(series, column_name)
+    clause: dict[str, Any] = {
+        "type": profile["dtype"],
+        "description": describe_field(column_name),
     }
-    if profile["sample_values"]:
-        block["sample_values"] = profile["sample_values"]
-    if "stats" in profile and profile["stats"]:
-        stats = profile["stats"]
-        block["observed_min"] = round(stats["min"], 6)
-        block["observed_max"] = round(stats["max"], 6)
-        block["observed_mean"] = round(stats["mean"], 6)
-        block["observed_stddev"] = round(stats["stddev"], 6)
-        block["observed_p50"] = round(stats["p50"], 6)
-        block["observed_p95"] = round(stats["p95"], 6)
-    return block
-
-
-def build_field_clause(profile: dict[str, Any]) -> dict[str, Any]:
-    name = profile["name"]
-    clause: dict[str, Any] = {"type": infer_contract_type(profile)}
 
     if profile["null_fraction"] == 0.0:
         clause["required"] = True
 
-    if profile["is_unique"]:
-        clause["unique"] = True
+    if column_name.endswith("_id") and values_match(series, UUID_RE):
+        clause["format"] = "uuid"
 
-    if "confidence" in name and clause["type"] in {"number", "integer"}:
-        clause["minimum"] = 0.0
-        clause["maximum"] = 1.0
-
-    if name.endswith("_id"):
-        if profile.get("pattern_hint") == "uuid":
-            clause["format"] = "uuid"
-        elif profile.get("pattern_hint") == "hex12":
-            clause["pattern"] = "^[a-f0-9]{12}$"
-
-    if name.endswith("_at"):
+    if column_name.endswith("_at") and all(parse_datetime(value) for value in series.dropna().tolist()):
         clause["format"] = "date-time"
 
-    if profile.get("pattern_hint") == "sha256":
+    if "confidence" in column_name:
+        clause["minimum"] = 0.0
+        clause["maximum"] = 1.0
+        clause["description"] = "Confidence value for the extracted fact. This must remain in the 0.0-1.0 range."
+
+    if column_name == "source_hash" and values_match(series, SHA256_RE):
         clause["pattern"] = "^[a-f0-9]{64}$"
 
-    enum_values = profile.get("enum_values")
-    if enum_values and len(enum_values) == profile["cardinality_estimate"]:
-        clause["enum"] = enum_values
+    if profile["dtype"] == "string":
+        enum_values = unique_string_values(series)
+        if enum_values and column_name not in {"source_path", "source_hash", "fact_text", "fact_source_excerpt", "fact_entity_refs"}:
+            clause["enum"] = enum_values
 
-    clause["description"] = field_description(name, profile)
-    clause["profile"] = build_profile_block(profile)
+    ordered_profile: dict[str, Any] = {
+        "dtype": profile["dtype"],
+        "null_fraction": profile["null_fraction"],
+        "cardinality_estimate": profile["cardinality_estimate"],
+        "sample_values": profile["sample_values"],
+    }
+    for key in (
+        "observed_min",
+        "observed_max",
+        "observed_mean",
+        "observed_stddev",
+        "observed_p50",
+        "observed_p95",
+    ):
+        if key in profile:
+            ordered_profile[key] = profile[key]
+    clause["profile"] = ordered_profile
     return clause
 
 
-def build_quality_checks(
-    profiles: dict[str, dict[str, Any]], contract_label: str
-) -> dict[str, Any]:
-    checks: list[str] = ["row_count >= 1"]
-
-    for name, profile in profiles.items():
-        if profile["null_fraction"] == 0.0:
-            checks.append(f"missing_count({name}) = 0")
-        if profile["is_unique"]:
-            checks.append(f"duplicate_count({name}) = 0")
-        if "confidence" in name and "stats" in profile:
-            checks.append(f"min({name}) >= 0.0")
-            checks.append(f"max({name}) <= 1.0")
-
-    return {
-        "type": "SodaChecks",
-        "specification": {f"checks for {contract_label}": checks},
-    }
-
-
-def derive_lineage_consumers(
-    snapshot: dict[str, Any], observed_fields: list[str]
-) -> tuple[list[dict[str, Any]], list[str], dict[str, int]]:
-    edges = snapshot.get("edges", [])
-    summary = {
-        "dataset_count": len(snapshot.get("datasets", []))
-        if isinstance(snapshot.get("datasets"), list)
-        else len(snapshot.get("datasets", {})),
-        "transformation_count": len(snapshot.get("transformations", []))
-        if isinstance(snapshot.get("transformations"), list)
-        else len(snapshot.get("transformations", {})),
-        "edge_count": len(edges) if isinstance(edges, list) else 0,
-    }
-
-    query_tokens = {field.lower() for field in observed_fields}
-    query_tokens.update({"week3", "document_id", "doc_id", "confidence_score"})
-
+def find_downstream_consumers(
+    snapshot: dict[str, Any], snapshot_mode: str, source_fields: list[str]
+) -> tuple[list[dict[str, Any]], list[str]]:
     downstream: list[dict[str, Any]] = []
     notes: list[str] = []
-    seen_ids: set[str] = set()
 
-    if isinstance(edges, list):
-        for edge in edges:
-            source_text = str(edge.get("source", "")).lower()
-            target_text = str(edge.get("target", "")).lower()
-            if not any(token in source_text or token in target_text for token in query_tokens):
-                continue
-            target_id = str(edge.get("target"))
-            if target_id in seen_ids:
-                continue
-            seen_ids.add(target_id)
-            downstream.append(
-                {
-                    "id": target_id,
-                    "fields_consumed": observed_fields[: min(3, len(observed_fields))],
-                }
-            )
+    if "nodes" in snapshot and "edges" in snapshot:
+        node_map = {node.get("node_id"): node for node in snapshot.get("nodes", []) if node.get("node_id")}
+        for edge in snapshot.get("edges", []):
+            source = str(edge.get("source", ""))
+            target = str(edge.get("target", ""))
+            if "week3" in source.lower() or "extraction" in source.lower():
+                node = node_map.get(target, {})
+                downstream.append(
+                    {
+                        "id": target,
+                        "label": node.get("label", target),
+                        "relationship": edge.get("relationship", "CONSUMES"),
+                        "fields_consumed": source_fields,
+                    }
+                )
+        if not downstream:
+            notes.append("Canonical lineage snapshot loaded, but no explicit Week 3 downstream consumers were found.")
+        return downstream, notes
 
-    if not downstream:
+    if "datasets" in snapshot and "edges" in snapshot:
         notes.append(
-            "No explicit Week 3 consumer nodes were found in the provided Week 4 lineage snapshot."
+            "Week 4 lineage is currently a dbt-style whole-file graph, not the canonical Week 7 node/edge snapshot."
         )
         notes.append(
-            "The latest lineage file is a dbt-style graph with datasets, transformations, and edges, "
-            "so blast-radius details will become stronger after Week 4 is migrated to the canonical snapshot schema."
+            "No explicit consumer for the Week 3 extraction output was found in the current lineage file, so downstream blast radius is recorded as unknown."
         )
+        return downstream, notes
 
-    return downstream, notes, summary
+    notes.append(
+        f"Lineage snapshot was loaded in {snapshot_mode} mode, but its structure did not expose a direct Week 3 downstream mapping."
+    )
+    return downstream, notes
 
 
 def build_contract(
+    contract_id: str,
     source_path: Path,
     lineage_path: Path,
-    contract_slug: str,
-    records: list[dict[str, Any]],
     inspection: dict[str, Any],
     df: pd.DataFrame,
     flatten_metadata: dict[str, Any],
-    profiles: dict[str, dict[str, Any]],
     lineage_snapshot: dict[str, Any],
     lineage_mode: str,
 ) -> dict[str, Any]:
-    schema: dict[str, Any] = {}
-    for name in df.columns:
-        schema[name] = build_field_clause(profiles[name])
+    schema_order = [
+        "doc_id",
+        "source_path",
+        "source_hash",
+        "entities_count",
+        "extraction_model",
+        "processing_time_ms",
+        "token_count_input",
+        "token_count_output",
+        "extracted_at",
+        "fact_fact_id",
+        "fact_text",
+        "fact_entity_refs_count",
+        "fact_entity_refs",
+        "fact_confidence",
+        "fact_page_ref",
+        "fact_source_excerpt",
+    ]
 
-    downstream, lineage_notes, lineage_summary = derive_lineage_consumers(
-        lineage_snapshot, list(df.columns)
+    schema: dict[str, Any] = {}
+    for column_name in schema_order:
+        if column_name in df.columns:
+            schema[column_name] = build_schema_clause(column_name, df[column_name])
+
+    remaining = [column for column in df.columns if column not in schema]
+    for column_name in remaining:
+        schema[column_name] = build_schema_clause(column_name, df[column_name])
+
+    downstream, lineage_notes = find_downstream_consumers(
+        snapshot=lineage_snapshot,
+        snapshot_mode=lineage_mode,
+        source_fields=["doc_id", "extracted_facts"],
     )
 
-    limitations: list[str] = []
-    if inspection["warnings"]:
-        limitations.extend(inspection["warnings"])
-    if flatten_metadata["flatten_mode"] == "record_level_fallback":
-        limitations.append(
-            "This contract was generated from record-level summary rows because extracted_facts[] was not present in the live Week 3 file."
+    if source_path.parent.name.lower() == "week3" and source_path.stem.lower() == "extractions":
+        title = "Week 3 Extractions Contract"
+    else:
+        title = (
+            f"{source_path.parent.name.replace('_', ' ').title()} "
+            f"{source_path.stem.replace('_', ' ').title()} Contract"
         )
-
-    return {
+    contract = {
         "kind": "DataContract",
         "apiVersion": "v3.0.0",
-        "id": contract_slug.replace("_", "-"),
+        "id": contract_id,
         "info": {
-            "title": "Week 3 Extractions Contract",
+            "title": title,
             "version": "1.0.0",
             "owner": "week7-contract-generator",
             "description": (
                 "Generated from the live Week 3 extraction output using profiling-based inference. "
-                "The contract reflects the real source file currently present in outputs/week3/extractions.jsonl."
+                "The contract reflects the canonical JSONL file currently present in outputs/week3/extractions.jsonl."
             ),
         },
         "servers": {
@@ -521,73 +458,66 @@ def build_contract(
         },
         "terms": {
             "usage": "Internal inter-system data contract generated from observed Week 3 output.",
-            "limitations": (
-                "Generated from the current live Week 3 export, which still uses a legacy summary schema."
-                if limitations
-                else "No additional limitations recorded."
-            ),
+            "limitations": "Lineage context reflects the current Week 4 snapshot shape and may be incomplete.",
         },
         "observations": {
-            "generated_at": datetime.now(timezone.utc).isoformat(),
-            "record_count": len(records),
+            "generated_at": now_iso(),
+            "record_count": inspection["record_count"],
             "profiled_row_count": flatten_metadata["profiled_row_count"],
             "flatten_mode": flatten_metadata["flatten_mode"],
             "repeated_field": flatten_metadata["repeated_field"],
             "observed_keys": inspection["observed_keys"],
-            "warnings": limitations,
+            "warnings": inspection["warnings"],
         },
         "schema": schema,
-        "quality": build_quality_checks(profiles, contract_slug),
         "lineage": {
-            "source_snapshot": str(lineage_path).replace("\\", "/"),
-            "snapshot_format": lineage_mode,
-            "snapshot_summary": lineage_summary,
-            "upstream": [],
+            "source_snapshot": {
+                "path": str(lineage_path).replace("\\", "/"),
+                "load_mode": lineage_mode,
+            },
             "downstream": downstream,
             "notes": lineage_notes,
         },
     }
+    return contract
 
 
-def ensure_parent(path: Path) -> None:
-    path.parent.mkdir(parents=True, exist_ok=True)
+def ensure_output_dir(path: Path) -> None:
+    path.mkdir(parents=True, exist_ok=True)
 
 
-def write_yaml(path: Path, payload: dict[str, Any]) -> None:
-    ensure_parent(path)
-    with path.open("w", encoding="utf-8") as handle:
-        yaml.safe_dump(payload, handle, sort_keys=False, allow_unicode=False)
+def write_contract(output_dir: Path, filename: str, contract: dict[str, Any]) -> Path:
+    ensure_output_dir(output_dir)
+    output_path = output_dir / filename
+    payload = yaml.safe_dump(contract, sort_keys=False, allow_unicode=False, width=100)
+    output_path.write_text(payload, encoding="utf-8")
+    return output_path
 
 
-def quality_check_contract(path: Path) -> list[str]:
-    warnings: list[str] = []
-    payload = yaml.safe_load(path.read_text(encoding="utf-8"))
-    schema = payload.get("schema", {})
+def quality_check(contract: dict[str, Any], output_path: Path) -> None:
+    reloaded = yaml.safe_load(output_path.read_text(encoding="utf-8"))
+    schema = reloaded.get("schema", {})
     if not schema:
-        raise ValueError("Generated contract is missing a schema section.")
+        raise ValueError("Generated contract has no schema block.")
+
+    required_descriptions = [name for name, clause in schema.items() if not clause.get("description")]
+    if required_descriptions:
+        raise ValueError(f"Fields missing descriptions: {required_descriptions}")
 
     confidence_fields = [
-        (name, clause)
+        clause
         for name, clause in schema.items()
-        if "confidence" in name and isinstance(clause, dict)
+        if "confidence" in name
     ]
     if not confidence_fields:
-        warnings.append("No confidence field was present in the generated contract.")
-    else:
-        for name, clause in confidence_fields:
-            if clause.get("minimum") != 0.0 or clause.get("maximum") != 1.0:
-                raise ValueError(
-                    f"Confidence clause for {name} is missing the required 0.0-1.0 range."
-                )
+        raise ValueError("Generated contract is missing a confidence clause.")
 
-    for name, clause in schema.items():
-        if not clause.get("description"):
-            warnings.append(f"{name} is missing a human-readable description.")
+    for clause in confidence_fields:
+        if clause.get("minimum") != 0.0 or clause.get("maximum") != 1.0:
+            raise ValueError("Confidence clause does not enforce the 0.0-1.0 range.")
 
-    if not payload.get("lineage"):
-        warnings.append("Lineage section is missing.")
-
-    return warnings
+    if "lineage" not in reloaded:
+        raise ValueError("Generated contract is missing lineage context.")
 
 
 def main() -> int:
@@ -595,39 +525,30 @@ def main() -> int:
     source_path = Path(args.source)
     lineage_path = Path(args.lineage)
     output_dir = Path(args.output)
-    contract_slug = make_contract_slug(source_path, args.contract_id)
-    output_path = output_dir / f"{contract_slug}.yaml"
 
     records = load_week3_records(source_path)
     inspection = inspect_records(records)
     df, flatten_metadata = flatten_for_profile(records)
-    profiles = profile_dataframe(df)
-    lineage_snapshot, lineage_mode = load_latest_lineage_snapshot(lineage_path)
 
+    lineage_snapshot, lineage_mode = load_latest_lineage_snapshot(lineage_path)
+    contract_id = make_contract_slug(source_path, args.contract_id)
     contract = build_contract(
+        contract_id=contract_id,
         source_path=source_path,
         lineage_path=lineage_path,
-        contract_slug=contract_slug,
-        records=records,
         inspection=inspection,
         df=df,
         flatten_metadata=flatten_metadata,
-        profiles=profiles,
         lineage_snapshot=lineage_snapshot,
         lineage_mode=lineage_mode,
     )
-    write_yaml(output_path, contract)
+    output_path = write_contract(output_dir, make_output_filename(source_path), contract)
+    quality_check(contract, output_path)
 
-    print(f"Wrote contract to {output_path}")
-    warnings = quality_check_contract(output_path)
-    if warnings:
-        print("Contract quality warnings:")
-        for warning in warnings:
-            print(f"- {warning}")
-    else:
-        print("Contract quality check passed.")
+    print(f"Contract written to {output_path}")
+    print("Contract quality check passed.")
     return 0
 
 
 if __name__ == "__main__":
-    sys.exit(main())
+    raise SystemExit(main())
