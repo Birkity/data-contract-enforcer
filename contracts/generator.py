@@ -100,20 +100,70 @@ def make_output_filename(source_path: Path) -> str:
     return f"{source_path.parent.name}_{source_path.stem}.yaml"
 
 
+def make_dbt_output_filename(source_path: Path) -> str:
+    return f"{source_path.parent.name}_{source_path.stem}_dbt.yml"
+
+
+def make_model_name(source_path: Path) -> str:
+    return f"{source_path.parent.name}_{source_path.stem}".replace("-", "_")
+
+
+def make_contract_title(source_path: Path) -> str:
+    if source_path.parent.name.lower() == "week3" and source_path.stem.lower() == "extractions":
+        return "Week 3 Extractions Contract"
+    if source_path.parent.name.lower() == "week5" and source_path.stem.lower() == "events":
+        return "Week 5 Events Contract"
+    return (
+        f"{source_path.parent.name.replace('_', ' ').title()} "
+        f"{source_path.stem.replace('_', ' ').title()} Contract"
+    )
+
+
+def make_contract_description(source_path: Path) -> str:
+    dataset_label = f"{source_path.parent.name}/{source_path.stem}".replace("\\", "/")
+    return (
+        f"Generated from the live {dataset_label} JSONL output using profiling-based inference. "
+        "The contract reflects the current serialized artifact present in the repository."
+    )
+
+
+def make_contract_usage(source_path: Path) -> str:
+    return (
+        "Internal inter-system data contract generated from the observed output snapshot at "
+        f"{str(source_path).replace(chr(92), '/')}."
+    )
+
+
 def preview_record(record: dict[str, Any]) -> str:
     return json.dumps(record, indent=2, ensure_ascii=True)
 
 
-def inspect_records(records: list[dict[str, Any]]) -> dict[str, Any]:
+def inspect_records(records: list[dict[str, Any]], source_path: Path) -> dict[str, Any]:
     first = records[0]
     warnings: list[str] = []
     observed_keys = list(first.keys())
 
-    canonical_markers = {"doc_id", "source_path", "source_hash", "extracted_facts", "entities"}
+    canonical_markers: set[str] = set()
+    if source_path.parent.name.lower() == "week3" and source_path.stem.lower() == "extractions":
+        canonical_markers = {"doc_id", "source_path", "source_hash", "extracted_facts", "entities"}
+    elif source_path.parent.name.lower() == "week5" and source_path.stem.lower() == "events":
+        canonical_markers = {
+            "event_id",
+            "event_type",
+            "aggregate_id",
+            "aggregate_type",
+            "sequence_number",
+            "payload",
+            "metadata",
+            "schema_version",
+            "occurred_at",
+            "recorded_at",
+        }
+
     missing_markers = sorted(marker for marker in canonical_markers if marker not in observed_keys)
     if missing_markers:
         warnings.append(
-            "The current Week 3 file is missing canonical fields: " + ", ".join(missing_markers)
+            "The current source file is missing canonical fields: " + ", ".join(missing_markers)
         )
 
     print(f"Loaded {len(records)} records.")
@@ -290,6 +340,18 @@ def describe_field(column_name: str) -> str:
         "fact_confidence": "Confidence value for the extracted fact. This must remain in the 0.0-1.0 range.",
         "fact_page_ref": "Source page number associated with the extracted fact.",
         "fact_source_excerpt": "Supporting excerpt copied from the source document for the extracted fact.",
+        "event_id": "Primary identifier for the event record.",
+        "event_type": "Business event type emitted by the event-sourcing platform.",
+        "aggregate_id": "Identifier for the aggregate instance the event belongs to.",
+        "aggregate_type": "Aggregate class or domain entity name for the event stream.",
+        "sequence_number": "Monotonic sequence number within the aggregate stream.",
+        "schema_version": "Version of the payload schema used to serialize the event.",
+        "occurred_at": "Business timestamp when the event occurred.",
+        "recorded_at": "Persistence timestamp when the event was stored.",
+        "metadata_causation_id": "Identifier of the event or command that triggered this event.",
+        "metadata_correlation_id": "Correlation identifier used to tie related events together.",
+        "metadata_user_id": "User or system principal associated with the event.",
+        "metadata_source_service": "Service or subsystem that emitted the event.",
     }
     if column_name in descriptions:
         return descriptions[column_name]
@@ -346,7 +408,10 @@ def build_schema_clause(column_name: str, series: pd.Series) -> dict[str, Any]:
 
 
 def find_downstream_consumers(
-    snapshot: dict[str, Any], snapshot_mode: str, source_fields: list[str]
+    snapshot: dict[str, Any],
+    snapshot_mode: str,
+    source_fields: list[str],
+    source_terms: list[str],
 ) -> tuple[list[dict[str, Any]], list[str]]:
     downstream: list[dict[str, Any]] = []
     notes: list[str] = []
@@ -356,7 +421,8 @@ def find_downstream_consumers(
         for edge in snapshot.get("edges", []):
             source = str(edge.get("source", ""))
             target = str(edge.get("target", ""))
-            if "week3" in source.lower() or "extraction" in source.lower():
+            source_text = source.lower()
+            if any(term in source_text for term in source_terms):
                 node = node_map.get(target, {})
                 downstream.append(
                     {
@@ -367,7 +433,9 @@ def find_downstream_consumers(
                     }
                 )
         if not downstream:
-            notes.append("Canonical lineage snapshot loaded, but no explicit Week 3 downstream consumers were found.")
+            notes.append(
+                "Canonical lineage snapshot loaded, but no explicit downstream consumers were found for the current source dataset."
+            )
         return downstream, notes
 
     if "datasets" in snapshot and "edges" in snapshot:
@@ -375,14 +443,69 @@ def find_downstream_consumers(
             "Week 4 lineage is currently a dbt-style whole-file graph, not the canonical Week 7 node/edge snapshot."
         )
         notes.append(
-            "No explicit consumer for the Week 3 extraction output was found in the current lineage file, so downstream blast radius is recorded as unknown."
+            "No explicit consumer for the current source dataset was found in the current lineage file, so downstream blast radius is recorded as unknown."
         )
         return downstream, notes
 
     notes.append(
-        f"Lineage snapshot was loaded in {snapshot_mode} mode, but its structure did not expose a direct Week 3 downstream mapping."
+        f"Lineage snapshot was loaded in {snapshot_mode} mode, but its structure did not expose a direct downstream mapping for the current source dataset."
     )
     return downstream, notes
+
+
+def make_source_fields(source_path: Path) -> list[str]:
+    if source_path.parent.name.lower() == "week3" and source_path.stem.lower() == "extractions":
+        return ["doc_id", "extracted_facts"]
+    if source_path.parent.name.lower() == "week5" and source_path.stem.lower() == "events":
+        return ["event_id", "event_type", "payload"]
+    return ["record_id"]
+
+
+def make_source_terms(source_path: Path) -> list[str]:
+    terms = {source_path.parent.name.lower(), source_path.stem.lower()}
+    if source_path.parent.name.lower() == "week3":
+        terms.update({"week3", "extraction", "document-refinery"})
+    if source_path.parent.name.lower() == "week5":
+        terms.update({"week5", "event", "ledger"})
+    return sorted(terms)
+
+
+def ordered_columns_for_dataset(source_path: Path) -> list[str]:
+    if source_path.parent.name.lower() == "week3" and source_path.stem.lower() == "extractions":
+        return [
+            "doc_id",
+            "source_path",
+            "source_hash",
+            "entities_count",
+            "extraction_model",
+            "processing_time_ms",
+            "token_count_input",
+            "token_count_output",
+            "extracted_at",
+            "fact_fact_id",
+            "fact_text",
+            "fact_entity_refs_count",
+            "fact_entity_refs",
+            "fact_confidence",
+            "fact_page_ref",
+            "fact_source_excerpt",
+        ]
+    if source_path.parent.name.lower() == "week5" and source_path.stem.lower() == "events":
+        return [
+            "event_id",
+            "event_type",
+            "aggregate_id",
+            "aggregate_type",
+            "sequence_number",
+            "schema_version",
+            "occurred_at",
+            "recorded_at",
+            "metadata_causation_id",
+            "metadata_correlation_id",
+            "metadata_user_id",
+            "metadata_source_service",
+        ]
+    return []
 
 
 def build_contract(
@@ -395,24 +518,7 @@ def build_contract(
     lineage_snapshot: dict[str, Any],
     lineage_mode: str,
 ) -> dict[str, Any]:
-    schema_order = [
-        "doc_id",
-        "source_path",
-        "source_hash",
-        "entities_count",
-        "extraction_model",
-        "processing_time_ms",
-        "token_count_input",
-        "token_count_output",
-        "extracted_at",
-        "fact_fact_id",
-        "fact_text",
-        "fact_entity_refs_count",
-        "fact_entity_refs",
-        "fact_confidence",
-        "fact_page_ref",
-        "fact_source_excerpt",
-    ]
+    schema_order = ordered_columns_for_dataset(source_path)
 
     schema: dict[str, Any] = {}
     for column_name in schema_order:
@@ -426,28 +532,19 @@ def build_contract(
     downstream, lineage_notes = find_downstream_consumers(
         snapshot=lineage_snapshot,
         snapshot_mode=lineage_mode,
-        source_fields=["doc_id", "extracted_facts"],
+        source_fields=make_source_fields(source_path),
+        source_terms=make_source_terms(source_path),
     )
 
-    if source_path.parent.name.lower() == "week3" and source_path.stem.lower() == "extractions":
-        title = "Week 3 Extractions Contract"
-    else:
-        title = (
-            f"{source_path.parent.name.replace('_', ' ').title()} "
-            f"{source_path.stem.replace('_', ' ').title()} Contract"
-        )
     contract = {
         "kind": "DataContract",
         "apiVersion": "v3.0.0",
         "id": contract_id,
         "info": {
-            "title": title,
+            "title": make_contract_title(source_path),
             "version": "1.0.0",
             "owner": "week7-contract-generator",
-            "description": (
-                "Generated from the live Week 3 extraction output using profiling-based inference. "
-                "The contract reflects the canonical JSONL file currently present in outputs/week3/extractions.jsonl."
-            ),
+            "description": make_contract_description(source_path),
         },
         "servers": {
             "local": {
@@ -457,7 +554,7 @@ def build_contract(
             }
         },
         "terms": {
-            "usage": "Internal inter-system data contract generated from observed Week 3 output.",
+            "usage": make_contract_usage(source_path),
             "limitations": "Lineage context reflects the current Week 4 snapshot shape and may be incomplete.",
         },
         "observations": {
@@ -494,6 +591,115 @@ def write_contract(output_dir: Path, filename: str, contract: dict[str, Any]) ->
     return output_path
 
 
+def build_dbt_tests(
+    column_name: str,
+    clause: dict[str, Any],
+    contract: dict[str, Any],
+) -> list[Any]:
+    tests: list[Any] = []
+
+    if clause.get("required") is True:
+        tests.append("not_null")
+
+    profile = clause.get("profile", {})
+    observations = contract.get("observations", {})
+    profiled_row_count = observations.get("profiled_row_count", 0)
+    cardinality_estimate = profile.get("cardinality_estimate")
+    null_fraction = profile.get("null_fraction")
+    if (
+        column_name.endswith("_id")
+        and cardinality_estimate
+        and profiled_row_count
+        and cardinality_estimate == profiled_row_count
+        and null_fraction == 0.0
+    ):
+        tests.append("unique")
+
+    if clause.get("enum"):
+        tests.append({"accepted_values": {"values": clause["enum"]}})
+
+    if clause.get("minimum") is not None or clause.get("maximum") is not None:
+        range_payload: dict[str, Any] = {}
+        if clause.get("minimum") is not None:
+            range_payload["min_value"] = clause["minimum"]
+        if clause.get("maximum") is not None:
+            range_payload["max_value"] = clause["maximum"]
+        tests.append({"dbt_expectations.expect_column_values_to_be_between": range_payload})
+
+    if clause.get("pattern"):
+        tests.append(
+            {
+                "dbt_expectations.expect_column_values_to_match_regex": {
+                    "regex": clause["pattern"]
+                }
+            }
+        )
+
+    if clause.get("format") == "uuid":
+        tests.append(
+            {
+                "dbt_expectations.expect_column_values_to_match_regex": {
+                    "regex": "^[0-9a-fA-F-]{36}$"
+                }
+            }
+        )
+
+    if clause.get("format") == "date-time":
+        tests.append(
+            {
+                "dbt_expectations.expect_column_values_to_match_regex": {
+                    "regex": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T"
+                }
+            }
+        )
+
+    return tests
+
+
+def build_dbt_counterpart(contract: dict[str, Any], source_path: Path) -> dict[str, Any]:
+    model_name = make_model_name(source_path)
+    columns: list[dict[str, Any]] = []
+
+    for column_name, clause in contract.get("schema", {}).items():
+        column_payload: dict[str, Any] = {
+            "name": column_name,
+            "description": clause.get("description", ""),
+        }
+        tests = build_dbt_tests(column_name, clause, contract)
+        if tests:
+            column_payload["tests"] = tests
+        columns.append(column_payload)
+
+    dbt_payload = {
+        "version": 2,
+        "models": [
+            {
+                "name": model_name,
+                "description": (
+                    f"dbt-compatible counterpart for generated contract {contract.get('id')} "
+                    f"built from {str(source_path).replace(chr(92), '/')}."
+                ),
+                "meta": {
+                    "generated_from_contract": contract.get("id"),
+                    "generated_at": contract.get("observations", {}).get("generated_at"),
+                    "source_path": str(source_path).replace("\\", "/"),
+                    "lineage_notes": contract.get("lineage", {}).get("notes", []),
+                },
+                "columns": columns,
+            }
+        ],
+    }
+    return dbt_payload
+
+
+def write_dbt_counterpart(output_dir: Path, filename: str, dbt_contract: dict[str, Any]) -> Path:
+    ensure_output_dir(output_dir)
+    output_path = output_dir / filename
+    payload = yaml.safe_dump(dbt_contract, sort_keys=False, allow_unicode=False, width=100)
+    output_path.write_text(payload, encoding="utf-8")
+    return output_path
+
+
 def quality_check(contract: dict[str, Any], output_path: Path) -> None:
     reloaded = yaml.safe_load(output_path.read_text(encoding="utf-8"))
     schema = reloaded.get("schema", {})
@@ -520,6 +726,33 @@ def quality_check(contract: dict[str, Any], output_path: Path) -> None:
         raise ValueError("Generated contract is missing lineage context.")
 
 
+def quality_check_dbt(dbt_output_path: Path) -> None:
+    reloaded = yaml.safe_load(dbt_output_path.read_text(encoding="utf-8"))
+    if reloaded.get("version") != 2:
+        raise ValueError("Generated dbt counterpart is missing version: 2.")
+
+    models = reloaded.get("models", [])
+    if not models:
+        raise ValueError("Generated dbt counterpart has no models block.")
+
+    columns = models[0].get("columns", [])
+    if not columns:
+        raise ValueError("Generated dbt counterpart has no column definitions.")
+
+    if not any("tests" in column for column in columns):
+        raise ValueError("Generated dbt counterpart has no tests.")
+
+    confidence_columns = [column for column in columns if "confidence" in column.get("name", "")]
+    for column in confidence_columns:
+        tests = column.get("tests", [])
+        has_range = any(
+            isinstance(test, dict) and "dbt_expectations.expect_column_values_to_be_between" in test
+            for test in tests
+        )
+        if not has_range:
+            raise ValueError("Confidence column in dbt counterpart is missing a range test.")
+
+
 def main() -> int:
     args = parse_args()
     source_path = Path(args.source)
@@ -527,7 +760,7 @@ def main() -> int:
     output_dir = Path(args.output)
 
     records = load_week3_records(source_path)
-    inspection = inspect_records(records)
+    inspection = inspect_records(records, source_path)
     df, flatten_metadata = flatten_for_profile(records)
 
     lineage_snapshot, lineage_mode = load_latest_lineage_snapshot(lineage_path)
@@ -544,8 +777,15 @@ def main() -> int:
     )
     output_path = write_contract(output_dir, make_output_filename(source_path), contract)
     quality_check(contract, output_path)
+    dbt_output_path = write_dbt_counterpart(
+        output_dir,
+        make_dbt_output_filename(source_path),
+        build_dbt_counterpart(contract, source_path),
+    )
+    quality_check_dbt(dbt_output_path)
 
     print(f"Contract written to {output_path}")
+    print(f"dbt counterpart written to {dbt_output_path}")
     print("Contract quality check passed.")
     return 0
 

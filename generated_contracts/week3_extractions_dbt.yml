@@ -1,0 +1,76 @@
+version: 2
+models:
+- name: week3_extractions
+  description: dbt-compatible counterpart for generated contract week3-extractions built from outputs/week3/extractions.jsonl.
+  meta:
+    generated_from_contract: week3-extractions
+    generated_at: '2026-04-01T18:28:57.344101+00:00'
+    source_path: outputs/week3/extractions.jsonl
+    lineage_notes:
+    - Week 4 lineage is currently a dbt-style whole-file graph, not the canonical Week 7 node/edge snapshot.
+    - No explicit consumer for the current source dataset was found in the current lineage file, so downstream
+      blast radius is recorded as unknown.
+  columns:
+  - name: doc_id
+    description: Primary identifier for the extracted document record.
+    tests:
+    - not_null
+    - dbt_expectations.expect_column_values_to_match_regex:
+        regex: ^[0-9a-fA-F-]{36}$
+  - name: source_path
+    description: Original source path or URL for the document.
+    tests:
+    - not_null
+  - name: source_hash
+    description: SHA-256 content hash of the source document.
+    tests:
+    - not_null
+    - dbt_expectations.expect_column_values_to_match_regex:
+        regex: ^[a-f0-9]{64}$
+  - name: entities_count
+    description: Number of entities linked to the document record.
+    tests:
+    - not_null
+  - name: extraction_model
+    description: Extraction strategy or model label used to produce the record.
+    tests:
+    - not_null
+  - name: processing_time_ms
+    description: End-to-end extraction processing time in milliseconds.
+    tests:
+    - not_null
+  - name: token_count_input
+    description: Approximate input token count used by the extraction workflow.
+    tests:
+    - not_null
+  - name: token_count_output
+    description: Approximate output token count produced by the extraction workflow.
+    tests:
+    - not_null
+  - name: extracted_at
+    description: Timestamp when the extraction record was produced.
+    tests:
+    - not_null
+    - dbt_expectations.expect_column_values_to_match_regex:
+        regex: ^[0-9]{4}-[0-9]{2}-[0-9]{2}T
+  - name: fact_fact_id
+    description: Primary identifier for the extracted fact.
+    tests:
+    - dbt_expectations.expect_column_values_to_match_regex:
+        regex: ^[0-9a-fA-F-]{36}$
+  - name: fact_text
+    description: Plain-English extracted fact text.
+  - name: fact_entity_refs_count
+    description: Number of entity references linked from the extracted fact.
+  - name: fact_entity_refs
+    description: Entity identifiers referenced by the extracted fact.
+  - name: fact_confidence
+    description: Confidence value for the extracted fact. This must remain in the 0.0-1.0 range.
+    tests:
+    - dbt_expectations.expect_column_values_to_be_between:
+        min_value: 0.0
+        max_value: 1.0
+  - name: fact_page_ref
+    description: Source page number associated with the extracted fact.
+  - name: fact_source_excerpt
+    description: Supporting excerpt copied from the source document for the extracted fact.

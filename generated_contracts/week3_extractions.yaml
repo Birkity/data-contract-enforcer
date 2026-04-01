@@ -5,18 +5,18 @@ info:
   title: Week 3 Extractions Contract
   version: 1.0.0
   owner: week7-contract-generator
-  description: Generated from the live Week 3 extraction output using profiling-based inference. The contract
-    reflects the canonical JSONL file currently present in outputs/week3/extractions.jsonl.
+  description: Generated from the live week3/extractions JSONL output using profiling-based inference.
+    The contract reflects the current serialized artifact present in the repository.
 servers:
   local:
     type: local
     path: outputs/week3/extractions.jsonl
     format: jsonl
 terms:
-  usage: Internal inter-system data contract generated from observed Week 3 output.
+  usage: Internal inter-system data contract generated from the observed output snapshot at outputs/week3/extractions.jsonl.
   limitations: Lineage context reflects the current Week 4 snapshot shape and may be incomplete.
 observations:
-  generated_at: '2026-04-01T15:24:35.018086+00:00'
+  generated_at: '2026-04-01T18:28:57.344101+00:00'
   record_count: 50
   profiled_row_count: 402
   flatten_mode: exploded_repeated_items
@@ -303,5 +303,5 @@ lineage:
   downstream: []
   notes:
   - Week 4 lineage is currently a dbt-style whole-file graph, not the canonical Week 7 node/edge snapshot.
-  - No explicit consumer for the Week 3 extraction output was found in the current lineage file, so downstream
+  - No explicit consumer for the current source dataset was found in the current lineage file, so downstream
     blast radius is recorded as unknown.

@@ -5,12 +5,16 @@ This repository currently contains:
 - completed Phase 0 analysis and domain notes
 - regenerated **Phase 1 ContractGenerator**
 - regenerated **Phase 2 ValidationRunner**
+- generated **dbt-compatible contract counterparts**
 - real Week 1 to Week 5 output snapshots under `outputs/`
 
 ## Current Phase 1 deliverables
 
 - `contracts/generator.py`
 - `generated_contracts/week3_extractions.yaml`
+- `generated_contracts/week3_extractions_dbt.yml`
+- `generated_contracts/week5_events.yaml`
+- `generated_contracts/week5_events_dbt.yml`
 - `reports/phase_0.md`
 - `reports/phase_1.md`
 - `contracts/runner.py`
@@ -33,6 +37,7 @@ It:
 - explodes `extracted_facts[]` into one profiled row per fact
 - profiles observed columns with pandas
 - generates a human-readable Bitol-style YAML contract
+- generates a parallel dbt-compatible `schema.yml` counterpart with equivalent tests
 - injects lineage notes from `outputs/week4/lineage_snapshots.jsonl`
 - runs a quality check before finishing
 
@@ -76,6 +81,9 @@ The generated contract is written to:
 
 ```text
 generated_contracts/week3_extractions.yaml
+generated_contracts/week3_extractions_dbt.yml
+generated_contracts/week5_events.yaml
+generated_contracts/week5_events_dbt.yml
 ```
 
 ## Current Week 3 observations
