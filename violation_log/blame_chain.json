@@ -1,9 +1,17 @@
 {
-  "generated_at": "2026-04-02T10:47:09.964203+00:00",
+  "generated_at": "2026-04-02T11:46:30.962307+00:00",
   "architecture_mode": {
     "blast_radius_primary_source": "contract_registry",
     "lineage_role": "enrichment_only",
     "enforcement_boundary": "consumer"
+  },
+  "confidence_scoring_method": {
+    "summary": "Confidence blends file-path relevance, line-level git blame hits, and recent commit context.",
+    "components": [
+      "path relevance to the failing field",
+      "git blame hits on relevant line ranges",
+      "recent commit support within the selected window"
+    ]
   },
   "source_report": "validation_reports\\injected_violation.json",
   "contract_path": "generated_contracts\\week3_extractions.yaml",
@@ -12,12 +20,12 @@
   "repo_roots": [
     "E:\\10 Academy\\Week 3\\document-intelligence-refinery"
   ],
-  "violation_log_entry_count": 6,
+  "violation_log_entry_count": 7,
   "attributions": [
     {
-      "violation_id": "25678648-47cc-42c7-94e1-e542d322d55a",
+      "violation_id": "a02c5925-8489-4bc6-a182-d2af576349b6",
       "check_id": "week3-extractions.fact_confidence.range",
-      "detected_at": "2026-04-02T10:46:44.600710+00:00",
+      "detected_at": "2026-04-02T11:43:22.485143+00:00",
       "field": "fact_confidence",
       "producer_system": "week3-document-intelligence-refinery",
       "dataset_path": "outputs/week3/extractions.jsonl",
@@ -38,7 +46,7 @@
         "src/models/schemas.py",
         "src/strategies/vision.py",
         "src/strategies/ocr.py",
-        "src/strategies/fast_text.py"
+        "src/strategies/base.py"
       ],
       "blame_chain": [
         {
@@ -106,17 +114,17 @@
           "rank": 4
         },
         {
-          "file_path": "src/strategies/fast_text.py",
+          "file_path": "src/strategies/base.py",
           "repo_root": "E:\\10 Academy\\Week 3\\document-intelligence-refinery",
           "commit_hash": "1a3aae070f5d41a56f10f12ce83ad4017bb7138e",
           "author": "Birkity",
           "author_email": "birkity.yishak.m@gmail.com",
           "commit_timestamp": "2026-03-04T12:36:25+00:00",
           "commit_message": "feat: Implement database layer and extraction strategies for Document Intelligence Refinery",
-          "confidence_score": 0.57,
+          "confidence_score": 0.6,
           "path_relevance": 0.59,
           "lineage_distance": 0,
-          "rationale": "This file computes a confidence score for the fast-text extraction strategy.",
+          "rationale": "This file defines the base extraction confidence contract used by Week 3 strategies.",
           "recent_commit_count": 0,
           "line_blame_hits": 9,
           "rank": 5
@@ -235,9 +243,9 @@
       }
     },
     {
-      "violation_id": "5911c982-225d-4229-9735-85fbb5d9db23",
+      "violation_id": "f0c3bd55-9425-4ce3-8a17-1c59c553fc88",
       "check_id": "week3-extractions.fact_confidence.drift",
-      "detected_at": "2026-04-02T10:46:44.600710+00:00",
+      "detected_at": "2026-04-02T11:43:22.485143+00:00",
       "field": "fact_confidence",
       "producer_system": "week3-document-intelligence-refinery",
       "dataset_path": "outputs/week3/extractions.jsonl",
@@ -252,7 +260,7 @@
         "src/models/schemas.py",
         "src/strategies/vision.py",
         "src/strategies/ocr.py",
-        "src/strategies/fast_text.py"
+        "src/strategies/base.py"
       ],
       "blame_chain": [
         {
@@ -320,17 +328,17 @@
           "rank": 4
         },
         {
-          "file_path": "src/strategies/fast_text.py",
+          "file_path": "src/strategies/base.py",
           "repo_root": "E:\\10 Academy\\Week 3\\document-intelligence-refinery",
           "commit_hash": "1a3aae070f5d41a56f10f12ce83ad4017bb7138e",
           "author": "Birkity",
           "author_email": "birkity.yishak.m@gmail.com",
           "commit_timestamp": "2026-03-04T12:36:25+00:00",
           "commit_message": "feat: Implement database layer and extraction strategies for Document Intelligence Refinery",
-          "confidence_score": 0.57,
+          "confidence_score": 0.6,
           "path_relevance": 0.59,
           "lineage_distance": 0,
-          "rationale": "This file computes a confidence score for the fast-text extraction strategy.",
+          "rationale": "This file defines the base extraction confidence contract used by Week 3 strategies.",
           "recent_commit_count": 0,
           "line_blame_hits": 9,
           "rank": 5

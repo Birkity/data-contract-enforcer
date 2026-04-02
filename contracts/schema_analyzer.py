@@ -522,6 +522,34 @@ def overall_decision(changes: list[dict[str, Any]]) -> tuple[str, str]:
     return ("PASS", "Only backward-compatible changes were detected. Deployment may proceed.")
 
 
+def recommend_next_actions(changes: list[dict[str, Any]], decision: str) -> list[str]:
+    actions: list[str] = []
+    if decision == "FAIL":
+        actions.append("Block producer deployment until impacted consumers have a migration plan.")
+        actions.append("Update contract_registry/subscriptions.yaml with any new field names, aliases, or migration notes before release.")
+        actions.append("Publish a compatibility notice to affected subscribers and regenerate the contract snapshot after the schema fix or migration.")
+    elif decision == "WARN":
+        actions.append("Require producer review before deployment because a risky change was detected without an active subscriber match.")
+        actions.append("Confirm whether the changed field should be added to registry breaking_fields for future blast-radius visibility.")
+    else:
+        actions.append("Deployment may proceed, but publish the new snapshot and keep registry metadata current.")
+
+    if any(change.get("change_type") == "field_renamed" for change in changes):
+        actions.append("Prefer deprecating the old field with an alias period before removing or renaming it outright.")
+
+    if any(change.get("change_type") == "range_changed" for change in changes):
+        actions.append("Re-establish downstream numeric baselines after the producer-side schema change is accepted.")
+
+    deduped: list[str] = []
+    seen: set[str] = set()
+    for action in actions:
+        if action in seen:
+            continue
+        seen.add(action)
+        deduped.append(action)
+    return deduped
+
+
 def build_reports(
     contract_id: str,
     previous: SnapshotRef,
@@ -530,6 +558,7 @@ def build_reports(
     notes: list[str],
 ) -> tuple[dict[str, Any], dict[str, Any]]:
     decision, recommendation = overall_decision(changes)
+    next_actions = recommend_next_actions(changes, decision)
     impacted_consumers = sorted(
         {
             consumer["subscriber_id"]
@@ -552,6 +581,7 @@ def build_reports(
         "lineage_role": "optional_enrichment_only",
         "registry_role": "primary_impact_source",
         "notes": notes,
+        "producer_next_actions": next_actions,
         "changes": changes,
     }
 
@@ -565,6 +595,7 @@ def build_reports(
         "decision": decision,
         "ci_gate_blocking": decision == "FAIL",
         "recommendation": recommendation,
+        "producer_next_actions": next_actions,
     }
     return compatibility_report, evolution_summary
 
@@ -585,6 +616,10 @@ def main() -> int:
             "decision": "WARN",
             "recommendation": "Not enough snapshots were available to compute a schema diff.",
             "notes": notes,
+            "producer_next_actions": [
+                "Capture at least two contract snapshots before relying on CI compatibility enforcement.",
+                "Regenerate the contract after the next producer-side schema change so the analyzer has comparison history.",
+            ],
             "changes": [],
         }
         evolution_summary = {
@@ -597,6 +632,9 @@ def main() -> int:
             "decision": "WARN",
             "ci_gate_blocking": False,
             "recommendation": "Capture at least two snapshots or supply explicit previous/current inputs.",
+            "producer_next_actions": [
+                "Capture at least two contract snapshots or provide explicit previous/current files to the analyzer.",
+            ],
         }
         write_json(Path(args.compatibility_output), compatibility_report)
         write_json(Path(args.summary_output), evolution_summary)

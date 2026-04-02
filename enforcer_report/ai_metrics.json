@@ -1,0 +1,111 @@
+{
+  "generated_at": "2026-04-02T11:44:39.987156+00:00",
+  "architecture_context": {
+    "enforcement_boundary": "consumer",
+    "blast_radius_primary_source": "contract_registry",
+    "lineage_role": "enrichment_only"
+  },
+  "checks": {
+    "embedding_drift": {
+      "status": "WARN",
+      "severity": "MEDIUM",
+      "metric": "embedding_drift_score",
+      "value": 0.28237,
+      "baseline_size": 187,
+      "current_size": 187,
+      "thresholds": {
+        "warn_above": 0.18,
+        "fail_above": 0.35
+      },
+      "summary": "Deterministic lexical embedding drift between early and late Week 3 fact text windows.",
+      "top_shifted_tokens": [
+        "000",
+        "birr",
+        "cash",
+        "of",
+        "percent",
+        "the",
+        "capacity",
+        "usd"
+      ],
+      "notes": [
+        "This uses a local hashed-token embedding surrogate so the metric is reproducible without external model calls."
+      ]
+    },
+    "prompt_input_schema_validation": {
+      "status": "PASS",
+      "severity": "LOW",
+      "metric": "prompt_input_schema_violation_rate",
+      "value": 0.0,
+      "checked_runs": 15,
+      "failing_runs": 0,
+      "thresholds": {
+        "warn_above": 0.02,
+        "fail_above": 0.08
+      },
+      "prompt_families": {
+        "document_page_text": 2,
+        "section_prompt": 1,
+        "task_prompt": 12
+      },
+      "sample_failures": [],
+      "summary": "Trace prompt inputs were validated against the observed structured prompt families in the LangSmith export."
+    },
+    "llm_output_schema_validation": {
+      "status": "PASS",
+      "severity": "LOW",
+      "metric": "llm_output_schema_violation_rate",
+      "value": 0.0,
+      "checked_rows": 5,
+      "failing_rows": 0,
+      "thresholds": {
+        "warn_above": 0.02,
+        "fail_above": 0.08
+      },
+      "verdict_mix": {
+        "FAIL": 2,
+        "PASS": 3
+      },
+      "sample_failures": [],
+      "summary": "Week 2 verdict records were checked for stable structured LLM output envelopes."
+    },
+    "trace_contract_risk": {
+      "status": "FAIL",
+      "severity": "HIGH",
+      "metric": "trace_contract_violation_rate",
+      "value": 0.176471,
+      "checked_rows": 153,
+      "invalid_run_type_rows": 27,
+      "thresholds": {
+        "warn_above": 0.05,
+        "fail_above": 0.12
+      },
+      "allowed_run_types": [
+        "chain",
+        "embedding",
+        "llm",
+        "retriever",
+        "tool"
+      ],
+      "observed_invalid_run_types": {
+        "parser": 12,
+        "prompt": 15
+      },
+      "duration_failures": 1,
+      "token_failures": 0,
+      "subscriber_count": 1,
+      "summary": "LangSmith trace telemetry was checked against the documented Week 7 trace contract expectations."
+    }
+  },
+  "overall_status": "FAIL",
+  "summary": {
+    "week3_fact_count": 374,
+    "week2_verdict_count": 5,
+    "trace_row_count": 153,
+    "registered_trace_consumers": 1
+  },
+  "recommendations": [
+    "Normalize LangSmith run_type values or adapt the trace export so only the documented enum values reach the contract boundary.",
+    "Re-baseline embedding-style fact-text centroids before promoting the current extraction slice to a stricter enforcement tier."
+  ]
+}

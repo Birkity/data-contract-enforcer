@@ -1,11 +1,12 @@
 {
-  "report_id": "01870c7d-3bd4-4034-bcca-d7130451521c",
+  "report_id": "ffc44c7e-9f25-40cf-8fe6-1aba6ea5c79e",
   "contract_id": "week3-extractions",
   "snapshot_id": "ee8e8796afee412f62d5b2fd2d676b5bed317af99013620222ecbcc8c9bca0cb",
-  "run_timestamp": "2026-04-02T10:46:44.600710+00:00",
+  "run_timestamp": "2026-04-02T11:43:22.485143+00:00",
   "validation_mode": "ENFORCE",
   "blocking": true,
   "decision": "BLOCK",
+  "profiled_row_count": 402,
   "total_checks": 37,
   "passed": 35,
   "failed": 2,
@@ -113,6 +114,9 @@
       "records_failing": 0,
       "sample_failing": [],
       "message": "doc_id is fully populated.",
+      "records_total": 402,
+      "failing_fraction": 0.0,
+      "failing_percent": 0.0,
       "validation_mode": "ENFORCE",
       "action": "ALLOW",
       "blocking": false
@@ -128,6 +132,9 @@
       "records_failing": 0,
       "sample_failing": [],
       "message": "doc_id matches expected type string.",
+      "records_total": 402,
+      "failing_fraction": 0.0,
+      "failing_percent": 0.0,
       "validation_mode": "ENFORCE",
       "action": "ALLOW",
       "blocking": false
@@ -143,6 +150,9 @@
       "records_failing": 0,
       "sample_failing": [],
       "message": "doc_id matches the UUID format.",
+      "records_total": 402,
+      "failing_fraction": 0.0,
+      "failing_percent": 0.0,
       "validation_mode": "ENFORCE",
       "action": "ALLOW",
       "blocking": false
@@ -158,6 +168,9 @@
       "records_failing": 0,
       "sample_failing": [],
       "message": "source_path is fully populated.",
+      "records_total": 402,
+      "failing_fraction": 0.0,
+      "failing_percent": 0.0,
       "validation_mode": "ENFORCE",
       "action": "ALLOW",
       "blocking": false
@@ -173,6 +186,9 @@
       "records_failing": 0,
       "sample_failing": [],
       "message": "source_path matches expected type string.",
+      "records_total": 402,
+      "failing_fraction": 0.0,
+      "failing_percent": 0.0,
       "validation_mode": "ENFORCE",
       "action": "ALLOW",
       "blocking": false
@@ -188,6 +204,9 @@
       "records_failing": 0,
       "sample_failing": [],
       "message": "source_hash is fully populated.",
+      "records_total": 402,
+      "failing_fraction": 0.0,
+      "failing_percent": 0.0,
       "validation_mode": "ENFORCE",
       "action": "ALLOW",
       "blocking": false
@@ -203,6 +222,9 @@
       "records_failing": 0,
       "sample_failing": [],
       "message": "source_hash matches expected type string.",
+      "records_total": 402,
+      "failing_fraction": 0.0,
+      "failing_percent": 0.0,
       "validation_mode": "ENFORCE",
       "action": "ALLOW",
       "blocking": false
@@ -218,6 +240,9 @@
       "records_failing": 0,
       "sample_failing": [],
       "message": "source_hash matches the expected pattern.",
+      "records_total": 402,
+      "failing_fraction": 0.0,
+      "failing_percent": 0.0,
       "validation_mode": "ENFORCE",
       "action": "ALLOW",
       "blocking": false
@@ -233,6 +258,9 @@
       "records_failing": 0,
       "sample_failing": [],
       "message": "entities_count is fully populated.",
+      "records_total": 402,
+      "failing_fraction": 0.0,
+      "failing_percent": 0.0,
       "validation_mode": "ENFORCE",
       "action": "ALLOW",
       "blocking": false
@@ -248,6 +276,9 @@
       "records_failing": 0,
       "sample_failing": [],
       "message": "entities_count matches expected type integer.",
+      "records_total": 402,
+      "failing_fraction": 0.0,
+      "failing_percent": 0.0,
       "validation_mode": "ENFORCE",
       "action": "ALLOW",
       "blocking": false
@@ -263,6 +294,9 @@
       "records_failing": 0,
       "sample_failing": [],
       "message": "extraction_model is fully populated.",
+      "records_total": 402,
+      "failing_fraction": 0.0,
+      "failing_percent": 0.0,
       "validation_mode": "ENFORCE",
       "action": "ALLOW",
       "blocking": false
@@ -278,6 +312,9 @@
       "records_failing": 0,
       "sample_failing": [],
       "message": "extraction_model matches expected type string.",
+      "records_total": 402,
+      "failing_fraction": 0.0,
+      "failing_percent": 0.0,
       "validation_mode": "ENFORCE",
       "action": "ALLOW",
       "blocking": false
@@ -293,6 +330,9 @@
       "records_failing": 0,
       "sample_failing": [],
       "message": "processing_time_ms is fully populated.",
+      "records_total": 402,
+      "failing_fraction": 0.0,
+      "failing_percent": 0.0,
       "validation_mode": "ENFORCE",
       "action": "ALLOW",
       "blocking": false
@@ -308,6 +348,9 @@
       "records_failing": 0,
       "sample_failing": [],
       "message": "processing_time_ms matches expected type integer.",
+      "records_total": 402,
+      "failing_fraction": 0.0,
+      "failing_percent": 0.0,
       "validation_mode": "ENFORCE",
       "action": "ALLOW",
       "blocking": false
@@ -323,6 +366,9 @@
       "records_failing": 0,
       "sample_failing": [],
       "message": "token_count_input is fully populated.",
+      "records_total": 402,
+      "failing_fraction": 0.0,
+      "failing_percent": 0.0,
       "validation_mode": "ENFORCE",
       "action": "ALLOW",
       "blocking": false
@@ -338,6 +384,9 @@
       "records_failing": 0,
       "sample_failing": [],
       "message": "token_count_input matches expected type integer.",
+      "records_total": 402,
+      "failing_fraction": 0.0,
+      "failing_percent": 0.0,
       "validation_mode": "ENFORCE",
       "action": "ALLOW",
       "blocking": false
@@ -353,6 +402,9 @@
       "records_failing": 0,
       "sample_failing": [],
       "message": "token_count_output is fully populated.",
+      "records_total": 402,
+      "failing_fraction": 0.0,
+      "failing_percent": 0.0,
       "validation_mode": "ENFORCE",
       "action": "ALLOW",
       "blocking": false
@@ -368,6 +420,9 @@
       "records_failing": 0,
       "sample_failing": [],
       "message": "token_count_output matches expected type integer.",
+      "records_total": 402,
+      "failing_fraction": 0.0,
+      "failing_percent": 0.0,
       "validation_mode": "ENFORCE",
       "action": "ALLOW",
       "blocking": false
@@ -383,6 +438,9 @@
       "records_failing": 0,
       "sample_failing": [],
       "message": "extracted_at is fully populated.",
+      "records_total": 402,
+      "failing_fraction": 0.0,
+      "failing_percent": 0.0,
       "validation_mode": "ENFORCE",
       "action": "ALLOW",
       "blocking": false
@@ -398,6 +456,9 @@
       "records_failing": 0,
       "sample_failing": [],
       "message": "extracted_at matches expected type string.",
+      "records_total": 402,
+      "failing_fraction": 0.0,
+      "failing_percent": 0.0,
       "validation_mode": "ENFORCE",
       "action": "ALLOW",
       "blocking": false
@@ -413,6 +474,9 @@
       "records_failing": 0,
       "sample_failing": [],
       "message": "extracted_at parses as ISO-8601 date-time.",
+      "records_total": 402,
+      "failing_fraction": 0.0,
+      "failing_percent": 0.0,
       "validation_mode": "ENFORCE",
       "action": "ALLOW",
       "blocking": false
@@ -428,6 +492,9 @@
       "records_failing": 0,
       "sample_failing": [],
       "message": "fact_fact_id matches expected type string.",
+      "records_total": 402,
+      "failing_fraction": 0.0,
+      "failing_percent": 0.0,
       "validation_mode": "ENFORCE",
       "action": "ALLOW",
       "blocking": false
@@ -443,6 +510,9 @@
       "records_failing": 0,
       "sample_failing": [],
       "message": "fact_fact_id matches the UUID format.",
+      "records_total": 402,
+      "failing_fraction": 0.0,
+      "failing_percent": 0.0,
       "validation_mode": "ENFORCE",
       "action": "ALLOW",
       "blocking": false
@@ -458,6 +528,9 @@
       "records_failing": 0,
       "sample_failing": [],
       "message": "fact_text matches expected type string.",
+      "records_total": 402,
+      "failing_fraction": 0.0,
+      "failing_percent": 0.0,
       "validation_mode": "ENFORCE",
       "action": "ALLOW",
       "blocking": false
@@ -473,6 +546,9 @@
       "records_failing": 0,
       "sample_failing": [],
       "message": "fact_entity_refs_count matches expected type number.",
+      "records_total": 402,
+      "failing_fraction": 0.0,
+      "failing_percent": 0.0,
       "validation_mode": "ENFORCE",
       "action": "ALLOW",
       "blocking": false
@@ -488,6 +564,9 @@
       "records_failing": 0,
       "sample_failing": [],
       "message": "fact_entity_refs matches expected type string.",
+      "records_total": 402,
+      "failing_fraction": 0.0,
+      "failing_percent": 0.0,
       "validation_mode": "ENFORCE",
       "action": "ALLOW",
       "blocking": false
@@ -503,6 +582,9 @@
       "records_failing": 0,
       "sample_failing": [],
       "message": "fact_confidence matches expected type number.",
+      "records_total": 402,
+      "failing_fraction": 0.0,
+      "failing_percent": 0.0,
       "validation_mode": "ENFORCE",
       "action": "ALLOW",
       "blocking": false
@@ -518,6 +600,9 @@
       "records_failing": 0,
       "sample_failing": [],
       "message": "fact_page_ref matches expected type number.",
+      "records_total": 402,
+      "failing_fraction": 0.0,
+      "failing_percent": 0.0,
       "validation_mode": "ENFORCE",
       "action": "ALLOW",
       "blocking": false
@@ -533,6 +618,9 @@
       "records_failing": 0,
       "sample_failing": [],
       "message": "fact_source_excerpt matches expected type string.",
+      "records_total": 402,
+      "failing_fraction": 0.0,
+      "failing_percent": 0.0,
       "validation_mode": "ENFORCE",
       "action": "ALLOW",
       "blocking": false
@@ -548,6 +636,9 @@
       "records_failing": 0,
       "sample_failing": [],
       "message": "entities_count remains within the established baseline.",
+      "records_total": 402,
+      "failing_fraction": 0.0,
+      "failing_percent": 0.0,
       "validation_mode": "ENFORCE",
       "action": "ALLOW",
       "blocking": false
@@ -563,6 +654,9 @@
       "records_failing": 0,
       "sample_failing": [],
       "message": "processing_time_ms remains within the established baseline.",
+      "records_total": 402,
+      "failing_fraction": 0.0,
+      "failing_percent": 0.0,
       "validation_mode": "ENFORCE",
       "action": "ALLOW",
       "blocking": false
@@ -578,6 +672,9 @@
       "records_failing": 0,
       "sample_failing": [],
       "message": "token_count_input remains within the established baseline.",
+      "records_total": 402,
+      "failing_fraction": 0.0,
+      "failing_percent": 0.0,
       "validation_mode": "ENFORCE",
       "action": "ALLOW",
       "blocking": false
@@ -593,6 +690,9 @@
       "records_failing": 0,
       "sample_failing": [],
       "message": "token_count_output remains within the established baseline.",
+      "records_total": 402,
+      "failing_fraction": 0.0,
+      "failing_percent": 0.0,
       "validation_mode": "ENFORCE",
       "action": "ALLOW",
       "blocking": false
@@ -608,6 +708,9 @@
       "records_failing": 0,
       "sample_failing": [],
       "message": "fact_entity_refs_count remains within the established baseline.",
+      "records_total": 402,
+      "failing_fraction": 0.0,
+      "failing_percent": 0.0,
       "validation_mode": "ENFORCE",
       "action": "ALLOW",
       "blocking": false
@@ -629,6 +732,9 @@
         "100.0"
       ],
       "message": "fact_confidence is outside the configured range. Breaking change detected.",
+      "records_total": 402,
+      "failing_fraction": 0.930348,
+      "failing_percent": 93.03,
       "validation_mode": "ENFORCE",
       "action": "BLOCK",
       "blocking": true
@@ -644,6 +750,9 @@
       "records_failing": 374,
       "sample_failing": [],
       "message": "fact_confidence mean drifted 700.4 stddev from baseline.",
+      "records_total": 402,
+      "failing_fraction": 0.930348,
+      "failing_percent": 93.03,
       "validation_mode": "ENFORCE",
       "action": "BLOCK",
       "blocking": true
@@ -659,6 +768,9 @@
       "records_failing": 0,
       "sample_failing": [],
       "message": "fact_page_ref remains within the established baseline.",
+      "records_total": 402,
+      "failing_fraction": 0.0,
+      "failing_percent": 0.0,
       "validation_mode": "ENFORCE",
       "action": "ALLOW",
       "blocking": false

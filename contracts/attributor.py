@@ -762,6 +762,14 @@ def build_output(
             "lineage_role": "enrichment_only",
             "enforcement_boundary": "consumer",
         },
+        "confidence_scoring_method": {
+            "summary": "Confidence blends file-path relevance, line-level git blame hits, and recent commit context.",
+            "components": [
+                "path relevance to the failing field",
+                "git blame hits on relevant line ranges",
+                "recent commit support within the selected window",
+            ],
+        },
         "source_report": str(report_path),
         "contract_path": str(contract_path),
         "registry_path": str(registry_path),
