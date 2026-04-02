@@ -1,13 +1,106 @@
 {
-  "report_id": "d7db7b4e-2c41-4bed-b2eb-80796a967b48",
+  "report_id": "b370229e-be2e-4c3c-b17e-1227423805d6",
   "contract_id": "week3-extractions",
   "snapshot_id": "47865473503ec5c78ed1422958b8b8a3c3545036bbbf7e42a73c042090d490a2",
-  "run_timestamp": "2026-04-01T15:24:58.029901+00:00",
-  "total_checks": 37,
-  "passed": 37,
+  "run_timestamp": "2026-04-02T10:46:11.679643+00:00",
+  "validation_mode": "AUDIT",
+  "blocking": false,
+  "decision": "ALLOW_WITH_AUDIT_TRAIL",
+  "total_checks": 30,
+  "passed": 30,
   "failed": 0,
   "warned": 0,
   "errored": 0,
+  "blocked": 0,
+  "architecture_context": {
+    "enforcement_boundary": "consumer",
+    "blast_radius_primary_source": "contract_registry",
+    "lineage_role": "enrichment_only"
+  },
+  "registry_subscribers": [
+    {
+      "contract_id": "week3-extractions",
+      "subscriber_id": "week4-brownfield-cartographer",
+      "fields_consumed": [
+        "doc_id",
+        "extracted_facts",
+        "extracted_facts[].confidence",
+        "entities"
+      ],
+      "breaking_fields": [
+        {
+          "field": "extracted_facts[].confidence",
+          "reason": "Confidence scale drives trust weighting and graph annotation quality in downstream cartography."
+        },
+        {
+          "field": "doc_id",
+          "reason": "Stable document identity is required to link extraction outputs to lineage or graph nodes."
+        }
+      ],
+      "validation_mode": "WARN",
+      "registered_at": "2026-04-02 16:20:00+00:00",
+      "contact": {
+        "owner": "Week 4 Brownfield Cartographer",
+        "role": "downstream consumer",
+        "email": "birkity.yishak.m@gmail.com"
+      }
+    },
+    {
+      "contract_id": "week3-extractions",
+      "subscriber_id": "week7-contract-generator",
+      "fields_consumed": [
+        "doc_id",
+        "extracted_facts",
+        "extracted_facts[].confidence",
+        "entities",
+        "extraction_model"
+      ],
+      "breaking_fields": [
+        {
+          "field": "extracted_facts",
+          "reason": "The generator depends on the nested fact structure to flatten the dataset and infer fact-level clauses."
+        },
+        {
+          "field": "extracted_facts[].confidence",
+          "reason": "Range and drift clauses are generated from the observed fact confidence distribution."
+        }
+      ],
+      "validation_mode": "AUDIT",
+      "registered_at": "2026-04-02 16:20:00+00:00",
+      "contact": {
+        "owner": "Week 7 Contract Generator",
+        "role": "contract consumer",
+        "email": "birkity.yishak.m@gmail.com"
+      }
+    },
+    {
+      "contract_id": "week3-extractions",
+      "subscriber_id": "week7-validation-runner",
+      "fields_consumed": [
+        "doc_id",
+        "extracted_facts[].confidence",
+        "source_hash",
+        "extracted_at"
+      ],
+      "breaking_fields": [
+        {
+          "field": "extracted_facts[].confidence",
+          "reason": "Confidence is a critical semantic field and should block on range or high-severity drift in enforce mode."
+        },
+        {
+          "field": "source_hash",
+          "reason": "Hash integrity is used as part of the contract's structural guarantees."
+        }
+      ],
+      "validation_mode": "ENFORCE",
+      "registered_at": "2026-04-02 16:20:00+00:00",
+      "contact": {
+        "owner": "Week 7 Validation Runner",
+        "role": "enforcement consumer",
+        "email": "birkity.yishak.m@gmail.com"
+      }
+    }
+  ],
   "results": [
     {
       "check_id": "week3-extractions.doc_id.required",
@@ -19,7 +112,10 @@
       "severity": "LOW",
       "records_failing": 0,
       "sample_failing": [],
-      "message": "doc_id is fully populated."
+      "message": "doc_id is fully populated.",
+      "validation_mode": "AUDIT",
+      "action": "ALLOW",
+      "blocking": false
     },
     {
       "check_id": "week3-extractions.doc_id.type",
@@ -31,7 +127,10 @@
       "severity": "LOW",
       "records_failing": 0,
       "sample_failing": [],
-      "message": "doc_id matches expected type string."
+      "message": "doc_id matches expected type string.",
+      "validation_mode": "AUDIT",
+      "action": "ALLOW",
+      "blocking": false
     },
     {
       "check_id": "week3-extractions.doc_id.uuid",
@@ -43,7 +142,10 @@
       "severity": "LOW",
       "records_failing": 0,
       "sample_failing": [],
-      "message": "doc_id matches the UUID format."
+      "message": "doc_id matches the UUID format.",
+      "validation_mode": "AUDIT",
+      "action": "ALLOW",
+      "blocking": false
     },
     {
       "check_id": "week3-extractions.source_path.required",
@@ -55,7 +157,10 @@
       "severity": "LOW",
       "records_failing": 0,
       "sample_failing": [],
-      "message": "source_path is fully populated."
+      "message": "source_path is fully populated.",
+      "validation_mode": "AUDIT",
+      "action": "ALLOW",
+      "blocking": false
     },
     {
       "check_id": "week3-extractions.source_path.type",
@@ -67,7 +172,10 @@
       "severity": "LOW",
       "records_failing": 0,
       "sample_failing": [],
-      "message": "source_path matches expected type string."
+      "message": "source_path matches expected type string.",
+      "validation_mode": "AUDIT",
+      "action": "ALLOW",
+      "blocking": false
     },
     {
       "check_id": "week3-extractions.source_hash.required",
@@ -79,7 +187,10 @@
       "severity": "LOW",
       "records_failing": 0,
       "sample_failing": [],
-      "message": "source_hash is fully populated."
+      "message": "source_hash is fully populated.",
+      "validation_mode": "AUDIT",
+      "action": "ALLOW",
+      "blocking": false
     },
     {
       "check_id": "week3-extractions.source_hash.type",
@@ -91,7 +202,10 @@
       "severity": "LOW",
       "records_failing": 0,
       "sample_failing": [],
-      "message": "source_hash matches expected type string."
+      "message": "source_hash matches expected type string.",
+      "validation_mode": "AUDIT",
+      "action": "ALLOW",
+      "blocking": false
     },
     {
       "check_id": "week3-extractions.source_hash.pattern",
@@ -103,7 +217,10 @@
       "severity": "LOW",
       "records_failing": 0,
       "sample_failing": [],
-      "message": "source_hash matches the expected pattern."
+      "message": "source_hash matches the expected pattern.",
+      "validation_mode": "AUDIT",
+      "action": "ALLOW",
+      "blocking": false
     },
     {
       "check_id": "week3-extractions.entities_count.required",
@@ -115,7 +232,10 @@
       "severity": "LOW",
       "records_failing": 0,
       "sample_failing": [],
-      "message": "entities_count is fully populated."
+      "message": "entities_count is fully populated.",
+      "validation_mode": "AUDIT",
+      "action": "ALLOW",
+      "blocking": false
     },
     {
       "check_id": "week3-extractions.entities_count.type",
@@ -127,7 +247,10 @@
       "severity": "LOW",
       "records_failing": 0,
       "sample_failing": [],
-      "message": "entities_count matches expected type integer."
+      "message": "entities_count matches expected type integer.",
+      "validation_mode": "AUDIT",
+      "action": "ALLOW",
+      "blocking": false
     },
     {
       "check_id": "week3-extractions.extraction_model.required",
@@ -139,7 +262,10 @@
       "severity": "LOW",
       "records_failing": 0,
       "sample_failing": [],
-      "message": "extraction_model is fully populated."
+      "message": "extraction_model is fully populated.",
+      "validation_mode": "AUDIT",
+      "action": "ALLOW",
+      "blocking": false
     },
     {
       "check_id": "week3-extractions.extraction_model.type",
@@ -151,7 +277,10 @@
       "severity": "LOW",
       "records_failing": 0,
       "sample_failing": [],
-      "message": "extraction_model matches expected type string."
+      "message": "extraction_model matches expected type string.",
+      "validation_mode": "AUDIT",
+      "action": "ALLOW",
+      "blocking": false
     },
     {
       "check_id": "week3-extractions.processing_time_ms.required",
@@ -163,7 +292,10 @@
       "severity": "LOW",
       "records_failing": 0,
       "sample_failing": [],
-      "message": "processing_time_ms is fully populated."
+      "message": "processing_time_ms is fully populated.",
+      "validation_mode": "AUDIT",
+      "action": "ALLOW",
+      "blocking": false
     },
     {
       "check_id": "week3-extractions.processing_time_ms.type",
@@ -175,7 +307,10 @@
       "severity": "LOW",
       "records_failing": 0,
       "sample_failing": [],
-      "message": "processing_time_ms matches expected type integer."
+      "message": "processing_time_ms matches expected type integer.",
+      "validation_mode": "AUDIT",
+      "action": "ALLOW",
+      "blocking": false
     },
     {
       "check_id": "week3-extractions.token_count_input.required",
@@ -187,7 +322,10 @@
       "severity": "LOW",
       "records_failing": 0,
       "sample_failing": [],
-      "message": "token_count_input is fully populated."
+      "message": "token_count_input is fully populated.",
+      "validation_mode": "AUDIT",
+      "action": "ALLOW",
+      "blocking": false
     },
     {
       "check_id": "week3-extractions.token_count_input.type",
@@ -199,7 +337,10 @@
       "severity": "LOW",
       "records_failing": 0,
       "sample_failing": [],
-      "message": "token_count_input matches expected type integer."
+      "message": "token_count_input matches expected type integer.",
+      "validation_mode": "AUDIT",
+      "action": "ALLOW",
+      "blocking": false
     },
     {
       "check_id": "week3-extractions.token_count_output.required",
@@ -211,7 +352,10 @@
       "severity": "LOW",
       "records_failing": 0,
       "sample_failing": [],
-      "message": "token_count_output is fully populated."
+      "message": "token_count_output is fully populated.",
+      "validation_mode": "AUDIT",
+      "action": "ALLOW",
+      "blocking": false
     },
     {
       "check_id": "week3-extractions.token_count_output.type",
@@ -223,7 +367,10 @@
       "severity": "LOW",
       "records_failing": 0,
       "sample_failing": [],
-      "message": "token_count_output matches expected type integer."
+      "message": "token_count_output matches expected type integer.",
+      "validation_mode": "AUDIT",
+      "action": "ALLOW",
+      "blocking": false
     },
     {
       "check_id": "week3-extractions.extracted_at.required",
@@ -235,7 +382,10 @@
       "severity": "LOW",
       "records_failing": 0,
       "sample_failing": [],
-      "message": "extracted_at is fully populated."
+      "message": "extracted_at is fully populated.",
+      "validation_mode": "AUDIT",
+      "action": "ALLOW",
+      "blocking": false
     },
     {
       "check_id": "week3-extractions.extracted_at.type",
@@ -247,7 +397,10 @@
       "severity": "LOW",
       "records_failing": 0,
       "sample_failing": [],
-      "message": "extracted_at matches expected type string."
+      "message": "extracted_at matches expected type string.",
+      "validation_mode": "AUDIT",
+      "action": "ALLOW",
+      "blocking": false
     },
     {
       "check_id": "week3-extractions.extracted_at.datetime",
@@ -259,7 +412,10 @@
       "severity": "LOW",
       "records_failing": 0,
       "sample_failing": [],
-      "message": "extracted_at parses as ISO-8601 date-time."
+      "message": "extracted_at parses as ISO-8601 date-time.",
+      "validation_mode": "AUDIT",
+      "action": "ALLOW",
+      "blocking": false
     },
     {
       "check_id": "week3-extractions.fact_fact_id.type",
@@ -271,7 +427,10 @@
       "severity": "LOW",
       "records_failing": 0,
       "sample_failing": [],
-      "message": "fact_fact_id matches expected type string."
+      "message": "fact_fact_id matches expected type string.",
+      "validation_mode": "AUDIT",
+      "action": "ALLOW",
+      "blocking": false
     },
     {
       "check_id": "week3-extractions.fact_fact_id.uuid",
@@ -283,7 +442,10 @@
       "severity": "LOW",
       "records_failing": 0,
       "sample_failing": [],
-      "message": "fact_fact_id matches the UUID format."
+      "message": "fact_fact_id matches the UUID format.",
+      "validation_mode": "AUDIT",
+      "action": "ALLOW",
+      "blocking": false
     },
     {
       "check_id": "week3-extractions.fact_text.type",
@@ -295,7 +457,10 @@
       "severity": "LOW",
       "records_failing": 0,
       "sample_failing": [],
-      "message": "fact_text matches expected type string."
+      "message": "fact_text matches expected type string.",
+      "validation_mode": "AUDIT",
+      "action": "ALLOW",
+      "blocking": false
     },
     {
       "check_id": "week3-extractions.fact_entity_refs_count.type",
@@ -307,7 +472,10 @@
       "severity": "LOW",
       "records_failing": 0,
       "sample_failing": [],
-      "message": "fact_entity_refs_count matches expected type number."
+      "message": "fact_entity_refs_count matches expected type number.",
+      "validation_mode": "AUDIT",
+      "action": "ALLOW",
+      "blocking": false
     },
     {
       "check_id": "week3-extractions.fact_entity_refs.type",
@@ -319,7 +487,10 @@
       "severity": "LOW",
       "records_failing": 0,
       "sample_failing": [],
-      "message": "fact_entity_refs matches expected type string."
+      "message": "fact_entity_refs matches expected type string.",
+      "validation_mode": "AUDIT",
+      "action": "ALLOW",
+      "blocking": false
     },
     {
       "check_id": "week3-extractions.fact_confidence.type",
@@ -331,7 +502,10 @@
       "severity": "LOW",
       "records_failing": 0,
       "sample_failing": [],
-      "message": "fact_confidence matches expected type number."
+      "message": "fact_confidence matches expected type number.",
+      "validation_mode": "AUDIT",
+      "action": "ALLOW",
+      "blocking": false
     },
     {
       "check_id": "week3-extractions.fact_page_ref.type",
@@ -343,7 +517,10 @@
       "severity": "LOW",
       "records_failing": 0,
       "sample_failing": [],
-      "message": "fact_page_ref matches expected type number."
+      "message": "fact_page_ref matches expected type number.",
+      "validation_mode": "AUDIT",
+      "action": "ALLOW",
+      "blocking": false
     },
     {
       "check_id": "week3-extractions.fact_source_excerpt.type",
@@ -355,67 +532,10 @@
       "severity": "LOW",
       "records_failing": 0,
       "sample_failing": [],
-      "message": "fact_source_excerpt matches expected type string."
-    },
-    {
-      "check_id": "week3-extractions.entities_count.drift",
-      "column_name": "entities_count",
-      "check_type": "drift",
-      "status": "PASS",
-      "actual_value": "mean=50.92537313432836, z_score=0.0",
-      "expected": "baseline_mean=50.92537313432836, baseline_stddev=45.068851765785624",
-      "severity": "LOW",
-      "records_failing": 0,
-      "sample_failing": [],
-      "message": "entities_count remains within the established baseline."
-    },
-    {
-      "check_id": "week3-extractions.processing_time_ms.drift",
-      "column_name": "processing_time_ms",
-      "check_type": "drift",
-      "status": "PASS",
-      "actual_value": "mean=61470.49751243781, z_score=0.0",
-      "expected": "baseline_mean=61470.49751243781, baseline_stddev=76363.12733440478",
-      "severity": "LOW",
-      "records_failing": 0,
-      "sample_failing": [],
-      "message": "processing_time_ms remains within the established baseline."
-    },
-    {
-      "check_id": "week3-extractions.token_count_input.drift",
-      "column_name": "token_count_input",
-      "check_type": "drift",
-      "status": "PASS",
-      "actual_value": "mean=451.3134328358209, z_score=0.0",
-      "expected": "baseline_mean=451.3134328358209, baseline_stddev=420.2289855162144",
-      "severity": "LOW",
-      "records_failing": 0,
-      "sample_failing": [],
-      "message": "token_count_input remains within the established baseline."
-    },
-    {
-      "check_id": "week3-extractions.token_count_output.drift",
-      "column_name": "token_count_output",
-      "check_type": "drift",
-      "status": "PASS",
-      "actual_value": "mean=123.81592039800995, z_score=0.0",
-      "expected": "baseline_mean=123.81592039800995, baseline_stddev=80.43988133383296",
-      "severity": "LOW",
-      "records_failing": 0,
-      "sample_failing": [],
-      "message": "token_count_output remains within the established baseline."
-    },
-    {
-      "check_id": "week3-extractions.fact_entity_refs_count.drift",
-      "column_name": "fact_entity_refs_count",
-      "check_type": "drift",
-      "status": "PASS",
-      "actual_value": "mean=0.93048128342246, z_score=0.0",
-      "expected": "baseline_mean=0.93048128342246, baseline_stddev=0.7542418265335848",
-      "severity": "LOW",
-      "records_failing": 0,
-      "sample_failing": [],
-      "message": "fact_entity_refs_count remains within the established baseline."
+      "message": "fact_source_excerpt matches expected type string.",
+      "validation_mode": "AUDIT",
+      "action": "ALLOW",
+      "blocking": false
     },
     {
       "check_id": "week3-extractions.fact_confidence.range",
@@ -427,31 +547,10 @@
       "severity": "LOW",
       "records_failing": 0,
       "sample_failing": [],
-      "message": "fact_confidence stays within the configured range."
-    },
-    {
-      "check_id": "week3-extractions.fact_confidence.drift",
-      "column_name": "fact_confidence",
-      "check_type": "drift",
-      "status": "PASS",
-      "actual_value": "mean=0.8063636363636365, z_score=0.0",
-      "expected": "baseline_mean=0.8063636363636365, baseline_stddev=0.11398526015257286",
-      "severity": "LOW",
-      "records_failing": 0,
-      "sample_failing": [],
-      "message": "fact_confidence remains within the established baseline."
-    },
-    {
-      "check_id": "week3-extractions.fact_page_ref.drift",
-      "column_name": "fact_page_ref",
-      "check_type": "drift",
-      "status": "PASS",
-      "actual_value": "mean=29.17379679144385, z_score=0.0",
-      "expected": "baseline_mean=29.17379679144385, baseline_stddev=32.76890008669152",
-      "severity": "LOW",
-      "records_failing": 0,
-      "sample_failing": [],
-      "message": "fact_page_ref remains within the established baseline."
+      "message": "fact_confidence stays within the configured range.",
+      "validation_mode": "AUDIT",
+      "action": "ALLOW",
+      "blocking": false
     }
   ]
 }

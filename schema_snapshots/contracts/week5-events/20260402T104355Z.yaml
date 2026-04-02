@@ -39,9 +39,6 @@ observations:
   - occurred_at
   - recorded_at
   warnings: []
-  snapshot_paths:
-    timestamped: schema_snapshots/contracts/week5-events/20260402T104355Z.yaml
-    latest: schema_snapshots/contracts/week5-events/latest.yaml
 schema:
   event_id:
     type: string

@@ -4,12 +4,17 @@ models:
   description: dbt-compatible counterpart for generated contract week3-extractions built from outputs/week3/extractions.jsonl.
   meta:
     generated_from_contract: week3-extractions
-    generated_at: '2026-04-01T18:28:57.344101+00:00'
+    generated_at: '2026-04-02T10:43:55.038905+00:00'
     source_path: outputs/week3/extractions.jsonl
+    blast_radius_primary_source: contract_registry
+    registry_subscribers:
+    - week4-brownfield-cartographer
+    - week7-contract-generator
+    - week7-validation-runner
     lineage_notes:
     - Week 4 lineage is currently a dbt-style whole-file graph, not the canonical Week 7 node/edge snapshot.
-    - No explicit consumer for the current source dataset was found in the current lineage file, so downstream
-      blast radius is recorded as unknown.
+    - No explicit consumer for the current source dataset was found in the current lineage file, so lineage
+      enrichment is partial.
   columns:
   - name: doc_id
     description: Primary identifier for the extracted document record.

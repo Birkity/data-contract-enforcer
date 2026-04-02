@@ -11,6 +11,7 @@ import pandas as pd
 import yaml
 
 from generator import flatten_for_profile, load_jsonl
+from registry_tools import get_contract_subscriptions, load_registry
 
 
 UUID_RE = re.compile(r"^[0-9a-f-]{36}$", re.IGNORECASE)
@@ -23,6 +24,17 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--contract", required=True, help="Path to the contract YAML file.")
     parser.add_argument("--data", required=True, help="Path to the JSONL data snapshot.")
     parser.add_argument("--output", required=True, help="Path to the output validation report JSON.")
+    parser.add_argument(
+        "--mode",
+        default="AUDIT",
+        choices=["AUDIT", "WARN", "ENFORCE"],
+        help="Consumer-boundary validation mode.",
+    )
+    parser.add_argument(
+        "--registry",
+        default="contract_registry/subscriptions.yaml",
+        help="Path to the contract registry subscriptions file.",
+    )
     parser.add_argument(
         "--baselines",
         default="schema_snapshots/baselines.json",
@@ -114,6 +126,27 @@ def build_result(
         "sample_failing": [str(value) for value in sample_failing[:5]],
         "message": message,
     }
+
+
+def blocking_for_mode(mode: str, status: str, severity: str) -> bool:
+    normalized_mode = mode.upper()
+    if status in {"PASS", "WARN"}:
+        return False
+    if normalized_mode == "AUDIT":
+        return False
+    if normalized_mode == "WARN":
+        return severity == "CRITICAL"
+    return severity in {"CRITICAL", "HIGH"}
+
+
+def action_for_result(mode: str, status: str, severity: str) -> str:
+    if status == "PASS":
+        return "ALLOW"
+    if blocking_for_mode(mode, status, severity):
+        return "BLOCK"
+    if status == "WARN" or severity in {"MEDIUM", "HIGH", "CRITICAL"}:
+        return "WARN"
+    return "LOG"
 
 
 def missing_column_result(contract_id: str, column_name: str, check_type: str) -> dict[str, Any]:
@@ -455,12 +488,24 @@ def statistical_checks(
     return results
 
 
+def decorate_results_for_mode(mode: str, results: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    decorated: list[dict[str, Any]] = []
+    for result in results:
+        enriched = dict(result)
+        enriched["validation_mode"] = mode.upper()
+        enriched["action"] = action_for_result(mode, result["status"], result["severity"])
+        enriched["blocking"] = blocking_for_mode(mode, result["status"], result["severity"])
+        decorated.append(enriched)
+    return decorated
+
+
 def append_violations(
     path: Path,
     report_id: str,
     contract_id: str,
     snapshot_id: str,
     run_timestamp: str,
+    validation_mode: str,
     results: list[dict[str, Any]],
 ) -> None:
     ensure_parent(path)
@@ -473,10 +518,13 @@ def append_violations(
                 "contract_id": contract_id,
                 "snapshot_id": snapshot_id,
                 "run_timestamp": run_timestamp,
+                "validation_mode": validation_mode,
                 "field": result["column_name"],
                 "check_type": result["check_type"],
                 "status": result["status"],
                 "severity": result["severity"],
+                "action": result.get("action"),
+                "blocking": result.get("blocking", False),
                 "message": result["message"],
                 "sample_values": result["sample_failing"],
                 "records_failing": result["records_failing"],
@@ -491,33 +539,57 @@ def summarize_statuses(results: list[dict[str, Any]]) -> dict[str, int]:
         "failed": sum(1 for result in results if result["status"] == "FAIL"),
         "warned": sum(1 for result in results if result["status"] == "WARN"),
         "errored": sum(1 for result in results if result["status"] == "ERROR"),
+        "blocked": sum(1 for result in results if result.get("blocking")),
     }
 
 
 def build_report(
-    contract_id: str, data_path: Path, results: list[dict[str, Any]]
+    contract_id: str,
+    data_path: Path,
+    mode: str,
+    registry_subscriptions: list[dict[str, Any]],
+    results: list[dict[str, Any]],
 ) -> dict[str, Any]:
     report_id = str(uuid.uuid4())
     snapshot_id = sha256_file(data_path)
     run_timestamp = now_iso()
     counts = summarize_statuses(results)
+    blocking = any(result.get("blocking") for result in results)
+    if mode.upper() == "AUDIT":
+        decision = "ALLOW_WITH_AUDIT_TRAIL"
+    elif blocking:
+        decision = "BLOCK"
+    elif counts["warned"] or counts["failed"] or counts["errored"]:
+        decision = "ALLOW_WITH_WARNINGS"
+    else:
+        decision = "ALLOW"
     return {
         "report_id": report_id,
         "contract_id": contract_id,
         "snapshot_id": snapshot_id,
         "run_timestamp": run_timestamp,
+        "validation_mode": mode.upper(),
+        "blocking": blocking,
+        "decision": decision,
         "total_checks": len(results),
         "passed": counts["passed"],
         "failed": counts["failed"],
         "warned": counts["warned"],
         "errored": counts["errored"],
+        "blocked": counts["blocked"],
+        "architecture_context": {
+            "enforcement_boundary": "consumer",
+            "blast_radius_primary_source": "contract_registry",
+            "lineage_role": "enrichment_only",
+        },
+        "registry_subscribers": registry_subscriptions,
         "results": results,
     }
 
 
 def write_report(path: Path, report: dict[str, Any]) -> None:
     ensure_parent(path)
-    path.write_text(json.dumps(report, indent=2), encoding="utf-8")
+    path.write_text(json.dumps(report, indent=2, default=str), encoding="utf-8")
 
 
 def main() -> int:
@@ -525,6 +597,7 @@ def main() -> int:
     contract_path = Path(args.contract)
     data_path = Path(args.data)
     output_path = Path(args.output)
+    registry_path = Path(args.registry)
     baselines_path = Path(args.baselines)
     violation_log_path = Path(args.violation_log)
 
@@ -532,6 +605,8 @@ def main() -> int:
     _, df, _ = load_dataframe(data_path)
     schema = contract.get("schema", {})
     contract_id = contract.get("id", contract_path.stem)
+    registry_payload = load_registry(registry_path)
+    registry_subscriptions = get_contract_subscriptions(registry_payload, contract_id)
 
     baselines = load_baselines(baselines_path)
 
@@ -555,7 +630,8 @@ def main() -> int:
             )
         )
 
-    report = build_report(contract_id, data_path, results)
+    results = decorate_results_for_mode(args.mode, results)
+    report = build_report(contract_id, data_path, args.mode, registry_subscriptions, results)
     write_report(output_path, report)
     append_violations(
         path=violation_log_path,
@@ -563,6 +639,7 @@ def main() -> int:
         contract_id=report["contract_id"],
         snapshot_id=report["snapshot_id"],
         run_timestamp=report["run_timestamp"],
+        validation_mode=report["validation_mode"],
         results=results,
     )
 
@@ -573,12 +650,22 @@ def main() -> int:
         json.dumps(
             {
                 key: report[key]
-                for key in ("report_id", "total_checks", "passed", "failed", "warned", "errored")
+                for key in (
+                    "report_id",
+                    "validation_mode",
+                    "decision",
+                    "blocking",
+                    "total_checks",
+                    "passed",
+                    "failed",
+                    "warned",
+                    "errored",
+                )
             },
             indent=2,
         )
     )
-    return 0
+    return 2 if report["blocking"] else 0
 
 
 if __name__ == "__main__":
