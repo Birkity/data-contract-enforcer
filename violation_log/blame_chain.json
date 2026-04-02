@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-04-02T11:46:30.962307+00:00",
+  "generated_at": "2026-04-02T13:35:02.234821+00:00",
   "architecture_mode": {
     "blast_radius_primary_source": "contract_registry",
     "lineage_role": "enrichment_only",
@@ -20,25 +20,25 @@
   "repo_roots": [
     "E:\\10 Academy\\Week 3\\document-intelligence-refinery"
   ],
-  "violation_log_entry_count": 7,
+  "violation_log_entry_count": 6,
   "attributions": [
     {
-      "violation_id": "a02c5925-8489-4bc6-a182-d2af576349b6",
+      "violation_id": "7aab4955-947c-474c-bf58-720ca581fd2e",
       "check_id": "week3-extractions.fact_confidence.range",
-      "detected_at": "2026-04-02T11:43:22.485143+00:00",
+      "detected_at": "2026-04-02T13:34:02.614704+00:00",
       "field": "fact_confidence",
       "producer_system": "week3-document-intelligence-refinery",
       "dataset_path": "outputs/week3/extractions.jsonl",
       "status": "FAIL",
       "severity": "CRITICAL",
       "message": "fact_confidence is outside the configured range. Breaking change detected.",
-      "records_failing": 374,
+      "records_failing": 136,
       "sample_failing": [
-        "100.0",
-        "100.0",
-        "100.0",
-        "100.0",
-        "100.0"
+        "75.0",
+        "75.0",
+        "75.0",
+        "75.0",
+        "75.0"
       ],
       "matching_violation_log_entries": 3,
       "candidate_files": [
@@ -230,7 +230,7 @@
           "matched_nodes": [],
           "upstream_candidates": [],
           "downstream_nodes": [],
-          "summary": "The current Week 4 lineage snapshot is a dbt-style graph and does not expose an explicit Week 3 consumer path, so lineage enrichment is partial.",
+          "summary": "No downstream lineage enrichment nodes were identified from the current snapshot.",
           "confidence": "low",
           "notes": [
             "No explicit Week 3 or extraction-related nodes were found in the current Week 4 lineage snapshot."
@@ -238,21 +238,21 @@
         }
       },
       "lineage_context": {
-        "lineage_shape": "dbt-whole-file",
-        "load_mode": "whole-file-json"
+        "lineage_shape": "canonical",
+        "load_mode": "jsonl-last-line"
       }
     },
     {
-      "violation_id": "f0c3bd55-9425-4ce3-8a17-1c59c553fc88",
+      "violation_id": "b258f333-4594-4c3a-93ac-43569410abc8",
       "check_id": "week3-extractions.fact_confidence.drift",
-      "detected_at": "2026-04-02T11:43:22.485143+00:00",
+      "detected_at": "2026-04-02T13:34:02.614704+00:00",
       "field": "fact_confidence",
       "producer_system": "week3-document-intelligence-refinery",
       "dataset_path": "outputs/week3/extractions.jsonl",
       "status": "FAIL",
       "severity": "HIGH",
-      "message": "fact_confidence mean drifted 700.4 stddev from baseline.",
-      "records_failing": 374,
+      "message": "fact_confidence mean drifted 923.4 stddev from baseline.",
+      "records_failing": 136,
       "sample_failing": [],
       "matching_violation_log_entries": 3,
       "candidate_files": [
@@ -444,7 +444,7 @@
           "matched_nodes": [],
           "upstream_candidates": [],
           "downstream_nodes": [],
-          "summary": "The current Week 4 lineage snapshot is a dbt-style graph and does not expose an explicit Week 3 consumer path, so lineage enrichment is partial.",
+          "summary": "No downstream lineage enrichment nodes were identified from the current snapshot.",
           "confidence": "low",
           "notes": [
             "No explicit Week 3 or extraction-related nodes were found in the current Week 4 lineage snapshot."
@@ -452,8 +452,8 @@
         }
       },
       "lineage_context": {
-        "lineage_shape": "dbt-whole-file",
-        "load_mode": "whole-file-json"
+        "lineage_shape": "canonical",
+        "load_mode": "jsonl-last-line"
       }
     }
   ]

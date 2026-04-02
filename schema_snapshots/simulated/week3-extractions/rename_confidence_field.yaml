@@ -22,9 +22,9 @@ implementation_model:
   lineage_role: enrichment_only
   trust_boundary_tier: tier_1_registry_plus_lineage
 observations:
-  generated_at: '2026-04-02T11:44:04.773858+00:00'
+  generated_at: '2026-04-02T13:34:40.896701+00:00'
   record_count: 50
-  profiled_row_count: 402
+  profiled_row_count: 173
   flatten_mode: exploded_repeated_items
   repeated_field: extracted_facts
   observed_keys:
@@ -47,13 +47,13 @@ schema:
     profile:
       dtype: string
       null_fraction: 0.0
-      cardinality_estimate: 40
+      cardinality_estimate: 50
       sample_values:
-      - fe37b8a8-5a66-5802-a021-aeedd736a227
-      - 22f7512d-0e44-5029-b4dc-eb77b3093c19
-      - d23841d2-a27f-5505-921d-a18c162e575c
-      - e46ecb86-9442-5a4e-b39f-5e5d7816a4f2
-      - 8bdbfef0-65c6-58a8-8682-52e92a3b84b1
+      - 6237da6c-5fc3-521d-90ca-d53f2e71f058
+      - 8256dd55-634b-5b08-966a-c9eb94e3d234
+      - 7688d619-8cdb-5fb7-8c8e-9835c482f165
+      - 7e045353-80a2-59bb-89d5-97dd8ae5cafb
+      - fecd6168-a53d-5434-871c-e209868ab728
   source_path:
     type: string
     description: Original source path or URL for the document.
@@ -61,13 +61,13 @@ schema:
     profile:
       dtype: string
       null_fraction: 0.0
-      cardinality_estimate: 39
+      cardinality_estimate: 50
       sample_values:
-      - E:\10 Academy\Week 3\document-intelligence-refinery\data\CBE ANNUAL REPORT 2023-24.pdf
-      - E:\10 Academy\Week 3\document-intelligence-refinery\data\Audit Report - 2023.pdf
-      - E:\10 Academy\Week 3\document-intelligence-refinery\data\fta_performance_survey_final_report_2022.pdf
-      - E:\10 Academy\Week 3\document-intelligence-refinery\data\tax_expenditure_ethiopia_2021_22.pdf
-      - E:\10 Academy\Week 3\document-intelligence-refinery\data\Annual_Report_JUNE-2023.pdf
+      - E:\10 Academy\Week 3\document-intelligence-refinery\data\2013-E.C-Assigned-regular-budget-and-expense.pdf
+      - E:\10 Academy\Week 3\document-intelligence-refinery\data\2013-E.C-Audit-finding-information.pdf
+      - E:\10 Academy\Week 3\document-intelligence-refinery\data\2013-E.C-Procurement-information.pdf
+      - E:\10 Academy\Week 3\document-intelligence-refinery\data\2018_Audited_Financial_Statement_Report.pdf
+      - E:\10 Academy\Week 3\document-intelligence-refinery\data\20191010_Pharmaceutical-Manufacturing-Opportunites-in-Ethiopia_VF.pdf
   source_hash:
     type: string
     description: SHA-256 content hash of the source document.
@@ -76,13 +76,13 @@ schema:
     profile:
       dtype: string
       null_fraction: 0.0
-      cardinality_estimate: 38
+      cardinality_estimate: 48
       sample_values:
-      - cafb11ca016fe4870c945fc2f8fe8b5fcc86bf6ee56da5327d4fd446456a7050
-      - 62213e3af42b0198d66aa799a8b0df5eb9c6cc1473ff222b5268c72c8cd08ee0
-      - 4dcf8792cc25a98826f4c9d28da108716744c49e444273983e06a6d72bb90154
-      - 212dc42370e200d430dcbd690970f879b0b82558edb1b5eaef04be9e1b51fa8a
-      - c9ddc16ac77d590e2ac35f8885ccfe17921549b110b480059ba95df7f5529fd0
+      - 45bc9cf4ff5ce1ac41a5240e6cc71e9b9809a25e078259afced4ebfcd7014b85
+      - 7b8976e32efc895a1ab0f78fb4376f3e1431dfa432b4c61b4427b30b1e103ab8
+      - 4a67ebdf892c8fce342935b5e109795989d03cfd0602781fb2ea586b2c8c1ca1
+      - 70e44e10d0776e9c5632c878614e1aec5b7ccdd5c9daeead5eeccf6b28fbc826
+      - d0effa290ba25144ec6bd70009d086c319d39474f05afb15b4b5531fc05d3816
   entities_count:
     type: integer
     description: Number of entities linked to the document record.
@@ -90,33 +90,41 @@ schema:
     profile:
       dtype: integer
       null_fraction: 0.0
-      cardinality_estimate: 18
+      cardinality_estimate: 23
       sample_values:
-      - '6'
       - '0'
-      - '18'
-      - '48'
-      - '127'
+      - '7'
+      - '11'
+      - '10'
+      - '20'
       observed_min: 0.0
-      observed_max: 127.0
-      observed_mean: 50.925373
-      observed_stddev: 45.068852
-      observed_p50: 47.0
-      observed_p95: 127.0
+      observed_max: 76.0
+      observed_mean: 32.520231
+      observed_stddev: 19.680468
+      observed_p50: 25.0
+      observed_p95: 76.0
   extraction_model:
     type: string
     description: Extraction strategy or model label used to produce the record.
     required: true
+    enum:
+    - layout_aware
+    - layout_aware+llm_assisted
+    - layout_aware+llm_assisted+regex
+    - layout_aware+regex
+    - layout_aware+table_parse
+    - ocr_heavy
+    - ocr_heavy+llm_assisted+regex
     profile:
       dtype: string
       null_fraction: 0.0
-      cardinality_estimate: 12
+      cardinality_estimate: 7
       sample_values:
-      - layout_aware+regex
-      - vision_augmented
-      - layout_aware+regex+table_parse
-      - layout_aware+llm_assisted+regex
+      - ocr_heavy
+      - layout_aware+llm_assisted
       - layout_aware
+      - layout_aware+llm_assisted+regex
+      - ocr_heavy+llm_assisted+regex
   processing_time_ms:
     type: integer
     description: End-to-end extraction processing time in milliseconds.
@@ -124,19 +132,19 @@ schema:
     profile:
       dtype: integer
       null_fraction: 0.0
-      cardinality_estimate: 49
+      cardinality_estimate: 43
       sample_values:
-      - '36205'
-      - '341'
-      - '30598'
-      - '19851'
-      - '43042'
-      observed_min: 7.0
-      observed_max: 279256.0
-      observed_mean: 61470.497512
-      observed_stddev: 76363.127334
-      observed_p50: 17800.0
-      observed_p95: 196699.0
+      - '867'
+      - '5'
+      - '7'
+      - '158'
+      - '6'
+      observed_min: 5.0
+      observed_max: 2373.0
+      observed_mean: 994.450867
+      observed_stddev: 913.110499
+      observed_p50: 781.0
+      observed_p95: 2249.0
   token_count_input:
     type: integer
     description: Approximate input token count used by the extraction workflow.
@@ -144,19 +152,19 @@ schema:
     profile:
       dtype: integer
       null_fraction: 0.0
-      cardinality_estimate: 21
+      cardinality_estimate: 32
       sample_values:
-      - '122'
       - '0'
-      - '87'
-      - '237'
-      - '935'
+      - '313'
+      - '384'
+      - '1421'
+      - '300'
       observed_min: 0.0
-      observed_max: 1015.0
-      observed_mean: 451.313433
-      observed_stddev: 420.228986
-      observed_p50: 161.0
-      observed_p95: 1015.0
+      observed_max: 3065.0
+      observed_mean: 965.283237
+      observed_stddev: 798.582455
+      observed_p50: 862.0
+      observed_p95: 1971.0
   token_count_output:
     type: integer
     description: Approximate output token count produced by the extraction workflow.
@@ -164,19 +172,19 @@ schema:
     profile:
       dtype: integer
       null_fraction: 0.0
-      cardinality_estimate: 15
+      cardinality_estimate: 28
       sample_values:
-      - '59'
       - '0'
-      - '37'
-      - '85'
-      - '176'
+      - '24'
+      - '15'
+      - '14'
+      - '40'
       observed_min: 0.0
-      observed_max: 256.0
-      observed_mean: 123.81592
-      observed_stddev: 80.439881
-      observed_p50: 115.0
-      observed_p95: 256.0
+      observed_max: 252.0
+      observed_mean: 129.450867
+      observed_stddev: 89.592905
+      observed_p50: 113.0
+      observed_p95: 252.0
   extracted_at:
     type: string
     description: Timestamp when the extraction record was produced.
@@ -185,70 +193,71 @@ schema:
     profile:
       dtype: string
       null_fraction: 0.0
-      cardinality_estimate: 40
+      cardinality_estimate: 50
       sample_values:
-      - '2026-03-05T13:46:05.529684+00:00'
-      - '2026-03-03T09:47:15.326679+00:00'
-      - '2026-03-06T14:14:23.835591+00:00'
-      - '2026-03-07T16:44:23.038222+00:00'
-      - '2026-03-03T09:47:13.815549+00:00'
+      - '2026-04-02T12:38:01.067888+00:00'
+      - '2026-04-02T12:38:01.213493+00:00'
+      - '2026-04-02T12:38:01.324784+00:00'
+      - '2026-04-02T12:38:01.465215+00:00'
+      - '2026-04-02T12:38:02.670678+00:00'
   fact_fact_id:
     type: string
     description: Primary identifier for the extracted fact.
     format: uuid
     profile:
       dtype: string
-      null_fraction: 0.069652
-      cardinality_estimate: 66
+      null_fraction: 0.213873
+      cardinality_estimate: 136
       sample_values:
-      - 250be8e7-6ba8-5c43-9c06-0acaeaf76d78
-      - b67a2714-7e98-547c-9a81-bbd4553488f7
-      - b4b9e0e8-ca74-5a03-b2f0-7274e7c9bb11
-      - 1234f7bf-4f80-5e75-aac1-a3266dd265f2
-      - d29f28f9-ed84-5bb8-b1c5-fcdd830f3106
+      - 2fa76b83-dab0-51e0-beeb-418c23c2bab5
+      - d62b9e94-fd2d-5d34-8271-57db20a4386c
+      - 4af41b0f-fa79-5cfd-b3e4-9f5ac140584e
+      - ae9ec6ca-c231-53ea-b5c5-2d2799f3605c
+      - 3be22619-cf74-5901-b2bb-ad3becc01fc4
   fact_text:
     type: string
     description: Plain-English extracted fact text.
     profile:
       dtype: string
-      null_fraction: 0.069652
-      cardinality_estimate: 216
+      null_fraction: 0.213873
+      cardinality_estimate: 81
       sample_values:
-      - 'The various foreign currencies to which the Group is exposed to are summarized below: 30'
-      - 'AED: 1,069'
-      - 'CAD: 701'
-      - 'CHF: 1,554'
-      - 'DJF: 64,331'
+      - 'East African pharmaceutical sector market size: 6'
+      - 'market size: 11'
+      - 'motor class of business share: 32.5 %'
+      - 'motor class of business share (previous year): 38 %'
+      - 'motor class of business share: 28.2 %'
   fact_entity_refs_count:
     type: number
     description: Number of entity references linked from the extracted fact.
     profile:
       dtype: number
-      null_fraction: 0.069652
-      cardinality_estimate: 3
+      null_fraction: 0.213873
+      cardinality_estimate: 4
       sample_values:
-      - '0.0'
       - '2.0'
+      - '3.0'
       - '1.0'
+      - '0.0'
       observed_min: 0.0
-      observed_max: 2.0
-      observed_mean: 0.930481
-      observed_stddev: 0.754242
-      observed_p50: 1.0
-      observed_p95: 2.0
+      observed_max: 3.0
+      observed_mean: 1.522059
+      observed_stddev: 0.942549
+      observed_p50: 2.0
+      observed_p95: 3.0
   fact_entity_refs:
     type: string
     description: Entity identifiers referenced by the extracted fact.
     profile:
       dtype: string
-      null_fraction: 0.368159
-      cardinality_estimate: 68
+      null_fraction: 0.381503
+      cardinality_estimate: 98
       sample_values:
-      - 1b1901ce-f026-59d7-9973-df8feb2f6b4a|0f104242-c4df-5346-b36a-5c6b18cbd882
-      - b326fc93-8b0a-5888-887b-e9f426046b55
-      - d0b9ddc6-905e-529d-a390-396adcbe508c
-      - 480c5067-3a62-511a-a2cb-22679752a0a2|da1d5d6a-dcc3-5f71-b5b4-ba03b99c4855
-      - 480c5067-3a62-511a-a2cb-22679752a0a2|7eb9f84d-77b7-57d8-996a-6cf9bce0a6b6
+      - 74fb2b49-0696-500d-bf7a-bdc536a9a60f|8757011d-10d6-5af7-9b61-80ae422e9f13
+      - eccde843-4e54-5187-966a-a0eb4073eb31|c818d6bf-ad34-5b0e-a7cc-6af6887c084e|2917fcab-f0fa-5d55-9bf7-876d47c35927
+      - eccde843-4e54-5187-966a-a0eb4073eb31|c818d6bf-ad34-5b0e-a7cc-6af6887c084e|2639f270-f6d9-5c0b-aadb-15cf600fd450
+      - e5e7a76f-5d64-5fba-92f7-6e04a3619fbd|265ecfd0-3e5f-526a-8ffa-1140faecd6d4|41a1e6b6-7727-5ab9-a45b-cc56251a2c30
+      - e5e7a76f-5d64-5fba-92f7-6e04a3619fbd|265ecfd0-3e5f-526a-8ffa-1140faecd6d4|64a8b229-4670-5bc3-912c-59d13c31fcda
   fact_confidence_score:
     type: number
     description: Simulated renamed field for CI gate testing. This intentionally breaks consumers expecting
@@ -257,52 +266,61 @@ schema:
     maximum: 1.0
     profile:
       dtype: number
-      null_fraction: 0.069652
-      cardinality_estimate: 6
+      null_fraction: 0.213873
+      cardinality_estimate: 4
       sample_values:
-      - '1.0'
-      - '0.55'
-      - '0.7'
-      - '0.9'
       - '0.75'
+      - '0.7'
+      - '0.55'
+      - '0.9'
       observed_min: 0.55
-      observed_max: 1.0
-      observed_mean: 0.806364
-      observed_stddev: 0.113985
-      observed_p50: 0.75
-      observed_p95: 1.0
+      observed_max: 0.9
+      observed_mean: 0.818015
+      observed_stddev: 0.087702
+      observed_p50: 0.9
+      observed_p95: 0.9
   fact_page_ref:
     type: number
     description: Source page number associated with the extracted fact.
     profile:
       dtype: number
-      null_fraction: 0.069652
-      cardinality_estimate: 21
+      null_fraction: 0.213873
+      cardinality_estimate: 9
       sample_values:
-      - '81.0'
-      - '1.0'
-      - '18.0'
-      - '76.0'
-      - '88.0'
+      - '6.0'
+      - '11.0'
+      - '67.0'
+      - '73.0'
+      - '35.0'
       observed_min: 1.0
-      observed_max: 88.0
-      observed_mean: 29.173797
-      observed_stddev: 32.7689
-      observed_p50: 10.0
-      observed_p95: 81.0
+      observed_max: 73.0
+      observed_mean: 23.330882
+      observed_stddev: 20.634044
+      observed_p50: 5.0
+      observed_p95: 67.0
   fact_source_excerpt:
     type: string
     description: Supporting excerpt copied from the source document for the extracted fact.
     profile:
       dtype: string
-      null_fraction: 0.069652
-      cardinality_estimate: 98
+      null_fraction: 0.213873
+      cardinality_estimate: 18
       sample_values:
-      - 'The various foreign currencies to which the Group is exposed to are summarized below: 30'
-      - 'AED: 1,069'
-      - 'CAD: 701'
-      - 'CHF: 1,554'
-      - 'DJF: 64,331'
+      - Investment - Why do business in Ethiopia? Growing Economy, Opportunities to invest Benefit based
+        on dynamic market with in high value tailored enabling access to East African pharmaceutical sector
+        environment market including specialized...
+      - Investment - Why do business in Ethiopia? Growing Economy, Opportunities to invest Benefit based
+        on dynamic market with in high value tailored enabling access to East African pharmaceutical sector
+        environment market 11
+      - "Notes to Financial Statements ETHIO RE Rising with Africa For the year ended 30 June 2020 (4)\
+        \ Financial risk review (Continued) Concentration of underwriting risk The Company\u2019s concentration\
+        \ of reinsurance risk is determined by class of..."
+      - ETHIO RE Notes to Financial Statements Annual Report For the year ended 30 June 2021 2020/21 (4)
+        Financial risk review (Continued) (a) Underwriting risk(continued) Concentration of underwriting
+        risk(continued) As can be observed from the...
+      - "ETHIOPIAN REINSURANCE S.C EETTHHIIOO RREE RRiissiinngg wwiitthh AAffrriiccaa STATEMENT OF DIRECTORS\u2019\
+        \ RESPONSIBILITIES 22002212//2223 NOTICE OF THE 7TH ANNUAL ORDINARY GENERAL MEETING OF SHAREHOLDERS\
+        \ Notice is hereby given to the Sharehol..."
 registry:
   role: primary_blast_radius_source
   path: contract_registry/subscriptions.yaml
@@ -376,12 +394,11 @@ lineage:
   role: enrichment_only
   source_snapshot:
     path: outputs/week4/lineage_snapshots.jsonl
-    load_mode: whole-file-json
+    load_mode: jsonl-last-line
   downstream_enrichment: []
   notes:
-  - Week 4 lineage is currently a dbt-style whole-file graph, not the canonical Week 7 node/edge snapshot.
-  - No explicit consumer for the current source dataset was found in the current lineage file, so lineage
-    enrichment is partial.
+  - Canonical lineage snapshot loaded, but no explicit downstream consumers were found for the current
+    source dataset.
 simulation:
   type: rename_confidence_field
-  source: schema_snapshots/contracts/week3-extractions/20260402T114231Z.yaml
+  source: schema_snapshots/contracts/week3-extractions/20260402T133022Z.yaml

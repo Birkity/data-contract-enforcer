@@ -34,7 +34,7 @@ The Week 3 file is now in canonical Week 7-style shape with:
 - `token_count`
 - `extracted_at`
 
-The Week 4 lineage file is still a non-canonical dbt-style whole-file JSON graph. I used it anyway and made the generator record that limitation explicitly in the output contract.
+The Week 4 lineage file has since been migrated to canonical JSONL, but at the time of the original Phase 1 run lineage enrichment was still limited. The generator now records the current limitation honestly: the snapshots are canonical, but they still do not expose an explicit Week 3 consumer path.
 
 ## What I implemented
 

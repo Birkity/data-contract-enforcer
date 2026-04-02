@@ -4,7 +4,7 @@ models:
   description: dbt-compatible counterpart for generated contract week3-extractions built from outputs/week3/extractions.jsonl.
   meta:
     generated_from_contract: week3-extractions
-    generated_at: '2026-04-02T11:42:31.605844+00:00'
+    generated_at: '2026-04-02T13:30:22.410810+00:00'
     source_path: outputs/week3/extractions.jsonl
     blast_radius_primary_source: contract_registry
     registry_subscribers:
@@ -12,9 +12,8 @@ models:
     - week7-contract-generator
     - week7-validation-runner
     lineage_notes:
-    - Week 4 lineage is currently a dbt-style whole-file graph, not the canonical Week 7 node/edge snapshot.
-    - No explicit consumer for the current source dataset was found in the current lineage file, so lineage
-      enrichment is partial.
+    - Canonical lineage snapshot loaded, but no explicit downstream consumers were found for the current
+      source dataset.
   columns:
   - name: doc_id
     description: Primary identifier for the extracted document record.
@@ -40,6 +39,15 @@ models:
     description: Extraction strategy or model label used to produce the record.
     tests:
     - not_null
+    - accepted_values:
+        values:
+        - layout_aware
+        - layout_aware+llm_assisted
+        - layout_aware+llm_assisted+regex
+        - layout_aware+regex
+        - layout_aware+table_parse
+        - ocr_heavy
+        - ocr_heavy+llm_assisted+regex
   - name: processing_time_ms
     description: End-to-end extraction processing time in milliseconds.
     tests:

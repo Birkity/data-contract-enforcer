@@ -247,7 +247,7 @@ Impact:
 - `402` flattened validation rows
 - `374` fact rows with numeric confidence values
 
-### Issue 3: Week 4 lineage is still non-canonical
+### Issue 3: Week 4 lineage enrichment is still limited
 
 This did not block Phase 2 itself, but it remains a real downstream constraint for later attribution work.
 

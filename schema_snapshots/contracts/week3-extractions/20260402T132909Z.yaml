@@ -22,7 +22,7 @@ implementation_model:
   lineage_role: enrichment_only
   trust_boundary_tier: tier_1_registry_plus_lineage
 observations:
-  generated_at: '2026-04-02T13:30:22.410810+00:00'
+  generated_at: '2026-04-02T13:29:09.543912+00:00'
   record_count: 50
   profiled_row_count: 173
   flatten_mode: exploded_repeated_items
@@ -38,9 +38,6 @@ observations:
   - token_count
   - extracted_at
   warnings: []
-  snapshot_paths:
-    timestamped: schema_snapshots/contracts/week3-extractions/20260402T133022Z.yaml
-    latest: schema_snapshots/contracts/week3-extractions/latest.yaml
 schema:
   doc_id:
     type: string

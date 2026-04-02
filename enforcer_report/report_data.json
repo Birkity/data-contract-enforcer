@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-04-02T11:46:09.433109+00:00",
+  "generated_at": "2026-04-02T13:52:40.380176+00:00",
   "system_name": "TRP Week 7 Data Contract Enforcer",
   "architecture": {
     "enforcement_boundary": "consumer",
@@ -7,10 +7,10 @@
     "lineage_role": "enrichment_only",
     "schema_evolution_role": "producer_side_ci_gate"
   },
-  "data_health_score": 90,
+  "data_health_score": 88,
   "score_breakdown": {
     "baseline_validation": 35.0,
-    "ai_contract_extensions": 14.0,
+    "ai_contract_extensions": 12.0,
     "attribution_and_blast_radius": 11.0,
     "schema_evolution_gate": 15.0,
     "governance_and_snapshots": 15.0
@@ -19,8 +19,8 @@
     "baseline": {
       "mode": "AUDIT",
       "decision": "ALLOW_WITH_AUDIT_TRAIL",
-      "total_checks": 37,
-      "passed": 37,
+      "total_checks": 38,
+      "passed": 38,
       "failed": 0,
       "warned": 0
     },
@@ -44,14 +44,14 @@
         {
           "check_id": "week3-extractions.fact_confidence.range",
           "severity": "CRITICAL",
-          "failing_percent": 93.03,
+          "failing_percent": 78.61,
           "message": "fact_confidence is outside the configured range. Breaking change detected."
         },
         {
           "check_id": "week3-extractions.fact_confidence.drift",
           "severity": "HIGH",
-          "failing_percent": 93.03,
-          "message": "fact_confidence mean drifted 700.4 stddev from baseline."
+          "failing_percent": 78.61,
+          "message": "fact_confidence mean drifted 923.4 stddev from baseline."
         }
       ]
     }
@@ -60,10 +60,10 @@
     "total_logged_entries": 7,
     "real_ai_findings": 1,
     "latest_real_ai_finding": {
-      "report_id": "d57bb636-4309-4b01-8fe0-aa7e6f072f34",
+      "report_id": "8e95bea6-cc5e-4b87-be02-251057c92c4f",
       "contract_id": "langsmith-trace-record",
       "snapshot_id": "8107ef0ca78a166fd3133297b2483f7e9bed798e611c0386699db321b6d866c0",
-      "run_timestamp": "2026-04-02T11:44:39.987156+00:00",
+      "run_timestamp": "2026-04-02T13:34:40.868605+00:00",
       "validation_mode": "AUDIT",
       "field": "run_type",
       "check_type": "enum",
@@ -291,32 +291,32 @@
   },
   "ai_risk_summary": {
     "overall_status": "FAIL",
-    "embedding_drift_score": 0.28237,
+    "embedding_drift_score": 0.655004,
     "prompt_input_schema_violation_rate": 0.0,
     "llm_output_schema_violation_rate": 0.0,
     "trace_contract_violation_rate": 0.176471,
     "details": {
       "embedding_drift": {
-        "status": "WARN",
-        "severity": "MEDIUM",
+        "status": "FAIL",
+        "severity": "HIGH",
         "metric": "embedding_drift_score",
-        "value": 0.28237,
-        "baseline_size": 187,
-        "current_size": 187,
+        "value": 0.655004,
+        "baseline_size": 68,
+        "current_size": 68,
         "thresholds": {
           "warn_above": 0.18,
           "fail_above": 0.35
         },
         "summary": "Deterministic lexical embedding drift between early and late Week 3 fact text windows.",
         "top_shifted_tokens": [
-          "000",
-          "birr",
-          "cash",
-          "of",
-          "percent",
-          "the",
-          "capacity",
-          "usd"
+          "0",
+          "and",
+          "5",
+          "1",
+          "2",
+          "years",
+          "9",
+          "loans"
         ],
         "notes": [
           "This uses a local hashed-token embedding surrogate so the metric is reproducible without external model calls."
@@ -390,19 +390,19 @@
   },
   "artifact_state": {
     "snapshot_versions": {
-      "week3-extractions": 2,
-      "week5-events": 2
+      "week3-extractions": 4,
+      "week5-events": 4
     },
     "submission_ready": true,
     "known_limitations": [
-      "Week 4 lineage is still non-canonical, so blast radius enrichment remains weaker than registry-based subscriber impact.",
+      "Week 4 lineage is canonical now, but it still does not expose a direct Week 3 consumer path, so blast radius enrichment remains weaker than registry-based subscriber impact.",
       "LangSmith traces currently contain non-canonical run_type values such as prompt and parser."
     ]
   },
   "recommended_actions": [
     "Keep consumer-side validation in AUDIT first for any new subscriber, then move to WARN or ENFORCE after a clean baseline is established.",
     "Normalize LangSmith run_type values or narrow the exported trace set before treating trace telemetry as a strict contract boundary.",
-    "Migrate Week 4 lineage into the canonical Week 7 node/edge snapshot shape so blast radius enrichment becomes stronger than the current low-confidence fallback.",
+    "Expand Week 4 lineage coverage so the canonical snapshots expose an explicit Week 3 consumer path and complete git metadata for every snapshot.",
     "Keep SchemaEvolutionAnalyzer in the producer CI path so breaking schema changes are blocked before consumers see them.",
     "Block producer deployment until impacted consumers have a migration plan.",
     "Update contract_registry/subscriptions.yaml with any new field names, aliases, or migration notes before release.",

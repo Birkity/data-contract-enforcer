@@ -27,7 +27,11 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--source", required=True)
     parser.add_argument("--lineage", default="outputs/week4/lineage_snapshots.jsonl")
     parser.add_argument("--registry", default="contract_registry/subscriptions.yaml")
-    parser.add_argument("--output", default="generated_contracts")
+    parser.add_argument(
+        "--output",
+        default="generated_contracts",
+        help="Directory for generated contracts, or an explicit .yaml output path.",
+    )
     parser.add_argument("--snapshot-dir", default="schema_snapshots/contracts")
     parser.add_argument("--contract-id", default=None)
     return parser.parse_args()
@@ -43,7 +47,7 @@ def timestamp_slug() -> str:
 
 def load_jsonl(path: Path) -> list[dict[str, Any]]:
     records: list[dict[str, Any]] = []
-    with path.open(encoding="utf-8") as handle:
+    with path.open(encoding="utf-8-sig") as handle:
         for raw_line in handle:
             line = raw_line.strip()
             if not line:
@@ -411,7 +415,12 @@ def find_downstream_consumers(
     notes: list[str] = []
 
     if "nodes" in snapshot and "edges" in snapshot:
-        node_map = {node.get("node_id"): node for node in snapshot.get("nodes", []) if node.get("node_id")}
+        node_map = {}
+        for node in snapshot.get("nodes", []):
+            node_id = node.get("node_id") or node.get("id")
+            if not node_id:
+                continue
+            node_map[str(node_id)] = node
         for edge in snapshot.get("edges", []):
             source = str(edge.get("source", ""))
             target = str(edge.get("target", ""))
@@ -421,8 +430,8 @@ def find_downstream_consumers(
                 downstream.append(
                     {
                         "id": target,
-                        "label": node.get("label", target),
-                        "relationship": edge.get("relationship", "CONSUMES"),
+                        "label": node.get("label") or node.get("name") or target,
+                        "relationship": edge.get("relationship") or edge.get("edge_type") or "CONSUMES",
                         "fields_consumed": source_fields,
                     }
                 )
@@ -643,6 +652,18 @@ def write_contract(output_dir: Path, filename: str, contract: dict[str, Any]) ->
     return write_yaml(output_dir / filename, contract)
 
 
+def resolve_output_paths(output_arg: Path, source_path: Path) -> tuple[Path, Path]:
+    if output_arg.suffix.lower() in {".yaml", ".yml"}:
+        contract_path = output_arg
+        dbt_name = make_dbt_output_filename(source_path)
+        dbt_path = output_arg.with_name(dbt_name)
+        return contract_path, dbt_path
+
+    contract_path = output_arg / make_output_filename(source_path)
+    dbt_path = output_arg / make_dbt_output_filename(source_path)
+    return contract_path, dbt_path
+
+
 def write_contract_snapshot(snapshot_dir: Path, contract_id: str, contract: dict[str, Any]) -> dict[str, str]:
     slug = timestamp_slug()
     contract_dir = snapshot_dir / contract_id
@@ -819,7 +840,7 @@ def main() -> int:
     source_path = Path(args.source)
     lineage_path = Path(args.lineage)
     registry_path = Path(args.registry)
-    output_dir = Path(args.output)
+    output_arg = Path(args.output)
     snapshot_dir = Path(args.snapshot_dir)
 
     records = load_source_records(source_path)
@@ -843,13 +864,10 @@ def main() -> int:
     )
     snapshot_paths = write_contract_snapshot(snapshot_dir, contract_id, contract)
     contract["observations"]["snapshot_paths"] = snapshot_paths
-    output_path = write_contract(output_dir, make_output_filename(source_path), contract)
+    output_path, dbt_output_path = resolve_output_paths(output_arg, source_path)
+    output_path = write_yaml(output_path, contract)
     quality_check(contract, output_path)
-    dbt_output_path = write_dbt_counterpart(
-        output_dir,
-        make_dbt_output_filename(source_path),
-        build_dbt_counterpart(contract, source_path),
-    )
+    write_yaml(dbt_output_path, build_dbt_counterpart(contract, source_path))
     quality_check_dbt(dbt_output_path)
 
     print(f"Contract written to {output_path}")

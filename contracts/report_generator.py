@@ -38,7 +38,7 @@ def load_json(path: Path) -> dict[str, Any]:
 
 def load_jsonl(path: Path) -> list[dict[str, Any]]:
     rows: list[dict[str, Any]] = []
-    with path.open(encoding="utf-8") as handle:
+    with path.open(encoding="utf-8-sig") as handle:
         for raw_line in handle:
             line = raw_line.strip()
             if not line:
@@ -152,7 +152,7 @@ def build_report_data(
     recommendations = [
         "Keep consumer-side validation in AUDIT first for any new subscriber, then move to WARN or ENFORCE after a clean baseline is established.",
         "Normalize LangSmith run_type values or narrow the exported trace set before treating trace telemetry as a strict contract boundary.",
-        "Migrate Week 4 lineage into the canonical Week 7 node/edge snapshot shape so blast radius enrichment becomes stronger than the current low-confidence fallback.",
+        "Expand Week 4 lineage coverage so the canonical snapshots expose an explicit Week 3 consumer path and complete git metadata for every snapshot.",
         "Keep SchemaEvolutionAnalyzer in the producer CI path so breaking schema changes are blocked before consumers see them.",
     ]
     if evolution_summary.get("producer_next_actions"):
@@ -255,7 +255,7 @@ def build_report_data(
             "snapshot_versions": snapshot_counts,
             "submission_ready": True,
             "known_limitations": [
-                "Week 4 lineage is still non-canonical, so blast radius enrichment remains weaker than registry-based subscriber impact.",
+                "Week 4 lineage is canonical now, but it still does not expose a direct Week 3 consumer path, so blast radius enrichment remains weaker than registry-based subscriber impact.",
                 "LangSmith traces currently contain non-canonical run_type values such as prompt and parser.",
             ],
         },
@@ -322,7 +322,7 @@ def render_markdown(report_data: dict[str, Any]) -> str:
             "## Submission view",
             "",
             "- The system is ready for submission because the registry-aware contracts, validation modes, attribution, schema evolution gate, AI extensions, and final report outputs are all present and connected.",
-            "- The main remaining weakness is still Week 4 lineage quality, which limits enrichment depth but does not invalidate the registry-first architecture.",
+            "- The main remaining weakness is Week 4 lineage relevance, not Week 4 format: the file is canonical now, but it still lacks an explicit Week 3 consumer path for stronger enrichment.",
         ]
     )
     return "\n".join(lines) + "\n"

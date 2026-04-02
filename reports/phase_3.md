@@ -14,7 +14,7 @@ The challenge and manual require it to:
 
 In this repo, the injected confidence-scale violation from Phase 2 is a good test because it is a real structured failure with a clear producer system: the Week 3 Document Intelligence Refinery.
 
-The important constraint is that the current Week 4 lineage file is not yet the canonical Week 7 node/edge snapshot. It is a dbt-style whole-file graph. That means attribution can still be useful, but some lineage-based blast radius results will be partial and must be reported honestly.
+The important constraint is that the current Week 4 lineage file is now canonical Week 7 JSONL, but the available snapshots still do not expose an explicit Week 3 consumer path. That means attribution is still useful, but some lineage-based enrichment results remain partial and must be reported honestly.
 
 ## 1. Requirements from the docs
 
@@ -112,7 +112,7 @@ The attributor loads the Week 4 lineage snapshot and normalizes it into a node/e
 It supports:
 
 - canonical Week 7 `nodes[]` and `edges[]`
-- the current repo's dbt-style whole-file shape with `datasets`, `transformations`, and `edges`
+- the earlier repo shape with `datasets`, `transformations`, and `edges`, which was later migrated into canonical Week 7 snapshots
 
 Traversal logic:
 
@@ -120,7 +120,7 @@ Traversal logic:
 2. if seed nodes are found, run breadth-first traversal upstream and downstream
 3. if no nodes match, keep the result partial and report that honestly
 
-In this repo, the current Week 4 snapshot is a dbt-style graph unrelated to the Week 3 extraction system, so no explicit Week 3 nodes were found.
+In this repo, the current Week 4 snapshots are canonical but still unrelated to the Week 3 extraction system, so no explicit Week 3 nodes were found.
 
 That means lineage was still used, but it produced:
 
@@ -247,7 +247,7 @@ The biggest limitation is not git. It is lineage quality.
 
 ### Limitation 1: Week 4 lineage is not modeling Week 3
 
-The current Week 4 snapshot is a dbt-style graph for a different system. It does not contain explicit Week 3 extraction nodes.
+The current Week 4 snapshots are canonical but represent different systems. They do not contain explicit Week 3 extraction nodes.
 
 Impact:
 

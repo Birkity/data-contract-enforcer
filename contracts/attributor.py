@@ -79,7 +79,7 @@ def load_json(path: Path) -> dict[str, Any]:
 
 def load_jsonl(path: Path) -> list[dict[str, Any]]:
     rows: list[dict[str, Any]] = []
-    with path.open(encoding="utf-8") as handle:
+    with path.open(encoding="utf-8-sig") as handle:
         for raw_line in handle:
             line = raw_line.strip()
             if not line:
@@ -200,16 +200,18 @@ def load_violation_log(path: Path) -> list[dict[str, Any]]:
 
 def normalize_lineage(snapshot: dict[str, Any], load_mode: str) -> dict[str, Any]:
     if "nodes" in snapshot and "edges" in snapshot:
-        nodes = {
-            node["node_id"]: {
-                "id": node["node_id"],
-                "type": node.get("type", "UNKNOWN"),
-                "label": node.get("label", node["node_id"]),
+        nodes = {}
+        for node in snapshot.get("nodes", []):
+            node_id = node.get("node_id") or node.get("id")
+            if not node_id:
+                continue
+            node_id = str(node_id)
+            nodes[node_id] = {
+                "id": node_id,
+                "type": node.get("type") or node.get("node_type") or "UNKNOWN",
+                "label": node.get("label") or node.get("name") or node_id,
                 "metadata": node.get("metadata", {}),
             }
-            for node in snapshot.get("nodes", [])
-            if node.get("node_id")
-        }
         return {
             "shape": "canonical",
             "load_mode": load_mode,
@@ -314,7 +316,7 @@ def traverse_lineage(lineage: dict[str, Any], seeds: list[str]) -> dict[str, Any
                     {
                         "node_id": next_node,
                         "distance": distance + 1,
-                        "relationship": edge.get("relationship") or edge.get("type") or "RELATED",
+                        "relationship": edge.get("relationship") or edge.get("edge_type") or edge.get("type") or "RELATED",
                         "metadata": edge.get("metadata", {}),
                     }
                 )

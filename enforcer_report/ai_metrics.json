@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-04-02T11:44:39.987156+00:00",
+  "generated_at": "2026-04-02T13:34:40.868605+00:00",
   "architecture_context": {
     "enforcement_boundary": "consumer",
     "blast_radius_primary_source": "contract_registry",
@@ -7,26 +7,26 @@
   },
   "checks": {
     "embedding_drift": {
-      "status": "WARN",
-      "severity": "MEDIUM",
+      "status": "FAIL",
+      "severity": "HIGH",
       "metric": "embedding_drift_score",
-      "value": 0.28237,
-      "baseline_size": 187,
-      "current_size": 187,
+      "value": 0.655004,
+      "baseline_size": 68,
+      "current_size": 68,
       "thresholds": {
         "warn_above": 0.18,
         "fail_above": 0.35
       },
       "summary": "Deterministic lexical embedding drift between early and late Week 3 fact text windows.",
       "top_shifted_tokens": [
-        "000",
-        "birr",
-        "cash",
-        "of",
-        "percent",
-        "the",
-        "capacity",
-        "usd"
+        "0",
+        "and",
+        "5",
+        "1",
+        "2",
+        "years",
+        "9",
+        "loans"
       ],
       "notes": [
         "This uses a local hashed-token embedding surrogate so the metric is reproducible without external model calls."
@@ -99,7 +99,7 @@
   },
   "overall_status": "FAIL",
   "summary": {
-    "week3_fact_count": 374,
+    "week3_fact_count": 136,
     "week2_verdict_count": 5,
     "trace_row_count": 153,
     "registered_trace_consumers": 1

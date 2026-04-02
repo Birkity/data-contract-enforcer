@@ -1,139 +1,235 @@
 # Data Contract Enforcer
 
-This repository currently contains:
+This repository contains a full Week 7 `Data Contract Enforcer` implementation aligned to the updated challenge document and the updated Practitioner Manual.
 
-- completed Phase 0 analysis and domain notes
-- regenerated **Phase 1 ContractGenerator**
-- regenerated **Phase 2 ValidationRunner**
-- generated **dbt-compatible contract counterparts**
-- real Week 1 to Week 5 output snapshots under `outputs/`
+It now includes:
 
-## Current Phase 1 deliverables
+- Phase 0 domain analysis and architecture notes
+- ContractGenerator
+- ValidationRunner
+- ViolationAttributor
+- SchemaEvolutionAnalyzer
+- AI Contract Extensions
+- final Enforcer Report generation
 
-- `contracts/generator.py`
+The implementation follows the updated architecture:
+
+- enforcement runs at the consumer boundary
+- the contract registry is the primary blast-radius source
+- lineage is enrichment only
+- schema evolution acts as a producer-side CI gate
+
+## Current artifact state
+
+### Inputs
+
+- `outputs/week1/intent_records.jsonl`
+- `outputs/week2/verdicts.jsonl`
+- `outputs/week3/extractions.jsonl`
+- `outputs/week4/lineage_snapshots.jsonl`
+- `outputs/week5/events.jsonl`
+- `outputs/traces/runs.jsonl`
+
+### Generated contracts
+
 - `generated_contracts/week3_extractions.yaml`
 - `generated_contracts/week3_extractions_dbt.yml`
 - `generated_contracts/week5_events.yaml`
 - `generated_contracts/week5_events_dbt.yml`
-- `reports/phase_0.md`
-- `reports/phase_1.md`
-- `contracts/runner.py`
+
+### Validation outputs
+
 - `validation_reports/thursday_baseline.json`
+- `validation_reports/injected_violation_audit.json`
+- `validation_reports/injected_violation_warn.json`
 - `validation_reports/injected_violation.json`
 - `violation_log/violations.jsonl`
 - `schema_snapshots/baselines.json`
-- `reports/phase_2.md`
-- `DOMAIN_NOTES.md`
 
-## What Phase 1 does
+### Attribution and schema evolution
 
-The generator is scoped to **ContractGenerator only**.
+- `violation_log/blame_chain.json`
+- `schema_snapshots/compatibility_report.json`
+- `schema_snapshots/evolution_summary.json`
 
-It:
+### AI and final report outputs
 
-- reads the real Week 3 extraction snapshot from `outputs/week3/extractions.jsonl`
-- validates that the source file is present and non-empty
-- prints the record count and one sample record
-- explodes `extracted_facts[]` into one profiled row per fact
-- profiles observed columns with pandas
-- generates a human-readable Bitol-style YAML contract
-- generates a parallel dbt-compatible `schema.yml` counterpart with equivalent tests
-- injects lineage notes from `outputs/week4/lineage_snapshots.jsonl`
-- runs a quality check before finishing
+- `enforcer_report/ai_metrics.json`
+- `enforcer_report/report_data.json`
+- `enforcer_report/report_summary.md`
 
-It does **not**:
+## Current data reality
 
-- run validation
-- create violation reports
-- perform blame attribution
-- call an LLM or use Ollama during generation
+### Week 3
 
-## Current Phase 2 deliverables
+The current canonical Week 3 export contains:
 
-Phase 2 is now restored with:
+- `50` extraction rows
+- `13` rows with extracted facts
+- `29` rows with entities
+- `136` fact-level confidence values
+- clean confidence range `0.55` to `0.9`
+- clean confidence mean `0.818015`
 
-- `contracts/runner.py`
-- `validation_reports/thursday_baseline.json`
-- `validation_reports/injected_violation.json`
-- `violation_log/violations.jsonl`
-- `schema_snapshots/baselines.json`
-- `reports/phase_2.md`
+### Week 4
 
-The runner:
+The current Week 4 lineage file is now canonical JSONL:
 
-- loads the generated contract
-- flattens Week 3 data the same way as the generator
-- runs structural checks first
-- runs statistical checks second
-- creates a clean baseline report
-- detects the injected confidence-scale violation
-- logs all non-pass results in structured JSONL format
+- `2` snapshot rows
+- required top-level fields:
+  - `snapshot_id`
+  - `codebase_root`
+  - `git_commit`
+  - `nodes`
+  - `edges`
+  - `captured_at`
 
-## Run Phase 1
+Current limitation:
 
-From the repo root:
+- the file is structurally correct, but it still does not expose an explicit Week 3 extraction consumer path
+- one snapshot has no `git_commit` because the original scanned temp-clone repo is gone
+
+### Week 5
+
+The current Week 5 export contains:
+
+- `1198` event rows
+- canonical event-envelope fields
+- generated contract coverage in both Bitol and dbt-compatible form
+
+### Traces
+
+The current trace export contains:
+
+- `153` rows
+- enough volume for the Week 7 requirement
+- a real contract issue: non-canonical `run_type` values such as `prompt` and `parser`
+
+## How to rerun the full flow
+
+Use the repo virtualenv:
 
 ```powershell
-.\.venv\Scripts\python.exe contracts/generator.py --source outputs/week3/extractions.jsonl --lineage outputs/week4/lineage_snapshots.jsonl --output generated_contracts
+.\.venv\Scripts\python.exe
 ```
 
-The generated contract is written to:
+### 1. Generate contracts
 
-```text
-generated_contracts/week3_extractions.yaml
-generated_contracts/week3_extractions_dbt.yml
-generated_contracts/week5_events.yaml
-generated_contracts/week5_events_dbt.yml
+```powershell
+.\.venv\Scripts\python.exe contracts/generator.py --source outputs/week3/extractions.jsonl --lineage outputs/week4/lineage_snapshots.jsonl --registry contract_registry/subscriptions.yaml --output generated_contracts/week3_extractions.yaml --snapshot-dir schema_snapshots/contracts --contract-id week3-extractions
+
+.\.venv\Scripts\python.exe contracts/generator.py --source outputs/week5/events.jsonl --lineage outputs/week4/lineage_snapshots.jsonl --registry contract_registry/subscriptions.yaml --output generated_contracts/week5_events.yaml --snapshot-dir schema_snapshots/contracts --contract-id week5-events
 ```
 
-## Contract verification status
+### 2. Run clean validation
 
-The generated contract artifacts have been verified at the file and YAML-structure level:
+```powershell
+.\.venv\Scripts\python.exe contracts/runner.py --contract generated_contracts/week3_extractions.yaml --data outputs/week3/extractions.jsonl --output validation_reports/thursday_baseline.json --registry contract_registry/subscriptions.yaml --mode AUDIT --baselines schema_snapshots/baselines.json --violation-log violation_log/violations.jsonl
+```
+
+### 3. Inject the known violation
+
+`outputs/week3/extractions_violated.jsonl` is the test artifact where `extracted_facts[].confidence` values are multiplied by `100`.
+
+### 4. Run violated validation
+
+```powershell
+.\.venv\Scripts\python.exe contracts/runner.py --contract generated_contracts/week3_extractions.yaml --data outputs/week3/extractions_violated.jsonl --output validation_reports/injected_violation_audit.json --registry contract_registry/subscriptions.yaml --mode AUDIT --baselines schema_snapshots/baselines.json --violation-log violation_log/violations.jsonl
+
+.\.venv\Scripts\python.exe contracts/runner.py --contract generated_contracts/week3_extractions.yaml --data outputs/week3/extractions_violated.jsonl --output validation_reports/injected_violation_warn.json --registry contract_registry/subscriptions.yaml --mode WARN --baselines schema_snapshots/baselines.json --violation-log violation_log/violations.jsonl
+
+.\.venv\Scripts\python.exe contracts/runner.py --contract generated_contracts/week3_extractions.yaml --data outputs/week3/extractions_violated.jsonl --output validation_reports/injected_violation.json --registry contract_registry/subscriptions.yaml --mode ENFORCE --baselines schema_snapshots/baselines.json --violation-log violation_log/violations.jsonl
+```
+
+### 5. Run attribution
+
+```powershell
+.\.venv\Scripts\python.exe contracts/attributor.py --report validation_reports/injected_violation.json --baseline-report validation_reports/thursday_baseline.json --violation-log violation_log/violations.jsonl --lineage outputs/week4/lineage_snapshots.jsonl --registry contract_registry/subscriptions.yaml --contract generated_contracts/week3_extractions.yaml --output violation_log/blame_chain.json
+```
+
+### 6. Run schema evolution analysis
+
+```powershell
+.\.venv\Scripts\python.exe contracts/schema_analyzer.py --contract-id week3-extractions --snapshot-root schema_snapshots/contracts --registry contract_registry/subscriptions.yaml --simulate rename_confidence_field --compatibility-output schema_snapshots/compatibility_report.json --summary-output schema_snapshots/evolution_summary.json
+```
+
+### 7. Run AI extensions
+
+```powershell
+.\.venv\Scripts\python.exe contracts/ai_extensions.py --week3 outputs/week3/extractions.jsonl --week2 outputs/week2/verdicts.jsonl --traces outputs/traces/runs.jsonl --registry contract_registry/subscriptions.yaml --output enforcer_report/ai_metrics.json --violation-log violation_log/violations.jsonl
+```
+
+### 8. Generate the final report
+
+```powershell
+.\.venv\Scripts\python.exe contracts/report_generator.py --baseline validation_reports/thursday_baseline.json --injected validation_reports/injected_violation.json --audit-injected validation_reports/injected_violation_audit.json --warn-injected validation_reports/injected_violation_warn.json --blame-chain violation_log/blame_chain.json --compatibility schema_snapshots/compatibility_report.json --evolution-summary schema_snapshots/evolution_summary.json --ai-metrics enforcer_report/ai_metrics.json --violation-log violation_log/violations.jsonl --output-dir enforcer_report
+```
+
+## Current verification status
+
+### Contracts
+
+Verified:
 
 - all four generated contract files exist
 - all four parse successfully as YAML
-- the Bitol contracts include schema clauses and lineage metadata
-- the dbt counterparts include `version: 2`, a `models` block, column definitions, and generated tests
-- key checks are present, including the Week 3 `fact_confidence` range test and the Week 5 `event_id` uniqueness/UUID checks
+- the Bitol contracts include structural, numeric, registry, and lineage sections
+- the dbt counterparts include generated tests for required fields, enums, patterns, and numeric ranges
 
-What is **not** yet verified in this environment:
+Not verified here:
 
-- `dbt test` runtime execution
+- live `dbt test` execution
 
-The reason is simple: the `dbt` CLI is not installed in this local environment, so artifact generation is verified, but live dbt execution is still pending.
+That is the only reason the dbt verification claim is artifact-level rather than runtime-level in this environment.
 
-## Current Week 3 observations
+### Validation
 
-Using the current canonical Week 3 file:
+Current rerun status:
 
-- `50` extraction records were loaded
-- flattening produced `402` profiled rows
-- `extracted_facts[]` is the repeated field used for profiling
-- `374` fact-level confidence values were observed
-- fact confidence range is `0.55` to `1.0`
-- fact confidence mean is `0.8063636363636363`
+- clean baseline: `38 / 38` checks passed
+- injected violation in `AUDIT`: `2` failures, allowed with audit trail
+- injected violation in `WARN`: `2` failures, blocked
+- injected violation in `ENFORCE`: `2` failures, blocked
 
-## Current Phase 2 observations
+The two expected failed checks are:
 
-From the regenerated validation runs:
+- `week3-extractions.fact_confidence.range`
+- `week3-extractions.fact_confidence.drift`
 
-- clean baseline report: `37` checks, all passed
-- injected violation report: `37` checks, `2` failed
-- the injected failure is correctly caught on `fact_confidence`
-- the two detected failures are:
-  - `week3-extractions.fact_confidence.range`
-  - `week3-extractions.fact_confidence.drift`
-- rerunning without cleanup appends new non-pass entries to `violation_log/violations.jsonl`
+### Attribution
 
-## Lineage caveat
+Current strongest attribution result:
 
-The current Week 4 lineage file is still a dbt-style whole-file JSON graph, not the canonical Week 7 node/edge snapshot format.
+- top file: `src/agents/fact_table.py`
+- top commit: `033135cc46c7b8889cb8bf4f6607f940469bed5b`
 
-Phase 1 still loads it and records lineage context, but the generated contract honestly notes that:
+### Schema evolution
 
-- no explicit downstream consumer of the Week 3 extraction output was found
-- blast-radius detail will improve once Week 4 lineage is migrated
+Current CI-gate result:
 
-## Local models
+- simulated rename of the confidence field is classified as breaking
+- overall decision: `FAIL`
 
-Your available Ollama/cloud models are useful for later AI-assisted phases, but this Phase 1 generator is deterministic and does not invoke them.
+### AI risk
+
+Current AI findings:
+
+- embedding drift: `FAIL`
+- prompt input schema validation: `PASS`
+- LLM output schema validation: `PASS`
+- trace contract risk: `FAIL`
+
+## Remaining honest limitations
+
+- Week 4 lineage is now canonical, but it still does not expose a direct Week 3 consumer path, so lineage enrichment is weaker than registry-based impact analysis.
+- Trace telemetry still contains non-canonical `run_type` values such as `prompt` and `parser`.
+- The embedding drift metric is a deterministic local surrogate, not a hosted semantic embedding service.
+
+## Best current truth sources
+
+If you want the current repo-wide truth rather than historical phase snapshots, start with:
+
+- `reports/final_audit.md`
+- `DOMAIN_NOTES.md`
+- `enforcer_report/report_summary.md`
+- `enforcer_report/report_data.json`

@@ -2,9 +2,15 @@
 
 ## Purpose
 
-This document explains the domain assumptions and architectural reasoning that now drive the Week 7 implementation after the updated challenge document and Practitioner Manual.
+This document explains the domain assumptions and architectural reasoning that drive the current Week 7 implementation after the updated challenge document, the updated Practitioner Manual, and the latest Week 3 and Week 4 output migrations.
 
-It is no longer enough to describe schema fields and validation rules in isolation. The updated docs emphasize trust boundaries, ownership, blast radius, and operational behavior. These notes therefore focus on how this repository now thinks about those concepts using the real Week 1-5 artifacts already present here.
+The updated docs changed the center of gravity of the project. The most important shift is that contracts are no longer just schema descriptions. They are now part of an operational trust model:
+
+- producers publish promises
+- consumers decide how strictly to enforce them
+- the registry names who is affected
+- lineage explains how impact might propagate internally
+- schema evolution protects consumers before a producer deploys a breaking change
 
 ## Current repository reality
 
@@ -17,13 +23,22 @@ The current repo contains these main upstream inputs:
 - `outputs/week5/events.jsonl`
 - `outputs/traces/runs.jsonl`
 
-The most important interface for the implemented Phases 1-3 is still Week 3 because it combines:
+The implemented system now covers:
+
+- ContractGenerator
+- ValidationRunner
+- ViolationAttributor
+- SchemaEvolutionAnalyzer
+- AI Contract Extensions
+- final Enforcer Report generation
+
+Week 3 remains the clearest proving ground because it combines:
 
 - nested extraction structure
 - a semantically important confidence field
-- enough volume to support both profiling and drift detection
+- enough volume for profiling, drift detection, and a real injected breaking-change test
 
-Week 5 is also now contract-ready and useful for multi-interface coverage, but Week 3 remains the clearest demonstration of why contracts matter in practice.
+Week 5 is also contract-ready and strengthens multi-interface coverage, but Week 3 still shows the architectural ideas most clearly.
 
 ## Three trust boundary tiers
 
@@ -31,29 +46,34 @@ The updated docs describe three practical trust-boundary tiers. In this repo, th
 
 ### Tier 1: registry plus lineage
 
-This is the ideal operating state:
+This is the strongest model:
 
-- the registry tells us who subscribed to the contract
-- lineage helps explain how impact propagates internally
+- the registry tells us who subscribed to a contract
+- lineage helps explain how impact propagates inside systems we can see
 
-The updated Week 3 contract now follows this model in structure, even though the lineage side is still weaker than the registry side.
+This repo now partly reaches Tier 1 because:
+
+- `contract_registry/subscriptions.yaml` exists and is used as the primary blast-radius source
+- `outputs/week4/lineage_snapshots.jsonl` is now canonical JSONL with `nodes` and `edges`
+
+But lineage enrichment is still weaker than registry reasoning for the Week 3 confidence case because the current Week 4 snapshots do not expose an explicit Week 3 consumer path.
 
 ### Tier 2: registry primary
 
-This is the most realistic current state for the Week 3 confidence test in this repo.
+This is the most realistic current operating mode for the Week 3 confidence violation in this repo.
 
 Why:
 
-- `contract_registry/subscriptions.yaml` now names explicit subscribers to `week3-extractions`
-- the current Week 4 lineage file is still non-canonical and only partially useful for Week 3
+- the registry explicitly names subscribers to `week3-extractions`
+- the current Week 4 lineage snapshots are structurally correct, but they still do not model the Week 3 extraction interface directly
 
-So blast radius is now correctly grounded in the registry first.
+So the primary blast-radius answer is now correctly grounded in the registry first.
 
 ### Tier 3: weak lineage-only visibility
 
-This is what the older implementation leaned on too heavily. It is the least reliable state because it infers impact from graph structure without explicit subscription ownership.
+This is what the older implementation leaned on too heavily. It is the least reliable model because it tries to infer downstream impact from visible graph structure alone.
 
-The migration away from this tier is one of the main architectural corrections in the repo.
+One of the main architectural corrections in this repo was moving away from that lineage-only mindset.
 
 ## Enforcement runs at the consumer boundary
 
@@ -61,15 +81,15 @@ The updated docs are explicit about this: enforcement is primarily a consumer-si
 
 In this repo that now means:
 
-- ContractGenerator describes what consumers expect from Week 3 and Week 5 interfaces
+- ContractGenerator describes what consumers depend on at the interface boundary
 - ValidationRunner enforces those expectations when a consumer reads a snapshot
 - validation mode expresses how strict that consumer wants to be
 
-This is more realistic than pretending producers can or should enforce every downstream rule at runtime.
+That is more realistic than pretending producers can enforce every downstream runtime rule themselves.
 
 ## Validation mode strategy
 
-The updated runner now supports three modes:
+The runner now supports three modes.
 
 ### AUDIT
 
@@ -80,10 +100,10 @@ This is appropriate when a consumer wants visibility before adopting strict enfo
 
 ### WARN
 
-- block only on `CRITICAL`
-- warn on lower severities
+- block on `CRITICAL`
+- tolerate lower severities with warnings
 
-This is appropriate when a consumer wants to stop clearly unsafe changes but tolerate softer drift while the contract matures.
+This is appropriate when a consumer wants to stop clearly unsafe changes while still observing softer drift during contract adoption.
 
 ### ENFORCE
 
@@ -92,29 +112,29 @@ This is appropriate when a consumer wants to stop clearly unsafe changes but tol
 
 This is appropriate when the consumer depends on the contract strongly enough that severe failures should stop the flow.
 
-In the current Week 3 confidence violation:
+For the current Week 3 confidence violation:
 
-- `AUDIT` logs the failure but allows the run
+- `AUDIT` logs the failure and allows the run
 - `WARN` blocks because the range break is `CRITICAL`
 - `ENFORCE` blocks because the range break is `CRITICAL` and the drift break is `HIGH`
 
 ## Registry is now the primary blast-radius source
 
-This is the biggest conceptual update.
+This is the biggest conceptual update in the repo.
 
-Before the migration, blast radius was inferred mainly from lineage. Now the first question is:
+Before the architecture migration, blast radius was inferred mainly from lineage. Now the first question is:
 
 - who subscribed to this contract?
 
-That is a better model because blast radius is fundamentally about downstream dependence, not just graph shape.
+That is the right primary question because blast radius is fundamentally about downstream dependence, not just graph shape.
 
-For the current Week 3 contract, the registry identifies these subscribers:
+For the current Week 3 contract, the registry identifies these direct subscribers:
 
 - `week4-brownfield-cartographer`
 - `week7-contract-generator`
 - `week7-validation-runner`
 
-This is stronger than the previous lineage-only story because the current Week 4 file does not directly model the Week 3 extraction system.
+That is stronger than the previous lineage-only story because the current Week 4 snapshots still do not directly model the Week 3 extraction system.
 
 ## Lineage is enrichment, not ownership
 
@@ -122,22 +142,34 @@ Week 4 lineage still matters, but it now answers a different question:
 
 - if impact exists, how might it propagate internally?
 
-It does **not** answer the primary blast-radius question on its own anymore.
+It does **not** answer the primary blast-radius question by itself anymore.
 
-That distinction is especially important in this repo because the current Week 4 artifact is still a dbt-style whole-file graph with:
+The current Week 4 file is now structurally correct for Week 7:
 
-- `datasets`
-- `edges`
-- `transformations`
+- valid JSONL
+- one snapshot per line
+- canonical top-level fields:
+  - `snapshot_id`
+  - `codebase_root`
+  - `git_commit`
+  - `nodes`
+  - `edges`
+  - `captured_at`
 
-It is useful, but it is not a clean canonical Week 7 snapshot of the Week 3 extraction system.
+Current real Week 4 snapshot facts:
+
+- `2` snapshots
+- snapshot 1: `38` nodes, `30` edges
+- snapshot 2: `13` nodes, `7` edges
+
+So the Week 4 problem is no longer format correctness. The remaining issue is coverage and relevance: the snapshots do not yet expose an explicit Week 3 extraction consumer path, and one snapshot has an empty `git_commit` because its original scanned temp clone path no longer exists.
 
 ## Process failure vs technical failure
 
 The updated docs push a useful distinction:
 
 - a technical failure is when a field is wrong, missing, or semantically broken
-- a process failure is when the organization has no clear subscription, no owner, no validation mode, or no migration path
+- a process failure is when the organization has no clear subscriber, no owner, no validation mode, or no migration path
 
 This repo now addresses both sides better than before.
 
@@ -151,7 +183,7 @@ The injected Week 3 confidence violation is a technical failure:
 
 ### Process failure example
 
-The repo originally had no registry at all. That was not a bad data value problem. It was a dependency-governance problem. The migration fixes that by making subscribers explicit.
+The repo originally had no registry. That was not a bad data value problem. It was a dependency-governance problem. The migration fixed that by making subscribers, breaking fields, and validation modes explicit.
 
 ## Ownership and tradeoffs
 
@@ -159,7 +191,13 @@ The updated docs are strong on ownership thinking, and that maps well to this pr
 
 ### Producers own change safety
 
-Producers should not silently introduce breaking changes. In the updated architecture, this is where schema evolution and CI gating belong, even though that phase is not implemented yet in this migration pass.
+Producers should not silently introduce breaking changes. In the updated architecture, this is where SchemaEvolutionAnalyzer belongs.
+
+In this repo that now means:
+
+- contract snapshots are written on each generator run
+- `contracts/schema_analyzer.py` compares snapshots
+- a breaking producer-side change can now block deployment before consumers see it
 
 ### Consumers own runtime trust decisions
 
@@ -169,11 +207,11 @@ Consumers choose:
 - whether they are in `WARN`
 - whether they are in `ENFORCE`
 
-That is why validation mode is attached to consumer-facing behavior.
+That is why validation mode is attached to consumer-facing behavior rather than producer runtime behavior.
 
 ### Registry owns dependency visibility
 
-The registry is now where cross-system impact becomes explicit:
+The registry is where cross-system impact becomes explicit:
 
 - fields consumed
 - fields considered breaking
@@ -182,14 +220,20 @@ The registry is now where cross-system impact becomes explicit:
 
 ## Schema evolution as a producer-side CI gate
 
-The updated docs now frame SchemaEvolutionAnalyzer differently from ValidationRunner.
+The updated docs frame SchemaEvolutionAnalyzer differently from ValidationRunner, and that distinction now exists in code as well.
 
 That distinction matters:
 
 - ValidationRunner asks: "should this consumer trust the data it just received?"
 - SchemaEvolutionAnalyzer asks: "should this producer-side change be allowed to deploy?"
 
-This repository does not yet implement Phase 4 in code during this migration pass, but the generator now writes contract snapshots so that future producer-side schema comparison has real historical material to inspect.
+This repository now implements that producer-side gate in code:
+
+- timestamped snapshots are written under `schema_snapshots/contracts/`
+- `contracts/schema_analyzer.py` can diff snapshots
+- a simulated rename of the confidence field is classified as breaking
+- the current compatibility verdict is `FAIL`
+- the analyzer emits producer next actions, not just a raw diff
 
 ## Why Week 3 confidence is still the right proving ground
 
@@ -198,10 +242,12 @@ The Week 3 confidence case remains the strongest demonstration of the system bec
 Current real Week 3 facts:
 
 - `50` extraction records
-- `402` profiled rows after flattening
-- `374` fact-level confidence values
-- clean confidence range: `0.55` to `1.0`
-- clean confidence mean: `0.8063636363636365`
+- `173` profiled rows after flattening
+- `13` rows with extracted facts
+- `29` rows with entities
+- `136` fact-level confidence values
+- clean confidence range: `0.55` to `0.9`
+- clean confidence mean: `0.818015`
 
 That makes Week 3 ideal for showing:
 
@@ -210,25 +256,37 @@ That makes Week 3 ideal for showing:
 - drift detection
 - registry-based blast radius
 - git-backed attribution
+- producer-side compatibility blocking
 
-## Current limitation that still matters
+## Current limitations that still matter
 
-The biggest remaining architectural weakness is still Week 4 lineage quality.
+The biggest remaining architectural weakness is still Week 4 lineage relevance, not Week 4 format.
 
-The system is much stronger now because the registry carries the primary blast-radius responsibility, but lineage enrichment will become far better once `outputs/week4/lineage_snapshots.jsonl` is migrated into the canonical Week 7 node/edge snapshot form.
+The system is much stronger now because:
+
+- the registry carries the primary blast-radius responsibility
+- Week 4 lineage is now canonical JSONL
+
+But lineage enrichment will become far better once the Week 4 graph includes an explicit Week 3 consumer path and complete source-repo metadata for every snapshot.
+
+Another real limitation is trace quality:
+
+- `outputs/traces/runs.jsonl` still contains non-canonical `run_type` values such as `prompt` and `parser`
+- the AI extensions correctly surface that as a real contract risk
 
 ## Final note
 
-The most important change in these domain notes is not a new field or a new check. It is a change in system thinking:
+The most important change in these notes is not a new field or a new check. It is a change in system thinking:
 
 - contracts are not just schemas
 - blast radius is not just graph traversal
 - enforcement is not just pass/fail
 
-The updated Week 7 implementation now treats contracts as part of an operational trust model:
+The current Week 7 implementation now treats contracts as part of an operational trust model:
 
 - producers publish
 - consumers validate
 - the registry declares who depends on what
 - lineage explains propagation
+- schema evolution blocks unsafe producer changes before release
 - attribution helps teams act quickly when something breaks
