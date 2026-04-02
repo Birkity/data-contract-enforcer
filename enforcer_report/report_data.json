@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-04-02T17:46:29.159889+00:00",
+  "generated_at": "2026-04-02T20:07:10.507570+00:00",
   "system_name": "TRP Week 7 Data Contract Enforcer",
   "architecture": {
     "enforcement_boundary": "consumer",
@@ -7,10 +7,10 @@
     "lineage_role": "enrichment_only",
     "schema_evolution_role": "producer_side_ci_gate"
   },
-  "data_health_score": 92,
+  "data_health_score": 98,
   "score_breakdown": {
     "baseline_validation": 35.0,
-    "ai_contract_extensions": 12.0,
+    "ai_contract_extensions": 18.0,
     "attribution_and_blast_radius": 15.0,
     "schema_evolution_gate": 15.0,
     "governance_and_snapshots": 15.0
@@ -57,32 +57,9 @@
     }
   },
   "violations_summary": {
-    "total_logged_entries": 7,
-    "real_ai_findings": 1,
-    "latest_real_ai_finding": {
-      "report_id": "73377fcb-0015-4673-87f9-82c33f0dd77d",
-      "contract_id": "langsmith-trace-record",
-      "snapshot_id": "8107ef0ca78a166fd3133297b2483f7e9bed798e611c0386699db321b6d866c0",
-      "run_timestamp": "2026-04-02T17:41:50.086382+00:00",
-      "validation_mode": "AUDIT",
-      "field": "run_type",
-      "check_type": "enum",
-      "status": "FAIL",
-      "severity": "HIGH",
-      "action": "WARN",
-      "blocking": false,
-      "message": "Observed trace run types include values outside the documented Week 7 trace enum.",
-      "sample_values": [
-        "parser",
-        "prompt"
-      ],
-      "records_failing": 27,
-      "records_total": 153,
-      "failing_percent": 17.65,
-      "check_id": "langsmith-trace-record.run_type.enum",
-      "source_component": "ai_extensions",
-      "evidence_kind": "real_observed_violation"
-    },
+    "total_logged_entries": 6,
+    "real_ai_findings": 0,
+    "latest_real_ai_finding": null,
     "injected_validation_failures": 2
   },
   "blast_radius": {
@@ -290,24 +267,28 @@
     ]
   },
   "ai_risk_summary": {
-    "overall_status": "FAIL",
-    "embedding_drift_score": 0.655004,
+    "overall_status": "WARN",
+    "embedding_drift_score": 0.20591,
     "prompt_input_schema_violation_rate": 0.0,
     "llm_output_schema_violation_rate": 0.0,
-    "trace_contract_violation_rate": 0.176471,
+    "trace_contract_violation_rate": 0.0,
     "details": {
       "embedding_drift": {
-        "status": "FAIL",
-        "severity": "HIGH",
+        "status": "WARN",
+        "severity": "MEDIUM",
         "metric": "embedding_drift_score",
-        "value": 0.655004,
+        "value": 0.20591,
         "baseline_size": 68,
         "current_size": 68,
+        "metric_source": "ollama_embeddings",
+        "provider": "http://localhost:11434",
+        "model": "nomic-embed-text:latest",
+        "fallback_reason": null,
         "thresholds": {
           "warn_above": 0.18,
           "fail_above": 0.35
         },
-        "summary": "Deterministic lexical embedding drift between early and late Week 3 fact text windows.",
+        "summary": "Semantic drift between early and late Week 3 fact text windows.",
         "top_shifted_tokens": [
           "0",
           "and",
@@ -319,7 +300,7 @@
           "loans"
         ],
         "notes": [
-          "This uses a local hashed-token embedding surrogate so the metric is reproducible without external model calls."
+          "This metric used a real local embedding provider, so the drift score reflects semantic similarity rather than token hashing alone."
         ]
       },
       "prompt_input_schema_validation": {
@@ -360,12 +341,13 @@
         "summary": "Week 2 verdict records were checked for stable structured LLM output envelopes."
       },
       "trace_contract_risk": {
-        "status": "FAIL",
-        "severity": "HIGH",
+        "status": "PASS",
+        "severity": "LOW",
         "metric": "trace_contract_violation_rate",
-        "value": 0.176471,
-        "checked_rows": 153,
-        "invalid_run_type_rows": 27,
+        "value": 0.0,
+        "raw_checked_rows": 153,
+        "checked_rows": 126,
+        "invalid_run_type_rows": 0,
         "thresholds": {
           "warn_above": 0.05,
           "fail_above": 0.12
@@ -377,21 +359,90 @@
           "retriever",
           "tool"
         ],
-        "observed_invalid_run_types": {
-          "parser": 12,
-          "prompt": 15
+        "observed_invalid_run_types": {},
+        "normalization": {
+          "raw_row_count": 153,
+          "canonical_row_count": 126,
+          "excluded_internal_rows": 27,
+          "excluded_internal_run_types": {
+            "parser": 12,
+            "prompt": 15
+          },
+          "excluded_samples": [
+            {
+              "id": "019d450c-fc29-77e2-9d45-65a17371af66",
+              "name": "fact_table.llm.prompt",
+              "raw_run_type": "prompt",
+              "reason": "prompt_helper_span"
+            },
+            {
+              "id": "019d450c-7af1-7671-9ae5-addd6d230828",
+              "name": "fact_table.llm.prompt",
+              "raw_run_type": "prompt",
+              "reason": "prompt_helper_span"
+            },
+            {
+              "id": "019d450c-7aed-7ad1-aa57-b2de4a413d49",
+              "name": "pageindex.summary.parse",
+              "raw_run_type": "parser",
+              "reason": "parser_helper_span"
+            },
+            {
+              "id": "019d450c-3979-7461-a7cb-457ccec2744f",
+              "name": "pageindex.summary.prompt",
+              "raw_run_type": "prompt",
+              "reason": "prompt_helper_span"
+            },
+            {
+              "id": "019d454e-c467-7380-8486-7fc372038237",
+              "name": "brownfield_cartographer.prompt.purpose_extraction",
+              "raw_run_type": "prompt",
+              "reason": "prompt_helper_span"
+            },
+            {
+              "id": "019d454e-c461-77e1-bf96-f16ed79337a4",
+              "name": "brownfield_cartographer.ollama.parse_json",
+              "raw_run_type": "parser",
+              "reason": "parser_helper_span"
+            },
+            {
+              "id": "019d454e-6c5f-76f1-a52b-6c9bd0ff6d08",
+              "name": "brownfield_cartographer.prompt.purpose_extraction",
+              "raw_run_type": "prompt",
+              "reason": "prompt_helper_span"
+            },
+            {
+              "id": "019d454e-6620-7003-8dd1-74b0597f4ff6",
+              "name": "brownfield_cartographer.ollama.parse_json",
+              "raw_run_type": "parser",
+              "reason": "parser_helper_span"
+            },
+            {
+              "id": "019d454d-66f6-7f42-842d-dcb7133f893e",
+              "name": "brownfield_cartographer.prompt.purpose_extraction",
+              "raw_run_type": "prompt",
+              "reason": "prompt_helper_span"
+            },
+            {
+              "id": "019d454d-66f3-7bd3-9089-18ba4ce9d3d4",
+              "name": "brownfield_cartographer.ollama.parse_json",
+              "raw_run_type": "parser",
+              "reason": "parser_helper_span"
+            }
+          ],
+          "summary": "Internal helper spans were excluded before trace contract enforcement so the consumer boundary only sees documented trace run types."
         },
         "duration_failures": 1,
         "token_failures": 0,
         "subscriber_count": 1,
-        "summary": "LangSmith trace telemetry was checked against the documented Week 7 trace contract expectations."
+        "summary": "LangSmith trace telemetry was normalized at the consumer boundary and then checked against the documented Week 7 trace contract expectations."
       }
     }
   },
   "artifact_state": {
     "snapshot_versions": {
-      "week3-extractions": 6,
-      "week5-events": 5
+      "week3-extractions": 8,
+      "week5-events": 7
     },
     "submission_ready": true,
     "known_limitations": [
@@ -401,9 +452,9 @@
   },
   "recommended_actions": [
     "Keep consumer-side validation in AUDIT first for any new subscriber, then move to WARN or ENFORCE after a clean baseline is established.",
-    "Normalize LangSmith run_type values or narrow the exported trace set before treating trace telemetry as a strict contract boundary.",
-    "Expand Week 4 lineage coverage so the canonical snapshots expose an explicit Week 3 consumer path and complete git metadata for every snapshot.",
     "Keep SchemaEvolutionAnalyzer in the producer CI path so breaking schema changes are blocked before consumers see them.",
+    "Expand Week 4 lineage coverage so the canonical snapshots expose an explicit Week 3 consumer path for stronger downstream enrichment.",
+    "Re-baseline embedding-style fact-text centroids before promoting the current extraction slice to a stricter enforcement tier.",
     "Block producer deployment until impacted consumers have a migration plan.",
     "Update contract_registry/subscriptions.yaml with any new field names, aliases, or migration notes before release.",
     "Publish a compatibility notice to affected subscribers and regenerate the contract snapshot after the schema fix or migration.",

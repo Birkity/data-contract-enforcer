@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-04-02T17:46:28.930661+00:00",
+  "generated_at": "2026-04-02T20:06:51.462135+00:00",
   "architecture_mode": {
     "blast_radius_primary_source": "contract_registry",
     "lineage_role": "enrichment_only",
@@ -20,12 +20,12 @@
   "repo_roots": [
     "E:\\10 Academy\\Week 3\\document-intelligence-refinery"
   ],
-  "violation_log_entry_count": 7,
+  "violation_log_entry_count": 6,
   "attributions": [
     {
-      "violation_id": "c0cbcfa9-2698-4d00-bd53-0c10390e759c",
+      "violation_id": "7e43f893-e81c-48bd-ab24-34543758fcbe",
       "check_id": "week3-extractions.fact_confidence.range",
-      "detected_at": "2026-04-02T17:41:39.938664+00:00",
+      "detected_at": "2026-04-02T20:06:18.232209+00:00",
       "field": "fact_confidence",
       "producer_system": "week3-document-intelligence-refinery",
       "dataset_path": "outputs/week3/extractions.jsonl",
@@ -258,9 +258,9 @@
       }
     },
     {
-      "violation_id": "2176a9be-f334-4ce4-9909-9d2b30e21c4a",
+      "violation_id": "8af070ed-812a-48e7-967e-dfcbefb79f72",
       "check_id": "week3-extractions.fact_confidence.drift",
-      "detected_at": "2026-04-02T17:41:39.938664+00:00",
+      "detected_at": "2026-04-02T20:06:18.232209+00:00",
       "field": "fact_confidence",
       "producer_system": "week3-document-intelligence-refinery",
       "dataset_path": "outputs/week3/extractions.jsonl",

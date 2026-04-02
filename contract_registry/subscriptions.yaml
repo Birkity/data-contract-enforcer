@@ -63,14 +63,14 @@ subscriptions:
   - contract_id: week4-lineage-snapshots
     subscriber_id: week7-violation-attributor
     fields_consumed:
-      - datasets
+      - nodes
       - edges
-      - transformations
+      - nodes[].metadata.source_file_abs
     breaking_fields:
       - field: edges
         reason: Edge connectivity is required for lineage enrichment during attribution.
-      - field: transformations
-        reason: Transformation metadata supplies the candidate source file path used for blame reasoning.
+      - field: nodes[].metadata.source_file_abs
+        reason: Source file metadata links lineage evidence back to concrete producer files during attribution.
     validation_mode: WARN
     registered_at: 2026-04-02T16:20:00Z
     contact:

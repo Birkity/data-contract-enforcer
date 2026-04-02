@@ -1,8 +1,8 @@
 {
-  "report_id": "4a3a8796-ceba-442c-841a-c93eb8d288be",
+  "report_id": "85936338-5efe-41b6-9992-a09d8fd3e22f",
   "contract_id": "week3-extractions",
   "snapshot_id": "f135edde66cac33db400e5353562bc14439b563ec03b26e98feb423d2964df8c",
-  "run_timestamp": "2026-04-02T17:41:37.396273+00:00",
+  "run_timestamp": "2026-04-02T20:06:18.264585+00:00",
   "validation_mode": "AUDIT",
   "blocking": false,
   "decision": "ALLOW_WITH_AUDIT_TRAIL",

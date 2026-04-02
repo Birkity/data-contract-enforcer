@@ -4,7 +4,7 @@ models:
   description: dbt-compatible counterpart for generated contract week3-extractions built from outputs/week3/extractions.jsonl.
   meta:
     generated_from_contract: week3-extractions
-    generated_at: '2026-04-02T17:45:08.480878+00:00'
+    generated_at: '2026-04-02T20:05:45.810295+00:00'
     source_path: outputs/week3/extractions.jsonl
     blast_radius_primary_source: contract_registry
     registry_subscribers:

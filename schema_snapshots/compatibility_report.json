@@ -1,8 +1,8 @@
 {
-  "generated_at": "2026-04-02T17:41:49.822014+00:00",
+  "generated_at": "2026-04-02T20:06:37.797384+00:00",
   "role": "producer_side_ci_gate",
   "contract_id": "week3-extractions",
-  "previous_snapshot": "schema_snapshots/contracts/week3-extractions/20260402T174131Z.yaml",
+  "previous_snapshot": "schema_snapshots/contracts/week3-extractions/20260402T200545Z.yaml",
   "current_snapshot": "schema_snapshots/simulated/week3-extractions/rename_confidence_field.yaml",
   "decision": "FAIL",
   "recommendation": "Breaking change detected for fields that active registered consumers depend on. Deployment should be blocked.",

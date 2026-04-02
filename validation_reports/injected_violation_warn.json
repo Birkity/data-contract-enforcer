@@ -1,8 +1,8 @@
 {
-  "report_id": "7e24379b-96c0-4fe0-964e-ddca02470684",
+  "report_id": "bc4aee23-7eca-4262-9c42-2bc82da0d613",
   "contract_id": "week3-extractions",
   "snapshot_id": "f135edde66cac33db400e5353562bc14439b563ec03b26e98feb423d2964df8c",
-  "run_timestamp": "2026-04-02T17:41:38.773506+00:00",
+  "run_timestamp": "2026-04-02T20:06:18.319686+00:00",
   "validation_mode": "WARN",
   "blocking": true,
   "decision": "BLOCK",

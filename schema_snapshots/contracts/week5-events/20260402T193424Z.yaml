@@ -22,7 +22,7 @@ implementation_model:
   lineage_role: enrichment_only
   trust_boundary_tier: tier_1_registry_plus_lineage
 observations:
-  generated_at: '2026-04-02T20:05:46.857035+00:00'
+  generated_at: '2026-04-02T19:34:24.816416+00:00'
   record_count: 1198
   profiled_row_count: 1198
   flatten_mode: record_level_fallback

@@ -158,11 +158,13 @@ The current Week 4 file is now structurally correct for Week 7:
 
 Current real Week 4 snapshot facts:
 
-- `2` snapshots
-- snapshot 1: `38` nodes, `30` edges
-- snapshot 2: `13` nodes, `7` edges
+- `4` snapshots
+- Week 7 consumer snapshot: `38` nodes, `19` edges
+- Week 3 repo snapshot: `80` nodes, `47` edges
+- jaffle-shop snapshot: `38` nodes, `30` edges
+- Week 4 self-snapshot: `13` nodes, `7` edges
 
-So the Week 4 problem is no longer format correctness. The remaining issue is coverage and relevance: the snapshots do not yet expose an explicit Week 3 extraction consumer path, and one snapshot has an empty `git_commit` because its original scanned temp clone path no longer exists.
+So the Week 4 problem is no longer format correctness or missing commit metadata. The remaining issue is coverage and relevance: the snapshots do not yet expose an explicit Week 3 extraction consumer path, and the current Week 7 consumer snapshot is still dominated by dynamic file-I/O observations rather than a clean contract-level dependency edge.
 
 ## Process failure vs technical failure
 
@@ -271,8 +273,15 @@ But lineage enrichment will become far better once the Week 4 graph includes an 
 
 Another real limitation is trace quality:
 
-- `outputs/traces/runs.jsonl` still contains non-canonical `run_type` values such as `prompt` and `parser`
-- the AI extensions correctly surface that as a real contract risk
+- the raw export `outputs/traces/runs.jsonl` still contains helper-span `run_type` values such as `prompt` and `parser`
+- the Week 7 consumer-boundary contract file now normalizes those into `outputs/traces/runs_contract_boundary.jsonl`
+- trace contract risk at the consumer boundary is therefore fixed, but the raw upstream export remains noisy
+
+The remaining AI-side warning is now embedding drift:
+
+- the metric now uses real local Ollama embeddings when available
+- the current result is still `WARN`
+- that means the extraction slice should be re-baselined before stricter AI enforcement tiers
 
 ## Final note
 

@@ -1,7 +1,7 @@
 # Enforcer Report
 
-- Generated at: `2026-04-02T17:46:29.159889+00:00`
-- Data Health Score: **92 / 100**
+- Generated at: `2026-04-02T20:07:10.507570+00:00`
+- Data Health Score: **98 / 100**
 - Architecture: consumer enforcement, registry-first blast radius, lineage enrichment only
 
 ## What is healthy
@@ -19,11 +19,11 @@
 
 ## AI risk summary
 
-- Overall AI status: **FAIL**
-- Embedding drift score: `0.655004`
+- Overall AI status: **WARN**
+- Embedding drift score: `0.20591`
 - Prompt input schema violation rate: `0.0`
 - LLM output schema violation rate: `0.0`
-- Trace contract violation rate: `0.176471`
+- Trace contract violation rate: `0.0`
 
 ## Blast radius
 
@@ -33,9 +33,9 @@
 ## Recommended actions
 
 - Keep consumer-side validation in AUDIT first for any new subscriber, then move to WARN or ENFORCE after a clean baseline is established.
-- Normalize LangSmith run_type values or narrow the exported trace set before treating trace telemetry as a strict contract boundary.
-- Expand Week 4 lineage coverage so the canonical snapshots expose an explicit Week 3 consumer path and complete git metadata for every snapshot.
 - Keep SchemaEvolutionAnalyzer in the producer CI path so breaking schema changes are blocked before consumers see them.
+- Expand Week 4 lineage coverage so the canonical snapshots expose an explicit Week 3 consumer path for stronger downstream enrichment.
+- Re-baseline embedding-style fact-text centroids before promoting the current extraction slice to a stricter enforcement tier.
 - Block producer deployment until impacted consumers have a migration plan.
 - Update contract_registry/subscriptions.yaml with any new field names, aliases, or migration notes before release.
 - Publish a compatibility notice to affected subscribers and regenerate the contract snapshot after the schema fix or migration.

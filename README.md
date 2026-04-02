@@ -75,7 +75,8 @@ The current canonical Week 3 export contains:
 
 The current Week 4 lineage file is now canonical JSONL:
 
-- `3` snapshot rows
+- `4` snapshot rows
+- includes a Week 7 consumer-side snapshot with persisted `git_commit`
 - includes a real Week 3 repo snapshot with `80` nodes and `47` edges
 - required top-level fields:
   - `snapshot_id`
@@ -88,7 +89,8 @@ The current Week 4 lineage file is now canonical JSONL:
 Current limitation:
 
 - the file is structurally correct, but it still does not expose an explicit Week 3 extraction consumer path
-- one snapshot has no `git_commit` because the original scanned temp-clone repo is gone
+- the Week 7 consumer-side snapshot now has `38` nodes and `19` edges, but those consumer-side lineage nodes are still mostly dynamic file-I/O observations rather than a clean explicit Week 3 contract edge
+- external downstream enrichment is therefore better than before, but still weaker than registry-based blast radius
 
 ### Week 5
 
@@ -104,7 +106,8 @@ The current trace export contains:
 
 - `153` rows
 - enough volume for the Week 7 requirement
-- a real contract issue: non-canonical `run_type` values such as `prompt` and `parser`
+- helper-span `run_type` values such as `prompt` and `parser` in the raw export
+- a canonical consumer-boundary file at `outputs/traces/runs_contract_boundary.jsonl` with `126` normalized rows
 
 ## How to rerun the full flow
 
@@ -157,7 +160,7 @@ Use the repo virtualenv:
 ### 7. Run AI extensions
 
 ```powershell
-.\.venv\Scripts\python.exe contracts/ai_extensions.py --week3 outputs/week3/extractions.jsonl --week2 outputs/week2/verdicts.jsonl --traces outputs/traces/runs.jsonl --registry contract_registry/subscriptions.yaml --output enforcer_report/ai_metrics.json --violation-log violation_log/violations.jsonl
+.\.venv\Scripts\python.exe contracts/ai_extensions.py --week3 outputs/week3/extractions.jsonl --week2 outputs/week2/verdicts.jsonl --traces outputs/traces/runs.jsonl --canonical-traces-output outputs/traces/runs_contract_boundary.jsonl --registry contract_registry/subscriptions.yaml --output enforcer_report/ai_metrics.json --violation-log violation_log/violations.jsonl
 ```
 
 ### 8. Generate the final report
@@ -215,16 +218,16 @@ Current CI-gate result:
 
 Current AI findings:
 
-- embedding drift: `FAIL`
+- embedding drift: `WARN`
 - prompt input schema validation: `PASS`
 - LLM output schema validation: `PASS`
-- trace contract risk: `FAIL`
+- trace contract risk: `PASS`
 
 ## Remaining honest limitations
 
 - Week 4 lineage is now canonical, but it still does not expose a direct Week 3 consumer path, so lineage enrichment is weaker than registry-based impact analysis.
-- Trace telemetry still contains non-canonical `run_type` values such as `prompt` and `parser`.
-- The embedding drift metric is a deterministic local surrogate, not a hosted semantic embedding service.
+- Raw trace telemetry still contains helper-span `run_type` values such as `prompt` and `parser`, but the consumer-boundary trace contract file now normalizes them.
+- The embedding drift metric now uses real local Ollama embeddings when available; the current remaining issue is not methodology but the `WARN` result itself, which should be re-baselined before stricter enforcement.
 
 ## Best current truth sources
 

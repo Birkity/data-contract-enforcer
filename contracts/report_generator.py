@@ -151,10 +151,20 @@ def build_report_data(
 
     recommendations = [
         "Keep consumer-side validation in AUDIT first for any new subscriber, then move to WARN or ENFORCE after a clean baseline is established.",
-        "Normalize LangSmith run_type values or narrow the exported trace set before treating trace telemetry as a strict contract boundary.",
-        "Expand Week 4 lineage coverage so the canonical snapshots expose an explicit Week 3 consumer path and complete git metadata for every snapshot.",
         "Keep SchemaEvolutionAnalyzer in the producer CI path so breaking schema changes are blocked before consumers see them.",
     ]
+    trace_risk = ai_checks.get("trace_contract_risk", {})
+    if trace_risk.get("status") != "PASS":
+        recommendations.append(
+            "Normalize LangSmith run_type values or narrow the exported trace set before treating trace telemetry as a strict contract boundary."
+        )
+
+    if enrichment_blast_radius.get("confidence") != "high":
+        recommendations.append(
+            "Expand Week 4 lineage coverage so the canonical snapshots expose an explicit Week 3 consumer path for stronger downstream enrichment."
+        )
+
+    recommendations.extend(ai_metrics.get("recommendations", []))
     if evolution_summary.get("producer_next_actions"):
         recommendations.extend(evolution_summary["producer_next_actions"])
 

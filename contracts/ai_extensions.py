@@ -4,7 +4,10 @@ import argparse
 import hashlib
 import json
 import math
+import os
 import re
+import urllib.error
+import urllib.request
 import uuid
 from collections import Counter
 from datetime import datetime, timezone
@@ -15,6 +18,12 @@ from registry_tools import get_contract_subscriptions, load_registry
 
 
 ALLOWED_TRACE_RUN_TYPES = {"llm", "chain", "tool", "retriever", "embedding"}
+INTERNAL_TRACE_RUN_TYPES = {
+    "prompt": "prompt_helper_span",
+    "parser": "parser_helper_span",
+}
+DEFAULT_CANONICAL_TRACE_OUTPUT = "outputs/traces/runs_contract_boundary.jsonl"
+EMBEDDING_MODEL_HINTS = ("embed", "embedding", "nomic-embed", "mxbai-embed")
 TOKEN_RE = re.compile(r"[a-z0-9]+")
 
 
@@ -25,6 +34,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--week3", default="outputs/week3/extractions.jsonl")
     parser.add_argument("--week2", default="outputs/week2/verdicts.jsonl")
     parser.add_argument("--traces", default="outputs/traces/runs.jsonl")
+    parser.add_argument("--canonical-traces-output", default=DEFAULT_CANONICAL_TRACE_OUTPUT)
     parser.add_argument("--registry", default="contract_registry/subscriptions.yaml")
     parser.add_argument("--output", default="enforcer_report/ai_metrics.json")
     parser.add_argument("--violation-log", default="violation_log/violations.jsonl")
@@ -41,13 +51,20 @@ def ensure_parent(path: Path) -> None:
 
 def load_jsonl(path: Path) -> list[dict[str, Any]]:
     records: list[dict[str, Any]] = []
-    with path.open(encoding="utf-8") as handle:
+    with path.open(encoding="utf-8-sig") as handle:
         for raw_line in handle:
             line = raw_line.strip()
             if not line:
                 continue
             records.append(json.loads(line))
     return records
+
+
+def write_jsonl(path: Path, rows: list[dict[str, Any]]) -> None:
+    ensure_parent(path)
+    with path.open("w", encoding="utf-8") as handle:
+        for row in rows:
+            handle.write(json.dumps(row, ensure_ascii=False) + "\n")
 
 
 def parse_iso(value: Any) -> datetime:
@@ -73,6 +90,26 @@ def severity_for_status(status: str) -> str:
 
 def tokenize(text: str) -> list[str]:
     return TOKEN_RE.findall(text.lower())
+
+
+def extract_fact_text_windows(week3_rows: list[dict[str, Any]]) -> tuple[list[str], list[str]]:
+    documents = sorted(
+        week3_rows,
+        key=lambda row: parse_iso(row.get("extracted_at") or now_iso()),
+    )
+    fact_texts: list[tuple[str, str]] = []
+    for row in documents:
+        extracted_at = str(row.get("extracted_at") or "")
+        for fact in row.get("extracted_facts", []):
+            text = fact.get("text")
+            if text:
+                fact_texts.append((extracted_at, text))
+
+    ordered_texts = [text for _, text in fact_texts]
+    midpoint = max(len(ordered_texts) // 2, 1)
+    baseline_texts = ordered_texts[:midpoint]
+    current_texts = ordered_texts[midpoint:] or ordered_texts[:midpoint]
+    return baseline_texts, current_texts
 
 
 def hashed_embedding(text: str, dimensions: int = 128) -> list[float]:
@@ -103,6 +140,16 @@ def cosine_distance(left: list[float], right: list[float]) -> float:
     return max(0.0, min(1.0, 1.0 - similarity))
 
 
+def average_vectors(vectors: list[list[float]]) -> list[float]:
+    if not vectors:
+        return []
+    accum = [0.0] * len(vectors[0])
+    for vector in vectors:
+        for index, value in enumerate(vector):
+            accum[index] += value
+    return [value / len(vectors) for value in accum]
+
+
 def top_shifted_tokens(left_texts: list[str], right_texts: list[str], limit: int = 8) -> list[str]:
     left_counts = Counter(token for text in left_texts for token in tokenize(text))
     right_counts = Counter(token for text in right_texts for token in tokenize(text))
@@ -116,26 +163,151 @@ def top_shifted_tokens(left_texts: list[str], right_texts: list[str], limit: int
     return [token for _, token in scored[:limit]]
 
 
-def compute_embedding_drift(week3_rows: list[dict[str, Any]]) -> dict[str, Any]:
-    documents = sorted(
-        week3_rows,
-        key=lambda row: parse_iso(row.get("extracted_at") or now_iso()),
+def post_json(url: str, payload: dict[str, Any], timeout: int = 30) -> dict[str, Any]:
+    request = urllib.request.Request(
+        url,
+        data=json.dumps(payload).encode("utf-8"),
+        headers={"Content-Type": "application/json"},
+        method="POST",
     )
-    fact_texts: list[tuple[str, str]] = []
-    for row in documents:
-        extracted_at = str(row.get("extracted_at") or "")
-        for fact in row.get("extracted_facts", []):
-            text = fact.get("text")
-            if text:
-                fact_texts.append((extracted_at, text))
+    with urllib.request.urlopen(request, timeout=timeout) as response:
+        return json.loads(response.read().decode("utf-8"))
 
-    ordered_texts = [text for _, text in fact_texts]
-    midpoint = max(len(ordered_texts) // 2, 1)
-    baseline_texts = ordered_texts[:midpoint]
-    current_texts = ordered_texts[midpoint:] or ordered_texts[:midpoint]
 
-    drift_score = cosine_distance(centroid(baseline_texts), centroid(current_texts))
+def fetch_json(url: str, timeout: int = 10) -> dict[str, Any]:
+    with urllib.request.urlopen(url, timeout=timeout) as response:
+        return json.loads(response.read().decode("utf-8"))
+
+
+def normalize_ollama_base_url(raw_url: str | None) -> str | None:
+    if not raw_url:
+        return None
+    cleaned = raw_url.strip().rstrip("/")
+    if cleaned.endswith("/v1"):
+        cleaned = cleaned[:-3]
+    return cleaned.rstrip("/")
+
+
+def discover_embedding_base_url(trace_rows: list[dict[str, Any]]) -> str | None:
+    env_candidates = [
+        os.getenv("OLLAMA_BASE_URL"),
+        os.getenv("OLLAMA_HOST"),
+        os.getenv("OPENAI_BASE_URL"),
+    ]
+    for candidate in env_candidates:
+        normalized = normalize_ollama_base_url(candidate)
+        if normalized:
+            return normalized
+
+    for row in trace_rows:
+        metadata = ((row.get("extra") or {}).get("metadata") or {})
+        for key in ("ollama_base_url", "base_url"):
+            normalized = normalize_ollama_base_url(metadata.get(key))
+            if normalized:
+                return normalized
+        inputs = row.get("inputs") or {}
+        normalized = normalize_ollama_base_url(inputs.get("base_url"))
+        if normalized:
+            return normalized
+    return None
+
+
+def discover_embedding_model(base_url: str | None) -> tuple[str | None, str | None]:
+    env_model = os.getenv("OLLAMA_EMBED_MODEL") or os.getenv("OLLAMA_EMBEDDING_MODEL")
+    if env_model:
+        return env_model, None
+    if not base_url:
+        return None, "No Ollama-compatible base URL was discovered in the environment or trace metadata."
+
+    try:
+        payload = fetch_json(f"{base_url}/api/tags")
+    except Exception as exc:  # pragma: no cover - exercised in live env
+        return None, f"Could not query local embedding provider at {base_url}: {exc}"
+
+    names = [
+        str(model.get("name") or "")
+        for model in payload.get("models", [])
+        if isinstance(model, dict)
+    ]
+    for name in names:
+        lowered = name.lower()
+        if any(hint in lowered for hint in EMBEDDING_MODEL_HINTS):
+            return name, None
+    if names:
+        return None, (
+            "No embedding-capable Ollama model was installed. "
+            f"Available models: {', '.join(names)}"
+        )
+    return None, "No models were reported by the local Ollama provider."
+
+
+def fetch_ollama_embeddings(
+    base_url: str,
+    model: str,
+    texts: list[str],
+    batch_size: int = 24,
+) -> list[list[float]]:
+    vectors: list[list[float]] = []
+    for start in range(0, len(texts), batch_size):
+        batch = texts[start : start + batch_size]
+        payload = {"model": model, "input": batch}
+        response = post_json(f"{base_url}/api/embed", payload, timeout=60)
+        batch_vectors = response.get("embeddings")
+        if not isinstance(batch_vectors, list):
+            raise ValueError("Embedding response did not include an 'embeddings' list.")
+        vectors.extend(batch_vectors)
+    if len(vectors) != len(texts):
+        raise ValueError(
+            f"Expected {len(texts)} embeddings but provider returned {len(vectors)}."
+        )
+    return vectors
+
+
+def compute_embedding_drift(
+    week3_rows: list[dict[str, Any]],
+    trace_rows: list[dict[str, Any]],
+) -> dict[str, Any]:
+    baseline_texts, current_texts = extract_fact_text_windows(week3_rows)
+    metric_source = "deterministic_lexical_surrogate"
+    provider = "local-hash"
+    model = "hashed-token-centroid"
+    fallback_reason = None
+
+    base_url = discover_embedding_base_url(trace_rows)
+    embed_model, model_reason = discover_embedding_model(base_url)
+    if embed_model and base_url:
+        try:
+            baseline_vectors = fetch_ollama_embeddings(base_url, embed_model, baseline_texts)
+            current_vectors = fetch_ollama_embeddings(base_url, embed_model, current_texts)
+            drift_score = cosine_distance(
+                average_vectors(baseline_vectors),
+                average_vectors(current_vectors),
+            )
+            metric_source = "ollama_embeddings"
+            provider = base_url
+            model = embed_model
+        except Exception as exc:  # pragma: no cover - depends on local runtime
+            drift_score = cosine_distance(centroid(baseline_texts), centroid(current_texts))
+            fallback_reason = (
+                f"Embedding provider was discovered but the embedding request failed: {exc}"
+            )
+    else:
+        drift_score = cosine_distance(centroid(baseline_texts), centroid(current_texts))
+        fallback_reason = model_reason
+
     status = status_from_rate(drift_score, warn_threshold=0.18, fail_threshold=0.35)
+    notes = []
+    if metric_source == "ollama_embeddings":
+        notes.append(
+            "This metric used a real local embedding provider, so the drift score reflects semantic similarity rather than token hashing alone."
+        )
+    else:
+        notes.append(
+            "This metric used a deterministic local hashed-token embedding surrogate because no usable embedding provider was available."
+        )
+    if fallback_reason:
+        notes.append(fallback_reason)
+
     return {
         "status": status,
         "severity": severity_for_status(status),
@@ -143,12 +315,57 @@ def compute_embedding_drift(week3_rows: list[dict[str, Any]]) -> dict[str, Any]:
         "value": round(drift_score, 6),
         "baseline_size": len(baseline_texts),
         "current_size": len(current_texts),
+        "metric_source": metric_source,
+        "provider": provider,
+        "model": model,
+        "fallback_reason": fallback_reason,
         "thresholds": {"warn_above": 0.18, "fail_above": 0.35},
-        "summary": "Deterministic lexical embedding drift between early and late Week 3 fact text windows.",
+        "summary": (
+            "Semantic drift between early and late Week 3 fact text windows."
+            if metric_source == "ollama_embeddings"
+            else "Deterministic lexical embedding drift between early and late Week 3 fact text windows."
+        ),
         "top_shifted_tokens": top_shifted_tokens(baseline_texts, current_texts),
-        "notes": [
-            "This uses a local hashed-token embedding surrogate so the metric is reproducible without external model calls."
-        ],
+        "notes": notes,
+    }
+
+
+def canonicalize_trace_rows(trace_rows: list[dict[str, Any]]) -> tuple[list[dict[str, Any]], dict[str, Any]]:
+    canonical_rows: list[dict[str, Any]] = []
+    excluded_rows: list[dict[str, Any]] = []
+    for row in trace_rows:
+        raw_run_type = str(row.get("run_type") or "").strip()
+        if raw_run_type in INTERNAL_TRACE_RUN_TYPES:
+            excluded_rows.append(
+                {
+                    "id": row.get("id"),
+                    "name": row.get("name"),
+                    "raw_run_type": raw_run_type,
+                    "reason": INTERNAL_TRACE_RUN_TYPES[raw_run_type],
+                }
+            )
+            continue
+
+        normalized = dict(row)
+        metadata = dict(((normalized.get("extra") or {}).get("metadata") or {}))
+        metadata.setdefault("original_run_type", raw_run_type)
+        normalized.setdefault("extra", {})
+        normalized["extra"] = dict(normalized["extra"])
+        normalized["extra"]["metadata"] = metadata
+        normalized["run_type"] = raw_run_type
+        canonical_rows.append(normalized)
+
+    return canonical_rows, {
+        "raw_row_count": len(trace_rows),
+        "canonical_row_count": len(canonical_rows),
+        "excluded_internal_rows": len(excluded_rows),
+        "excluded_internal_run_types": dict(
+            sorted(Counter(item["raw_run_type"] for item in excluded_rows).items())
+        ),
+        "excluded_samples": excluded_rows[:10],
+        "summary": (
+            "Internal helper spans were excluded before trace contract enforcement so the consumer boundary only sees documented trace run types."
+        ),
     }
 
 
@@ -291,13 +508,20 @@ def compute_llm_output_schema_validation(verdict_rows: list[dict[str, Any]]) -> 
     }
 
 
-def compute_trace_contract_risk(trace_rows: list[dict[str, Any]], registry_payload: dict[str, Any]) -> dict[str, Any]:
+def compute_trace_contract_risk(
+    raw_trace_rows: list[dict[str, Any]],
+    canonical_trace_rows: list[dict[str, Any]],
+    normalization_summary: dict[str, Any],
+    registry_payload: dict[str, Any],
+) -> dict[str, Any]:
     invalid_run_types = [
-        row.get("run_type") for row in trace_rows if row.get("run_type") not in ALLOWED_TRACE_RUN_TYPES
+        row.get("run_type")
+        for row in canonical_trace_rows
+        if row.get("run_type") not in ALLOWED_TRACE_RUN_TYPES
     ]
     duration_failures = []
     token_failures = []
-    for row in trace_rows:
+    for row in canonical_trace_rows:
         try:
             start = parse_iso(row.get("start_time"))
             end = parse_iso(row.get("end_time"))
@@ -312,7 +536,7 @@ def compute_trace_contract_risk(trace_rows: list[dict[str, Any]], registry_paylo
         if total_tokens < prompt_tokens + completion_tokens:
             token_failures.append(row.get("id"))
 
-    run_type_rate = len(invalid_run_types) / max(len(trace_rows), 1)
+    run_type_rate = len(invalid_run_types) / max(len(canonical_trace_rows), 1)
     status = status_from_rate(run_type_rate, warn_threshold=0.05, fail_threshold=0.12)
     subscribers = get_contract_subscriptions(registry_payload, "langsmith-trace-record")
     return {
@@ -320,15 +544,19 @@ def compute_trace_contract_risk(trace_rows: list[dict[str, Any]], registry_paylo
         "severity": severity_for_status(status),
         "metric": "trace_contract_violation_rate",
         "value": round(run_type_rate, 6),
-        "checked_rows": len(trace_rows),
+        "raw_checked_rows": len(raw_trace_rows),
+        "checked_rows": len(canonical_trace_rows),
         "invalid_run_type_rows": len(invalid_run_types),
         "thresholds": {"warn_above": 0.05, "fail_above": 0.12},
         "allowed_run_types": sorted(ALLOWED_TRACE_RUN_TYPES),
         "observed_invalid_run_types": dict(sorted(Counter(invalid_run_types).items())),
+        "normalization": normalization_summary,
         "duration_failures": len(duration_failures),
         "token_failures": len(token_failures),
         "subscriber_count": len(subscribers),
-        "summary": "LangSmith trace telemetry was checked against the documented Week 7 trace contract expectations.",
+        "summary": (
+            "LangSmith trace telemetry was normalized at the consumer boundary and then checked against the documented Week 7 trace contract expectations."
+        ),
     }
 
 
@@ -339,14 +567,14 @@ def worst_status(metrics: list[dict[str, Any]]) -> str:
 
 def append_ai_findings(
     violation_log_path: Path,
-    trace_path: Path,
-    trace_rows: list[dict[str, Any]],
+    trace_boundary_path: Path,
+    canonical_trace_rows: list[dict[str, Any]],
     ai_metrics: dict[str, Any],
 ) -> None:
     ensure_parent(violation_log_path)
     report_id = str(uuid.uuid4())
     run_timestamp = ai_metrics["generated_at"]
-    snapshot_id = hashlib.sha256(trace_path.read_bytes()).hexdigest()
+    snapshot_id = hashlib.sha256(trace_boundary_path.read_bytes()).hexdigest()
 
     metrics = ai_metrics.get("checks", {})
     trace_metric = metrics.get("trace_contract_risk")
@@ -366,8 +594,11 @@ def append_ai_findings(
             "message": "Observed trace run types include values outside the documented Week 7 trace enum.",
             "sample_values": list((trace_metric.get("observed_invalid_run_types") or {}).keys())[:5],
             "records_failing": trace_metric.get("invalid_run_type_rows", 0),
-            "records_total": len(trace_rows),
-            "failing_percent": round((trace_metric.get("invalid_run_type_rows", 0) / max(len(trace_rows), 1)) * 100.0, 2),
+            "records_total": len(canonical_trace_rows),
+            "failing_percent": round(
+                (trace_metric.get("invalid_run_type_rows", 0) / max(len(canonical_trace_rows), 1)) * 100.0,
+                2,
+            ),
             "check_id": "langsmith-trace-record.run_type.enum",
             "source_component": "ai_extensions",
             "evidence_kind": "real_observed_violation",
@@ -379,13 +610,20 @@ def append_ai_findings(
 def build_ai_metrics(
     week3_rows: list[dict[str, Any]],
     verdict_rows: list[dict[str, Any]],
-    trace_rows: list[dict[str, Any]],
+    raw_trace_rows: list[dict[str, Any]],
+    canonical_trace_rows: list[dict[str, Any]],
+    normalization_summary: dict[str, Any],
     registry_payload: dict[str, Any],
 ) -> dict[str, Any]:
-    embedding = compute_embedding_drift(week3_rows)
-    prompt_validation = compute_prompt_input_validation(trace_rows)
+    embedding = compute_embedding_drift(week3_rows, raw_trace_rows)
+    prompt_validation = compute_prompt_input_validation(raw_trace_rows)
     llm_output = compute_llm_output_schema_validation(verdict_rows)
-    trace_risk = compute_trace_contract_risk(trace_rows, registry_payload)
+    trace_risk = compute_trace_contract_risk(
+        raw_trace_rows,
+        canonical_trace_rows,
+        normalization_summary,
+        registry_payload,
+    )
     checks = {
         "embedding_drift": embedding,
         "prompt_input_schema_validation": prompt_validation,
@@ -427,7 +665,8 @@ def build_ai_metrics(
         "summary": {
             "week3_fact_count": sum(len(row.get("extracted_facts", [])) for row in week3_rows),
             "week2_verdict_count": len(verdict_rows),
-            "trace_row_count": len(trace_rows),
+            "trace_row_count_raw": len(raw_trace_rows),
+            "trace_row_count_canonical": len(canonical_trace_rows),
             "registered_trace_consumers": len(
                 get_contract_subscriptions(registry_payload, "langsmith-trace-record")
             ),
@@ -440,14 +679,29 @@ def main() -> int:
     args = parse_args()
     week3_rows = load_jsonl(Path(args.week3))
     verdict_rows = load_jsonl(Path(args.week2))
-    trace_rows = load_jsonl(Path(args.traces))
+    raw_trace_rows = load_jsonl(Path(args.traces))
+    canonical_trace_rows, normalization_summary = canonicalize_trace_rows(raw_trace_rows)
+    canonical_trace_path = Path(args.canonical_traces_output)
+    write_jsonl(canonical_trace_path, canonical_trace_rows)
     registry_payload = load_registry(Path(args.registry))
 
-    payload = build_ai_metrics(week3_rows, verdict_rows, trace_rows, registry_payload)
+    payload = build_ai_metrics(
+        week3_rows,
+        verdict_rows,
+        raw_trace_rows,
+        canonical_trace_rows,
+        normalization_summary,
+        registry_payload,
+    )
     output_path = Path(args.output)
     ensure_parent(output_path)
     output_path.write_text(json.dumps(payload, indent=2), encoding="utf-8")
-    append_ai_findings(Path(args.violation_log), Path(args.traces), trace_rows, payload)
+    append_ai_findings(
+        Path(args.violation_log),
+        canonical_trace_path,
+        canonical_trace_rows,
+        payload,
+    )
 
     print(
         json.dumps(
@@ -457,6 +711,7 @@ def main() -> int:
                 "prompt_input_schema_violation_rate": payload["checks"]["prompt_input_schema_validation"]["value"],
                 "llm_output_schema_violation_rate": payload["checks"]["llm_output_schema_validation"]["value"],
                 "trace_contract_violation_rate": payload["checks"]["trace_contract_risk"]["value"],
+                "canonical_trace_rows": len(canonical_trace_rows),
             },
             indent=2,
         )
