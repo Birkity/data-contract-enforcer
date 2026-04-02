@@ -22,7 +22,7 @@ implementation_model:
   lineage_role: enrichment_only
   trust_boundary_tier: tier_1_registry_plus_lineage
 observations:
-  generated_at: '2026-04-02T13:30:22.410810+00:00'
+  generated_at: '2026-04-02T17:45:08.480878+00:00'
   record_count: 50
   profiled_row_count: 173
   flatten_mode: exploded_repeated_items
@@ -39,7 +39,7 @@ observations:
   - extracted_at
   warnings: []
   snapshot_paths:
-    timestamped: schema_snapshots/contracts/week3-extractions/20260402T133022Z.yaml
+    timestamped: schema_snapshots/contracts/week3-extractions/20260402T174508Z.yaml
     latest: schema_snapshots/contracts/week3-extractions/latest.yaml
 schema:
   doc_id:
@@ -396,8 +396,13 @@ lineage:
   role: enrichment_only
   source_snapshot:
     path: outputs/week4/lineage_snapshots.jsonl
-    load_mode: jsonl-last-line
-  downstream_enrichment: []
-  notes:
-  - Canonical lineage snapshot loaded, but no explicit downstream consumers were found for the current
-    source dataset.
+    load_mode: jsonl:matched-root
+  downstream_enrichment:
+  - id: py:src/agents/fact_table.py:727
+    label: py:src/agents/fact_table.py:727
+    relationship: CONSUMES
+    fields_consumed:
+    - doc_id
+    - extracted_facts
+    - extracted_facts[].confidence
+  notes: []

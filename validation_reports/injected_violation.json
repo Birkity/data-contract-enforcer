@@ -1,8 +1,8 @@
 {
-  "report_id": "01992c15-95dc-41d1-9ad3-bf18dbfac29d",
+  "report_id": "0a2018b9-7e23-4a62-8268-951cf5dbf58d",
   "contract_id": "week3-extractions",
-  "snapshot_id": "8796a1e9e76b81590ddf40991057130906555d5900c39f461546eb68d997514e",
-  "run_timestamp": "2026-04-02T13:34:02.614704+00:00",
+  "snapshot_id": "f135edde66cac33db400e5353562bc14439b563ec03b26e98feb423d2964df8c",
+  "run_timestamp": "2026-04-02T17:41:39.938664+00:00",
   "validation_mode": "ENFORCE",
   "blocking": true,
   "decision": "BLOCK",

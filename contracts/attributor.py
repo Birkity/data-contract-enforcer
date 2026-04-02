@@ -10,6 +10,7 @@ from typing import Any
 
 import yaml
 
+from lineage_selector import load_preferred_lineage_snapshot
 from registry_tools import contact_summary, get_field_subscriptions, load_registry
 
 
@@ -92,24 +93,11 @@ def load_contract(path: Path) -> dict[str, Any]:
     return yaml.safe_load(path.read_text(encoding="utf-8"))
 
 
-def load_lineage_snapshot(path: Path) -> tuple[dict[str, Any], str]:
-    text = path.read_text(encoding="utf-8")
-    lines = [line for line in text.splitlines() if line.strip()]
-
-    if lines:
-        try:
-            last = json.loads(lines[-1])
-            if isinstance(last, dict):
-                return last, "jsonl-last-line"
-        except json.JSONDecodeError:
-            pass
-
-    payload = json.loads(text)
-    if isinstance(payload, dict):
-        return payload, "whole-file-json"
-    if isinstance(payload, list) and payload and isinstance(payload[-1], dict):
-        return payload[-1], "json-array-last-item"
-    raise ValueError(f"Unsupported lineage snapshot format in {path}")
+def load_lineage_snapshot(
+    path: Path,
+    preferred_roots: list[Path] | None = None,
+) -> tuple[dict[str, Any], str]:
+    return load_preferred_lineage_snapshot(path, preferred_roots)
 
 
 def find_git_root(start: Path) -> Path | None:
@@ -256,24 +244,44 @@ def seed_lineage_nodes(
     notes: list[str] = []
     seeds: list[str] = []
     nodes = lineage.get("nodes", {})
-    repo_tokens = set()
-    for root in repo_roots:
-        repo_tokens.update(token for token in re.split(r"[^a-z0-9]+", root.name.lower()) if token)
-
-    field_tokens = set(token for token in failure_field.lower().split("_") if token and token != "fact")
-    system_tokens = set(token for token in re.split(r"[^a-z0-9]+", system_id.lower()) if token)
-    all_tokens = system_tokens | repo_tokens | field_tokens
+    field_tokens = set(token for token in failure_field.lower().split("_") if token)
+    contextual_tokens = {
+        token
+        for token in re.split(r"[^a-z0-9]+", system_id.lower())
+        if token and token not in {"week3", "week5", "document", "intelligence", "refinery"}
+    }
+    scored: list[tuple[int, str]] = []
 
     for node_id, node in nodes.items():
-        haystack = " ".join(
+        metadata = node.get("metadata", {}) or {}
+        focused_haystack = " ".join(
             [
                 node_id.lower(),
                 str(node.get("label", "")).lower(),
-                str(node.get("metadata", {}).get("path", "")).lower(),
+                str(node.get("name", "")).lower(),
+                str(node.get("source_file", "")).lower(),
+                str(metadata.get("path", "")).lower(),
+                str(metadata.get("source_file", "")).lower(),
+                str(metadata.get("source_file_abs", "")).lower(),
+                " ".join(str(item).lower() for item in metadata.get("source_datasets", []) or []),
+                " ".join(str(item).lower() for item in metadata.get("target_datasets", []) or []),
             ]
         )
-        if any(token and token in haystack for token in all_tokens):
-            seeds.append(node_id)
+        if not focused_haystack.strip():
+            continue
+
+        field_hits = sum(1 for token in field_tokens if token in focused_haystack)
+        context_hits = sum(1 for token in contextual_tokens if token in focused_haystack)
+        if field_hits == 0 and context_hits == 0:
+            continue
+
+        score = field_hits * 5 + context_hits * 2
+        if str(node.get("node_type", "")).lower() == "transformation":
+            score += 1
+        scored.append((score, node_id))
+
+    scored.sort(key=lambda item: (-item[0], item[1]))
+    seeds = [node_id for _, node_id in scored[:8]]
 
     if not seeds:
         notes.append(
@@ -801,16 +809,15 @@ def main() -> int:
     contract = load_contract(contract_path)
     registry_payload = load_registry(registry_path)
     violation_log_rows = load_violation_log(violation_log_path)
-    lineage_snapshot, lineage_mode = load_lineage_snapshot(lineage_path)
+    repo_roots = infer_repo_roots_from_contract(contract, workspace_root)
+    if not repo_roots:
+        raise SystemExit("Could not infer any upstream git repository roots from the contract dataset.")
+    lineage_snapshot, lineage_mode = load_lineage_snapshot(lineage_path, repo_roots)
     lineage = normalize_lineage(lineage_snapshot, lineage_mode)
 
     normalized_failures = normalize_failures(report, contract)
     if not normalized_failures:
         raise SystemExit("No FAIL results were found in the supplied validation report.")
-
-    repo_roots = infer_repo_roots_from_contract(contract, workspace_root)
-    if not repo_roots:
-        raise SystemExit("Could not infer any upstream git repository roots from the contract dataset.")
 
     seeds, seed_notes = seed_lineage_nodes(
         lineage=lineage,

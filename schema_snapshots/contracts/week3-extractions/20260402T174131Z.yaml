@@ -22,7 +22,7 @@ implementation_model:
   lineage_role: enrichment_only
   trust_boundary_tier: tier_1_registry_plus_lineage
 observations:
-  generated_at: '2026-04-02T17:41:49.794940+00:00'
+  generated_at: '2026-04-02T17:41:31.975958+00:00'
   record_count: 50
   profiled_row_count: 173
   flatten_mode: exploded_repeated_items
@@ -258,10 +258,9 @@ schema:
       - eccde843-4e54-5187-966a-a0eb4073eb31|c818d6bf-ad34-5b0e-a7cc-6af6887c084e|2639f270-f6d9-5c0b-aadb-15cf600fd450
       - e5e7a76f-5d64-5fba-92f7-6e04a3619fbd|265ecfd0-3e5f-526a-8ffa-1140faecd6d4|41a1e6b6-7727-5ab9-a45b-cc56251a2c30
       - e5e7a76f-5d64-5fba-92f7-6e04a3619fbd|265ecfd0-3e5f-526a-8ffa-1140faecd6d4|64a8b229-4670-5bc3-912c-59d13c31fcda
-  fact_confidence_score:
+  fact_confidence:
     type: number
-    description: Simulated renamed field for CI gate testing. This intentionally breaks consumers expecting
-      fact_confidence.
+    description: Confidence value for the extracted fact. This must remain in the 0.0-1.0 range.
     minimum: 0.0
     maximum: 1.0
     profile:
@@ -399,6 +398,3 @@ lineage:
   notes:
   - Canonical lineage snapshot loaded, but no explicit downstream consumers were found for the current
     source dataset.
-simulation:
-  type: rename_confidence_field
-  source: schema_snapshots/contracts/week3-extractions/20260402T174131Z.yaml

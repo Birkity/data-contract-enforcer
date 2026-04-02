@@ -1,7 +1,7 @@
 # Enforcer Report
 
-- Generated at: `2026-04-02T13:52:40.380176+00:00`
-- Data Health Score: **88 / 100**
+- Generated at: `2026-04-02T17:46:29.159889+00:00`
+- Data Health Score: **92 / 100**
 - Architecture: consumer enforcement, registry-first blast radius, lineage enrichment only
 
 ## What is healthy
@@ -28,7 +28,7 @@
 ## Blast radius
 
 - Registered subscribers affected: `3`
-- Lineage enrichment confidence: `low`
+- Lineage enrichment confidence: `medium`
 
 ## Recommended actions
 

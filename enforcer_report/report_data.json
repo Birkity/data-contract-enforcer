@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-04-02T13:52:40.380176+00:00",
+  "generated_at": "2026-04-02T17:46:29.159889+00:00",
   "system_name": "TRP Week 7 Data Contract Enforcer",
   "architecture": {
     "enforcement_boundary": "consumer",
@@ -7,11 +7,11 @@
     "lineage_role": "enrichment_only",
     "schema_evolution_role": "producer_side_ci_gate"
   },
-  "data_health_score": 88,
+  "data_health_score": 92,
   "score_breakdown": {
     "baseline_validation": 35.0,
     "ai_contract_extensions": 12.0,
-    "attribution_and_blast_radius": 11.0,
+    "attribution_and_blast_radius": 15.0,
     "schema_evolution_gate": 15.0,
     "governance_and_snapshots": 15.0
   },
@@ -60,10 +60,10 @@
     "total_logged_entries": 7,
     "real_ai_findings": 1,
     "latest_real_ai_finding": {
-      "report_id": "8e95bea6-cc5e-4b87-be02-251057c92c4f",
+      "report_id": "73377fcb-0015-4673-87f9-82c33f0dd77d",
       "contract_id": "langsmith-trace-record",
       "snapshot_id": "8107ef0ca78a166fd3133297b2483f7e9bed798e611c0386699db321b6d866c0",
-      "run_timestamp": "2026-04-02T13:34:40.868605+00:00",
+      "run_timestamp": "2026-04-02T17:41:50.086382+00:00",
       "validation_mode": "AUDIT",
       "field": "run_type",
       "check_type": "enum",
@@ -174,7 +174,7 @@
       }
     ],
     "subscriber_count": 3,
-    "lineage_enrichment_confidence": "low",
+    "lineage_enrichment_confidence": "medium",
     "top_candidate_file": "src/agents/fact_table.py",
     "top_candidate_commit": "033135cc46c7b8889cb8bf4f6607f940469bed5b"
   },
@@ -390,8 +390,8 @@
   },
   "artifact_state": {
     "snapshot_versions": {
-      "week3-extractions": 4,
-      "week5-events": 4
+      "week3-extractions": 6,
+      "week5-events": 5
     },
     "submission_ready": true,
     "known_limitations": [

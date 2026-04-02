@@ -75,7 +75,8 @@ The current canonical Week 3 export contains:
 
 The current Week 4 lineage file is now canonical JSONL:
 
-- `2` snapshot rows
+- `3` snapshot rows
+- includes a real Week 3 repo snapshot with `80` nodes and `47` edges
 - required top-level fields:
   - `snapshot_id`
   - `codebase_root`

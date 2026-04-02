@@ -22,7 +22,7 @@ implementation_model:
   lineage_role: enrichment_only
   trust_boundary_tier: tier_1_registry_plus_lineage
 observations:
-  generated_at: '2026-04-02T13:30:23.747885+00:00'
+  generated_at: '2026-04-02T17:41:33.967043+00:00'
   record_count: 1198
   profiled_row_count: 1198
   flatten_mode: record_level_fallback
@@ -40,7 +40,7 @@ observations:
   - recorded_at
   warnings: []
   snapshot_paths:
-    timestamped: schema_snapshots/contracts/week5-events/20260402T133023Z.yaml
+    timestamped: schema_snapshots/contracts/week5-events/20260402T174133Z.yaml
     latest: schema_snapshots/contracts/week5-events/latest.yaml
 schema:
   event_id:

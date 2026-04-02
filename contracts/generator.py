@@ -10,6 +10,7 @@ from typing import Any
 import pandas as pd
 import yaml
 
+from lineage_selector import infer_repo_roots_from_records, load_preferred_lineage_snapshot
 from registry_tools import contact_summary, get_contract_subscriptions, infer_trust_tier, load_registry
 
 
@@ -65,27 +66,11 @@ def load_source_records(path: Path) -> list[dict[str, Any]]:
     return records
 
 
-def load_latest_lineage_snapshot(path: Path) -> tuple[dict[str, Any], str]:
-    if not path.exists():
-        raise FileNotFoundError(f"Lineage file not found: {path}")
-
-    text = path.read_text(encoding="utf-8")
-    non_empty_lines = [line for line in text.splitlines() if line.strip()]
-
-    if non_empty_lines:
-        try:
-            last_record = json.loads(non_empty_lines[-1])
-            if isinstance(last_record, dict):
-                return last_record, "jsonl-last-line"
-        except json.JSONDecodeError:
-            pass
-
-    payload = json.loads(text)
-    if isinstance(payload, dict):
-        return payload, "whole-file-json"
-    if isinstance(payload, list) and payload and isinstance(payload[-1], dict):
-        return payload[-1], "json-array-last-item"
-    raise ValueError(f"Unsupported lineage file shape in {path}")
+def load_latest_lineage_snapshot(
+    path: Path,
+    preferred_roots: list[Path] | None = None,
+) -> tuple[dict[str, Any], str]:
+    return load_preferred_lineage_snapshot(path, preferred_roots)
 
 
 def make_contract_slug(source_path: Path, explicit_slug: str | None) -> str:
@@ -846,8 +831,9 @@ def main() -> int:
     records = load_source_records(source_path)
     inspection = inspect_records(records, source_path)
     df, flatten_metadata = flatten_for_profile(records)
+    preferred_roots = infer_repo_roots_from_records(records)
 
-    lineage_snapshot, lineage_mode = load_latest_lineage_snapshot(lineage_path)
+    lineage_snapshot, lineage_mode = load_latest_lineage_snapshot(lineage_path, preferred_roots)
     registry_payload = load_registry(registry_path)
     contract_id = make_contract_slug(source_path, args.contract_id)
     contract = build_contract(
