@@ -10,6 +10,8 @@ from typing import Any
 
 import yaml
 
+from registry_tools import contact_summary, get_field_subscriptions, load_registry
+
 
 TEXT_EXTENSIONS = {".py", ".yaml", ".yml", ".toml"}
 IGNORED_DIRS = {".git", ".venv", "venv", "__pycache__", "node_modules", "data", ".refinery"}
@@ -38,6 +40,11 @@ def parse_args() -> argparse.Namespace:
         "--lineage",
         default="outputs/week4/lineage_snapshots.jsonl",
         help="Path to the Week 4 lineage snapshot.",
+    )
+    parser.add_argument(
+        "--registry",
+        default="contract_registry/subscriptions.yaml",
+        help="Path to the contract registry subscriptions file.",
     )
     parser.add_argument(
         "--contract",
@@ -627,53 +634,92 @@ def score_candidates(
     return scored
 
 
-def build_blast_radius(contract: dict[str, Any], lineage_walk: dict[str, Any], lineage: dict[str, Any]) -> dict[str, Any]:
-    contract_downstream = contract.get("lineage", {}).get("downstream", [])
-    if contract_downstream:
-        affected_nodes = [node.get("id") for node in contract_downstream if node.get("id")]
-        return {
-            "affected_nodes": affected_nodes,
-            "affected_pipelines": [node for node in affected_nodes if "pipeline" in node.lower()],
-            "summary": "Blast radius derived from downstream consumers already injected into the contract YAML.",
-            "lineage_confidence": "medium",
-        }
+def build_registry_blast_radius(
+    registry_payload: dict[str, Any], contract_id: str, failing_field: str
+) -> dict[str, Any]:
+    matching, contract_subscriptions = get_field_subscriptions(
+        registry_payload, contract_id, failing_field
+    )
+    subscriptions = matching or contract_subscriptions
+    matched_on_field = bool(matching)
 
-    downstream_nodes = [node["node_id"] for node in lineage_walk.get("downstream_nodes", [])]
-    if downstream_nodes:
-        return {
-            "affected_nodes": downstream_nodes,
-            "affected_pipelines": [node for node in downstream_nodes if "pipeline" in node.lower()],
-            "summary": "Blast radius derived from downstream traversal of the available Week 4 lineage graph.",
-            "lineage_confidence": "medium",
-        }
-
-    shape = lineage.get("shape")
-    if shape == "dbt-whole-file":
-        summary = (
-            "The current Week 4 lineage snapshot is a dbt-style graph and does not expose an explicit consumer for the "
-            "Week 3 extraction dataset. Known blast radius is therefore limited to the monitored Week 3 interface and any unseen consumers."
+    impacted_subscribers = []
+    for subscription in subscriptions:
+        impacted_subscribers.append(
+            {
+                "subscriber_id": subscription.get("subscriber_id"),
+                "fields_consumed": subscription.get("fields_consumed", []),
+                "breaking_fields": subscription.get("breaking_fields", []),
+                "validation_mode": subscription.get("validation_mode", "AUDIT"),
+                "registered_at": subscription.get("registered_at"),
+                "contact": subscription.get("contact"),
+                "contact_summary": contact_summary(subscription.get("contact")),
+                "match_type": "field_match" if matched_on_field else "contract_fallback",
+            }
         )
+
+    if impacted_subscribers:
+        summary = (
+            "Blast radius derived from contract registry subscribers that explicitly consume the failing field."
+            if matched_on_field
+            else "Blast radius derived from contract registry subscribers for the contract, even though the failing field was not explicitly declared."
+        )
+        confidence = "high" if matched_on_field else "medium"
     else:
         summary = (
-            "No downstream consumers could be established from the current lineage snapshot. Blast radius is uncertain."
+            "No registry subscriptions were found for this contract. Blast radius cannot be established from the registry alone."
         )
+        confidence = "low"
+
     return {
-        "affected_nodes": [],
-        "affected_pipelines": [],
+        "source": "contract_registry",
+        "subscriber_count": len(impacted_subscribers),
+        "matched_on_field": matched_on_field,
+        "subscribers": impacted_subscribers,
         "summary": summary,
-        "lineage_confidence": "low",
+        "confidence": confidence,
+    }
+
+
+def build_lineage_enrichment(lineage_walk: dict[str, Any], lineage: dict[str, Any]) -> dict[str, Any]:
+    downstream_nodes = [node["node_id"] for node in lineage_walk.get("downstream_nodes", [])]
+    upstream_nodes = [node["node_id"] for node in lineage_walk.get("upstream_candidates", [])]
+    notes = list(lineage_walk.get("notes", []))
+
+    if downstream_nodes:
+        summary = "Lineage traversal found downstream enrichment nodes that may reflect transitive propagation."
+        confidence = "medium"
+    else:
+        shape = lineage.get("shape")
+        if shape == "dbt-whole-file":
+            summary = (
+                "The current Week 4 lineage snapshot is a dbt-style graph and does not expose an explicit Week 3 consumer path, so lineage enrichment is partial."
+            )
+        else:
+            summary = "No downstream lineage enrichment nodes were identified from the current snapshot."
+        confidence = "low"
+
+    return {
+        "source": "week4_lineage_enrichment",
+        "matched_nodes": lineage_walk.get("matched_nodes", []),
+        "upstream_candidates": upstream_nodes,
+        "downstream_nodes": downstream_nodes,
+        "summary": summary,
+        "confidence": confidence,
+        "notes": notes,
     }
 
 
 def build_output(
     report_path: Path,
     contract_path: Path,
+    registry_path: Path,
     lineage_path: Path,
     normalized_failures: list[dict[str, Any]],
     candidate_map: dict[str, list[dict[str, Any]]],
+    registry_blast_radius: dict[str, Any],
     lineage: dict[str, Any],
-    lineage_walk: dict[str, Any],
-    blast_radius: dict[str, Any],
+    lineage_enrichment: dict[str, Any],
     repo_roots: list[Path],
     violation_log_rows: list[dict[str, Any]],
 ) -> dict[str, Any]:
@@ -698,20 +744,27 @@ def build_output(
                 "matching_violation_log_entries": len(matching_log_entries),
                 "candidate_files": [item["file_path"] for item in candidate_map.get(failure["check_id"], [])],
                 "blame_chain": candidate_map.get(failure["check_id"], []),
+                "blast_radius": {
+                    "primary": registry_blast_radius,
+                    "enrichment": lineage_enrichment,
+                },
                 "lineage_context": {
                     "lineage_shape": lineage["shape"],
                     "load_mode": lineage["load_mode"],
-                    "matched_nodes": lineage_walk.get("matched_nodes", []),
-                    "upstream_candidates": lineage_walk.get("upstream_candidates", []),
                 },
-                "blast_radius": blast_radius,
             }
         )
 
     return {
         "generated_at": now_iso(),
+        "architecture_mode": {
+            "blast_radius_primary_source": "contract_registry",
+            "lineage_role": "enrichment_only",
+            "enforcement_boundary": "consumer",
+        },
         "source_report": str(report_path),
         "contract_path": str(contract_path),
+        "registry_path": str(registry_path),
         "lineage_path": str(lineage_path),
         "repo_roots": [str(root) for root in repo_roots],
         "violation_log_entry_count": len(violation_log_rows),
@@ -721,7 +774,7 @@ def build_output(
 
 def write_output(path: Path, payload: dict[str, Any]) -> None:
     ensure_parent(path)
-    path.write_text(json.dumps(payload, indent=2), encoding="utf-8")
+    path.write_text(json.dumps(payload, indent=2, default=str), encoding="utf-8")
 
 
 def main() -> int:
@@ -730,11 +783,13 @@ def main() -> int:
     report_path = Path(args.report)
     violation_log_path = Path(args.violation_log)
     lineage_path = Path(args.lineage)
+    registry_path = Path(args.registry)
     contract_path = Path(args.contract)
     output_path = Path(args.output)
 
     report = load_json(report_path)
     contract = load_contract(contract_path)
+    registry_payload = load_registry(registry_path)
     violation_log_rows = load_violation_log(violation_log_path)
     lineage_snapshot, lineage_mode = load_lineage_snapshot(lineage_path)
     lineage = normalize_lineage(lineage_snapshot, lineage_mode)
@@ -769,16 +824,22 @@ def main() -> int:
         candidate_files=candidate_files,
         days=args.days,
     )
-    blast_radius = build_blast_radius(contract, lineage_walk, lineage)
+    registry_blast_radius = build_registry_blast_radius(
+        registry_payload=registry_payload,
+        contract_id=contract.get("id", contract_path.stem),
+        failing_field=normalized_failures[0]["field"],
+    )
+    lineage_enrichment = build_lineage_enrichment(lineage_walk, lineage)
     payload = build_output(
         report_path=report_path,
         contract_path=contract_path,
+        registry_path=registry_path,
         lineage_path=lineage_path,
         normalized_failures=normalized_failures,
         candidate_map=candidate_map,
+        registry_blast_radius=registry_blast_radius,
         lineage=lineage,
-        lineage_walk=lineage_walk,
-        blast_radius=blast_radius,
+        lineage_enrichment=lineage_enrichment,
         repo_roots=repo_roots,
         violation_log_rows=violation_log_rows,
     )
@@ -789,7 +850,7 @@ def main() -> int:
         "top_file": payload["attributions"][0]["blame_chain"][0]["file_path"]
         if payload["attributions"] and payload["attributions"][0]["blame_chain"]
         else None,
-        "blast_radius_nodes": len(payload["attributions"][0]["blast_radius"]["affected_nodes"])
+        "registry_subscribers": len(payload["attributions"][0]["blast_radius"]["primary"]["subscribers"])
         if payload["attributions"]
         else 0,
     }

@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import argparse
 import json
 import re
@@ -7,6 +9,8 @@ from typing import Any
 
 import pandas as pd
 import yaml
+
+from registry_tools import contact_summary, get_contract_subscriptions, infer_trust_tier, load_registry
 
 
 UUID_RE = re.compile(
@@ -20,31 +24,21 @@ def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(
         description="Generate a Bitol-style data contract from a real JSONL dataset."
     )
-    parser.add_argument(
-        "--source",
-        required=True,
-        help="Path to the primary JSONL source file, for example outputs/week3/extractions.jsonl",
-    )
-    parser.add_argument(
-        "--lineage",
-        default="outputs/week4/lineage_snapshots.jsonl",
-        help="Path to the Week 4 lineage snapshot file.",
-    )
-    parser.add_argument(
-        "--output",
-        default="generated_contracts",
-        help="Output directory for the generated YAML contract.",
-    )
-    parser.add_argument(
-        "--contract-id",
-        default=None,
-        help="Optional contract id override. Defaults to '<parent>-<stem>'.",
-    )
+    parser.add_argument("--source", required=True)
+    parser.add_argument("--lineage", default="outputs/week4/lineage_snapshots.jsonl")
+    parser.add_argument("--registry", default="contract_registry/subscriptions.yaml")
+    parser.add_argument("--output", default="generated_contracts")
+    parser.add_argument("--snapshot-dir", default="schema_snapshots/contracts")
+    parser.add_argument("--contract-id", default=None)
     return parser.parse_args()
 
 
 def now_iso() -> str:
     return datetime.now(timezone.utc).isoformat()
+
+
+def timestamp_slug() -> str:
+    return datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ")
 
 
 def load_jsonl(path: Path) -> list[dict[str, Any]]:
@@ -58,7 +52,7 @@ def load_jsonl(path: Path) -> list[dict[str, Any]]:
     return records
 
 
-def load_week3_records(path: Path) -> list[dict[str, Any]]:
+def load_source_records(path: Path) -> list[dict[str, Any]]:
     if not path.exists():
         raise FileNotFoundError(f"Source file not found: {path}")
     records = load_jsonl(path)
@@ -443,7 +437,7 @@ def find_downstream_consumers(
             "Week 4 lineage is currently a dbt-style whole-file graph, not the canonical Week 7 node/edge snapshot."
         )
         notes.append(
-            "No explicit consumer for the current source dataset was found in the current lineage file, so downstream blast radius is recorded as unknown."
+            "No explicit consumer for the current source dataset was found in the current lineage file, so lineage enrichment is partial."
         )
         return downstream, notes
 
@@ -455,9 +449,9 @@ def find_downstream_consumers(
 
 def make_source_fields(source_path: Path) -> list[str]:
     if source_path.parent.name.lower() == "week3" and source_path.stem.lower() == "extractions":
-        return ["doc_id", "extracted_facts"]
+        return ["doc_id", "extracted_facts", "extracted_facts[].confidence"]
     if source_path.parent.name.lower() == "week5" and source_path.stem.lower() == "events":
-        return ["event_id", "event_type", "payload"]
+        return ["event_id", "event_type", "payload", "occurred_at"]
     return ["record_id"]
 
 
@@ -508,15 +502,55 @@ def ordered_columns_for_dataset(source_path: Path) -> list[str]:
     return []
 
 
+def build_registry_context(
+    contract_id: str,
+    registry_path: Path,
+    registry_payload: dict[str, Any],
+) -> dict[str, Any]:
+    subscriptions = []
+    for subscription in get_contract_subscriptions(registry_payload, contract_id):
+        subscriptions.append(
+            {
+                "subscriber_id": subscription.get("subscriber_id"),
+                "fields_consumed": subscription.get("fields_consumed", []),
+                "breaking_fields": subscription.get("breaking_fields", []),
+                "validation_mode": subscription.get("validation_mode", "AUDIT"),
+                "registered_at": subscription.get("registered_at"),
+                "contact": subscription.get("contact"),
+                "contact_summary": contact_summary(subscription.get("contact")),
+            }
+        )
+
+    notes: list[str] = []
+    if subscriptions:
+        notes.append("Registry subscriptions are the primary source of blast-radius reasoning for this contract.")
+    else:
+        notes.append("No registry subscriptions were found for this contract. Blast radius falls back to lineage only.")
+
+    registry_notes = registry_payload.get("notes", [])
+    if isinstance(registry_notes, list):
+        notes.extend(str(note) for note in registry_notes if note)
+
+    return {
+        "role": "primary_blast_radius_source",
+        "path": str(registry_path).replace("\\", "/"),
+        "subscriber_count": len(subscriptions),
+        "subscriptions": subscriptions,
+        "notes": notes,
+    }
+
+
 def build_contract(
     contract_id: str,
     source_path: Path,
     lineage_path: Path,
+    registry_path: Path,
     inspection: dict[str, Any],
     df: pd.DataFrame,
     flatten_metadata: dict[str, Any],
     lineage_snapshot: dict[str, Any],
     lineage_mode: str,
+    registry_payload: dict[str, Any],
 ) -> dict[str, Any]:
     schema_order = ordered_columns_for_dataset(source_path)
 
@@ -535,14 +569,19 @@ def build_contract(
         source_fields=make_source_fields(source_path),
         source_terms=make_source_terms(source_path),
     )
+    registry_context = build_registry_context(contract_id, registry_path, registry_payload)
+    trust_tier = infer_trust_tier(
+        has_registry=registry_context["subscriber_count"] > 0,
+        has_lineage=bool(downstream or lineage_notes),
+    )
 
-    contract = {
+    return {
         "kind": "DataContract",
         "apiVersion": "v3.0.0",
         "id": contract_id,
         "info": {
             "title": make_contract_title(source_path),
-            "version": "1.0.0",
+            "version": "1.1.0",
             "owner": "week7-contract-generator",
             "description": make_contract_description(source_path),
         },
@@ -555,7 +594,13 @@ def build_contract(
         },
         "terms": {
             "usage": make_contract_usage(source_path),
-            "limitations": "Lineage context reflects the current Week 4 snapshot shape and may be incomplete.",
+            "limitations": "Registry subscribers are authoritative for blast radius; lineage remains enrichment-only and may be incomplete.",
+        },
+        "implementation_model": {
+            "enforcement_boundary": "consumer",
+            "blast_radius_primary_source": "contract_registry",
+            "lineage_role": "enrichment_only",
+            "trust_boundary_tier": trust_tier,
         },
         "observations": {
             "generated_at": now_iso(),
@@ -567,35 +612,49 @@ def build_contract(
             "warnings": inspection["warnings"],
         },
         "schema": schema,
+        "registry": registry_context,
         "lineage": {
+            "role": "enrichment_only",
             "source_snapshot": {
                 "path": str(lineage_path).replace("\\", "/"),
                 "load_mode": lineage_mode,
             },
-            "downstream": downstream,
+            "downstream_enrichment": downstream,
             "notes": lineage_notes,
         },
     }
-    return contract
 
 
 def ensure_output_dir(path: Path) -> None:
     path.mkdir(parents=True, exist_ok=True)
 
 
+def write_yaml(path: Path, payload: dict[str, Any]) -> Path:
+    ensure_output_dir(path.parent)
+    path.write_text(
+        yaml.safe_dump(payload, sort_keys=False, allow_unicode=False, width=100),
+        encoding="utf-8",
+    )
+    return path
+
+
 def write_contract(output_dir: Path, filename: str, contract: dict[str, Any]) -> Path:
     ensure_output_dir(output_dir)
-    output_path = output_dir / filename
-    payload = yaml.safe_dump(contract, sort_keys=False, allow_unicode=False, width=100)
-    output_path.write_text(payload, encoding="utf-8")
-    return output_path
+    return write_yaml(output_dir / filename, contract)
 
 
-def build_dbt_tests(
-    column_name: str,
-    clause: dict[str, Any],
-    contract: dict[str, Any],
-) -> list[Any]:
+def write_contract_snapshot(snapshot_dir: Path, contract_id: str, contract: dict[str, Any]) -> dict[str, str]:
+    slug = timestamp_slug()
+    contract_dir = snapshot_dir / contract_id
+    timestamped_path = write_yaml(contract_dir / f"{slug}.yaml", contract)
+    latest_path = write_yaml(contract_dir / "latest.yaml", contract)
+    return {
+        "timestamped": str(timestamped_path).replace("\\", "/"),
+        "latest": str(latest_path).replace("\\", "/"),
+    }
+
+
+def build_dbt_tests(column_name: str, clause: dict[str, Any], contract: dict[str, Any]) -> list[Any]:
     tests: list[Any] = []
 
     if clause.get("required") is True:
@@ -670,7 +729,7 @@ def build_dbt_counterpart(contract: dict[str, Any], source_path: Path) -> dict[s
             column_payload["tests"] = tests
         columns.append(column_payload)
 
-    dbt_payload = {
+    return {
         "version": 2,
         "models": [
             {
@@ -683,21 +742,22 @@ def build_dbt_counterpart(contract: dict[str, Any], source_path: Path) -> dict[s
                     "generated_from_contract": contract.get("id"),
                     "generated_at": contract.get("observations", {}).get("generated_at"),
                     "source_path": str(source_path).replace("\\", "/"),
+                    "blast_radius_primary_source": "contract_registry",
+                    "registry_subscribers": [
+                        subscription.get("subscriber_id")
+                        for subscription in contract.get("registry", {}).get("subscriptions", [])
+                    ],
                     "lineage_notes": contract.get("lineage", {}).get("notes", []),
                 },
                 "columns": columns,
             }
         ],
     }
-    return dbt_payload
 
 
 def write_dbt_counterpart(output_dir: Path, filename: str, dbt_contract: dict[str, Any]) -> Path:
     ensure_output_dir(output_dir)
-    output_path = output_dir / filename
-    payload = yaml.safe_dump(dbt_contract, sort_keys=False, allow_unicode=False, width=100)
-    output_path.write_text(payload, encoding="utf-8")
-    return output_path
+    return write_yaml(output_dir / filename, dbt_contract)
 
 
 def quality_check(contract: dict[str, Any], output_path: Path) -> None:
@@ -710,11 +770,7 @@ def quality_check(contract: dict[str, Any], output_path: Path) -> None:
     if required_descriptions:
         raise ValueError(f"Fields missing descriptions: {required_descriptions}")
 
-    confidence_fields = [
-        clause
-        for name, clause in schema.items()
-        if "confidence" in name
-    ]
+    confidence_fields = [clause for name, clause in schema.items() if "confidence" in name]
     if not confidence_fields:
         raise ValueError("Generated contract is missing a confidence clause.")
 
@@ -722,8 +778,13 @@ def quality_check(contract: dict[str, Any], output_path: Path) -> None:
         if clause.get("minimum") != 0.0 or clause.get("maximum") != 1.0:
             raise ValueError("Confidence clause does not enforce the 0.0-1.0 range.")
 
-    if "lineage" not in reloaded:
-        raise ValueError("Generated contract is missing lineage context.")
+    registry = reloaded.get("registry", {})
+    if registry.get("role") != "primary_blast_radius_source":
+        raise ValueError("Generated contract is missing registry-first blast-radius context.")
+
+    lineage = reloaded.get("lineage", {})
+    if lineage.get("role") != "enrichment_only":
+        raise ValueError("Generated contract must mark lineage as enrichment only.")
 
 
 def quality_check_dbt(dbt_output_path: Path) -> None:
@@ -757,24 +818,31 @@ def main() -> int:
     args = parse_args()
     source_path = Path(args.source)
     lineage_path = Path(args.lineage)
+    registry_path = Path(args.registry)
     output_dir = Path(args.output)
+    snapshot_dir = Path(args.snapshot_dir)
 
-    records = load_week3_records(source_path)
+    records = load_source_records(source_path)
     inspection = inspect_records(records, source_path)
     df, flatten_metadata = flatten_for_profile(records)
 
     lineage_snapshot, lineage_mode = load_latest_lineage_snapshot(lineage_path)
+    registry_payload = load_registry(registry_path)
     contract_id = make_contract_slug(source_path, args.contract_id)
     contract = build_contract(
         contract_id=contract_id,
         source_path=source_path,
         lineage_path=lineage_path,
+        registry_path=registry_path,
         inspection=inspection,
         df=df,
         flatten_metadata=flatten_metadata,
         lineage_snapshot=lineage_snapshot,
         lineage_mode=lineage_mode,
+        registry_payload=registry_payload,
     )
+    snapshot_paths = write_contract_snapshot(snapshot_dir, contract_id, contract)
+    contract["observations"]["snapshot_paths"] = snapshot_paths
     output_path = write_contract(output_dir, make_output_filename(source_path), contract)
     quality_check(contract, output_path)
     dbt_output_path = write_dbt_counterpart(
@@ -786,6 +854,7 @@ def main() -> int:
 
     print(f"Contract written to {output_path}")
     print(f"dbt counterpart written to {dbt_output_path}")
+    print(f"Snapshot written to {snapshot_paths['timestamped']}")
     print("Contract quality check passed.")
     return 0
 

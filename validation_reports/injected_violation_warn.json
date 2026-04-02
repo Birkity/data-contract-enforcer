@@ -1,9 +1,9 @@
 {
-  "report_id": "01870c7d-3bd4-4034-bcca-d7130451521c",
+  "report_id": "f9d68170-d225-4075-a59e-46ebeab486bf",
   "contract_id": "week3-extractions",
   "snapshot_id": "ee8e8796afee412f62d5b2fd2d676b5bed317af99013620222ecbcc8c9bca0cb",
-  "run_timestamp": "2026-04-02T10:46:44.600710+00:00",
-  "validation_mode": "ENFORCE",
+  "run_timestamp": "2026-04-02T10:46:31.463441+00:00",
+  "validation_mode": "WARN",
   "blocking": true,
   "decision": "BLOCK",
   "total_checks": 37,
@@ -11,7 +11,7 @@
   "failed": 2,
   "warned": 0,
   "errored": 0,
-  "blocked": 2,
+  "blocked": 1,
   "architecture_context": {
     "enforcement_boundary": "consumer",
     "blast_radius_primary_source": "contract_registry",
@@ -113,7 +113,7 @@
       "records_failing": 0,
       "sample_failing": [],
       "message": "doc_id is fully populated.",
-      "validation_mode": "ENFORCE",
+      "validation_mode": "WARN",
       "action": "ALLOW",
       "blocking": false
     },
@@ -128,7 +128,7 @@
       "records_failing": 0,
       "sample_failing": [],
       "message": "doc_id matches expected type string.",
-      "validation_mode": "ENFORCE",
+      "validation_mode": "WARN",
       "action": "ALLOW",
       "blocking": false
     },
@@ -143,7 +143,7 @@
       "records_failing": 0,
       "sample_failing": [],
       "message": "doc_id matches the UUID format.",
-      "validation_mode": "ENFORCE",
+      "validation_mode": "WARN",
       "action": "ALLOW",
       "blocking": false
     },
@@ -158,7 +158,7 @@
       "records_failing": 0,
       "sample_failing": [],
       "message": "source_path is fully populated.",
-      "validation_mode": "ENFORCE",
+      "validation_mode": "WARN",
       "action": "ALLOW",
       "blocking": false
     },
@@ -173,7 +173,7 @@
       "records_failing": 0,
       "sample_failing": [],
       "message": "source_path matches expected type string.",
-      "validation_mode": "ENFORCE",
+      "validation_mode": "WARN",
       "action": "ALLOW",
       "blocking": false
     },
@@ -188,7 +188,7 @@
       "records_failing": 0,
       "sample_failing": [],
       "message": "source_hash is fully populated.",
-      "validation_mode": "ENFORCE",
+      "validation_mode": "WARN",
       "action": "ALLOW",
       "blocking": false
     },
@@ -203,7 +203,7 @@
       "records_failing": 0,
       "sample_failing": [],
       "message": "source_hash matches expected type string.",
-      "validation_mode": "ENFORCE",
+      "validation_mode": "WARN",
       "action": "ALLOW",
       "blocking": false
     },
@@ -218,7 +218,7 @@
       "records_failing": 0,
       "sample_failing": [],
       "message": "source_hash matches the expected pattern.",
-      "validation_mode": "ENFORCE",
+      "validation_mode": "WARN",
       "action": "ALLOW",
       "blocking": false
     },
@@ -233,7 +233,7 @@
       "records_failing": 0,
       "sample_failing": [],
       "message": "entities_count is fully populated.",
-      "validation_mode": "ENFORCE",
+      "validation_mode": "WARN",
       "action": "ALLOW",
       "blocking": false
     },
@@ -248,7 +248,7 @@
       "records_failing": 0,
       "sample_failing": [],
       "message": "entities_count matches expected type integer.",
-      "validation_mode": "ENFORCE",
+      "validation_mode": "WARN",
       "action": "ALLOW",
       "blocking": false
     },
@@ -263,7 +263,7 @@
       "records_failing": 0,
       "sample_failing": [],
       "message": "extraction_model is fully populated.",
-      "validation_mode": "ENFORCE",
+      "validation_mode": "WARN",
       "action": "ALLOW",
       "blocking": false
     },
@@ -278,7 +278,7 @@
       "records_failing": 0,
       "sample_failing": [],
       "message": "extraction_model matches expected type string.",
-      "validation_mode": "ENFORCE",
+      "validation_mode": "WARN",
       "action": "ALLOW",
       "blocking": false
     },
@@ -293,7 +293,7 @@
       "records_failing": 0,
       "sample_failing": [],
       "message": "processing_time_ms is fully populated.",
-      "validation_mode": "ENFORCE",
+      "validation_mode": "WARN",
       "action": "ALLOW",
       "blocking": false
     },
@@ -308,7 +308,7 @@
       "records_failing": 0,
       "sample_failing": [],
       "message": "processing_time_ms matches expected type integer.",
-      "validation_mode": "ENFORCE",
+      "validation_mode": "WARN",
       "action": "ALLOW",
       "blocking": false
     },
@@ -323,7 +323,7 @@
       "records_failing": 0,
       "sample_failing": [],
       "message": "token_count_input is fully populated.",
-      "validation_mode": "ENFORCE",
+      "validation_mode": "WARN",
       "action": "ALLOW",
       "blocking": false
     },
@@ -338,7 +338,7 @@
       "records_failing": 0,
       "sample_failing": [],
       "message": "token_count_input matches expected type integer.",
-      "validation_mode": "ENFORCE",
+      "validation_mode": "WARN",
       "action": "ALLOW",
       "blocking": false
     },
@@ -353,7 +353,7 @@
       "records_failing": 0,
       "sample_failing": [],
       "message": "token_count_output is fully populated.",
-      "validation_mode": "ENFORCE",
+      "validation_mode": "WARN",
       "action": "ALLOW",
       "blocking": false
     },
@@ -368,7 +368,7 @@
       "records_failing": 0,
       "sample_failing": [],
       "message": "token_count_output matches expected type integer.",
-      "validation_mode": "ENFORCE",
+      "validation_mode": "WARN",
       "action": "ALLOW",
       "blocking": false
     },
@@ -383,7 +383,7 @@
       "records_failing": 0,
       "sample_failing": [],
       "message": "extracted_at is fully populated.",
-      "validation_mode": "ENFORCE",
+      "validation_mode": "WARN",
       "action": "ALLOW",
       "blocking": false
     },
@@ -398,7 +398,7 @@
       "records_failing": 0,
       "sample_failing": [],
       "message": "extracted_at matches expected type string.",
-      "validation_mode": "ENFORCE",
+      "validation_mode": "WARN",
       "action": "ALLOW",
       "blocking": false
     },
@@ -413,7 +413,7 @@
       "records_failing": 0,
       "sample_failing": [],
       "message": "extracted_at parses as ISO-8601 date-time.",
-      "validation_mode": "ENFORCE",
+      "validation_mode": "WARN",
       "action": "ALLOW",
       "blocking": false
     },
@@ -428,7 +428,7 @@
       "records_failing": 0,
       "sample_failing": [],
       "message": "fact_fact_id matches expected type string.",
-      "validation_mode": "ENFORCE",
+      "validation_mode": "WARN",
       "action": "ALLOW",
       "blocking": false
     },
@@ -443,7 +443,7 @@
       "records_failing": 0,
       "sample_failing": [],
       "message": "fact_fact_id matches the UUID format.",
-      "validation_mode": "ENFORCE",
+      "validation_mode": "WARN",
       "action": "ALLOW",
       "blocking": false
     },
@@ -458,7 +458,7 @@
       "records_failing": 0,
       "sample_failing": [],
       "message": "fact_text matches expected type string.",
-      "validation_mode": "ENFORCE",
+      "validation_mode": "WARN",
       "action": "ALLOW",
       "blocking": false
     },
@@ -473,7 +473,7 @@
       "records_failing": 0,
       "sample_failing": [],
       "message": "fact_entity_refs_count matches expected type number.",
-      "validation_mode": "ENFORCE",
+      "validation_mode": "WARN",
       "action": "ALLOW",
       "blocking": false
     },
@@ -488,7 +488,7 @@
       "records_failing": 0,
       "sample_failing": [],
       "message": "fact_entity_refs matches expected type string.",
-      "validation_mode": "ENFORCE",
+      "validation_mode": "WARN",
       "action": "ALLOW",
       "blocking": false
     },
@@ -503,7 +503,7 @@
       "records_failing": 0,
       "sample_failing": [],
       "message": "fact_confidence matches expected type number.",
-      "validation_mode": "ENFORCE",
+      "validation_mode": "WARN",
       "action": "ALLOW",
       "blocking": false
     },
@@ -518,7 +518,7 @@
       "records_failing": 0,
       "sample_failing": [],
       "message": "fact_page_ref matches expected type number.",
-      "validation_mode": "ENFORCE",
+      "validation_mode": "WARN",
       "action": "ALLOW",
       "blocking": false
     },
@@ -533,7 +533,7 @@
       "records_failing": 0,
       "sample_failing": [],
       "message": "fact_source_excerpt matches expected type string.",
-      "validation_mode": "ENFORCE",
+      "validation_mode": "WARN",
       "action": "ALLOW",
       "blocking": false
     },
@@ -548,7 +548,7 @@
       "records_failing": 0,
       "sample_failing": [],
       "message": "entities_count remains within the established baseline.",
-      "validation_mode": "ENFORCE",
+      "validation_mode": "WARN",
       "action": "ALLOW",
       "blocking": false
     },
@@ -563,7 +563,7 @@
       "records_failing": 0,
       "sample_failing": [],
       "message": "processing_time_ms remains within the established baseline.",
-      "validation_mode": "ENFORCE",
+      "validation_mode": "WARN",
       "action": "ALLOW",
       "blocking": false
     },
@@ -578,7 +578,7 @@
       "records_failing": 0,
       "sample_failing": [],
       "message": "token_count_input remains within the established baseline.",
-      "validation_mode": "ENFORCE",
+      "validation_mode": "WARN",
       "action": "ALLOW",
       "blocking": false
     },
@@ -593,7 +593,7 @@
       "records_failing": 0,
       "sample_failing": [],
       "message": "token_count_output remains within the established baseline.",
-      "validation_mode": "ENFORCE",
+      "validation_mode": "WARN",
       "action": "ALLOW",
       "blocking": false
     },
@@ -608,7 +608,7 @@
       "records_failing": 0,
       "sample_failing": [],
       "message": "fact_entity_refs_count remains within the established baseline.",
-      "validation_mode": "ENFORCE",
+      "validation_mode": "WARN",
       "action": "ALLOW",
       "blocking": false
     },
@@ -629,7 +629,7 @@
         "100.0"
       ],
       "message": "fact_confidence is outside the configured range. Breaking change detected.",
-      "validation_mode": "ENFORCE",
+      "validation_mode": "WARN",
       "action": "BLOCK",
       "blocking": true
     },
@@ -644,9 +644,9 @@
       "records_failing": 374,
       "sample_failing": [],
       "message": "fact_confidence mean drifted 700.4 stddev from baseline.",
-      "validation_mode": "ENFORCE",
-      "action": "BLOCK",
-      "blocking": true
+      "validation_mode": "WARN",
+      "action": "WARN",
+      "blocking": false
     },
     {
       "check_id": "week3-extractions.fact_page_ref.drift",
@@ -659,7 +659,7 @@
       "records_failing": 0,
       "sample_failing": [],
       "message": "fact_page_ref remains within the established baseline.",
-      "validation_mode": "ENFORCE",
+      "validation_mode": "WARN",
       "action": "ALLOW",
       "blocking": false
     }

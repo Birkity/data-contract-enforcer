@@ -38,9 +38,6 @@ observations:
   - token_count
   - extracted_at
   warnings: []
-  snapshot_paths:
-    timestamped: schema_snapshots/contracts/week3-extractions/20260402T104355Z.yaml
-    latest: schema_snapshots/contracts/week3-extractions/latest.yaml
 schema:
   doc_id:
     type: string

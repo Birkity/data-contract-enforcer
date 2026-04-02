@@ -1,17 +1,23 @@
 {
-  "generated_at": "2026-04-01T15:42:41.657497+00:00",
+  "generated_at": "2026-04-02T10:47:09.964203+00:00",
+  "architecture_mode": {
+    "blast_radius_primary_source": "contract_registry",
+    "lineage_role": "enrichment_only",
+    "enforcement_boundary": "consumer"
+  },
   "source_report": "validation_reports\\injected_violation.json",
   "contract_path": "generated_contracts\\week3_extractions.yaml",
+  "registry_path": "contract_registry\\subscriptions.yaml",
   "lineage_path": "outputs\\week4\\lineage_snapshots.jsonl",
   "repo_roots": [
     "E:\\10 Academy\\Week 3\\document-intelligence-refinery"
   ],
-  "violation_log_entry_count": 4,
+  "violation_log_entry_count": 6,
   "attributions": [
     {
-      "violation_id": "c9e5fe2c-6ea1-4341-97bd-2fbf87bcf56d",
+      "violation_id": "25678648-47cc-42c7-94e1-e542d322d55a",
       "check_id": "week3-extractions.fact_confidence.range",
-      "detected_at": "2026-04-01T15:24:58.197122+00:00",
+      "detected_at": "2026-04-02T10:46:44.600710+00:00",
       "field": "fact_confidence",
       "producer_system": "week3-document-intelligence-refinery",
       "dataset_path": "outputs/week3/extractions.jsonl",
@@ -26,13 +32,13 @@
         "100.0",
         "100.0"
       ],
-      "matching_violation_log_entries": 2,
+      "matching_violation_log_entries": 3,
       "candidate_files": [
         "src/agents/fact_table.py",
         "src/models/schemas.py",
         "src/strategies/vision.py",
         "src/strategies/ocr.py",
-        "src/strategies/base.py"
+        "src/strategies/fast_text.py"
       ],
       "blame_chain": [
         {
@@ -100,39 +106,138 @@
           "rank": 4
         },
         {
-          "file_path": "src/strategies/base.py",
+          "file_path": "src/strategies/fast_text.py",
           "repo_root": "E:\\10 Academy\\Week 3\\document-intelligence-refinery",
           "commit_hash": "1a3aae070f5d41a56f10f12ce83ad4017bb7138e",
           "author": "Birkity",
           "author_email": "birkity.yishak.m@gmail.com",
           "commit_timestamp": "2026-03-04T12:36:25+00:00",
           "commit_message": "feat: Implement database layer and extraction strategies for Document Intelligence Refinery",
-          "confidence_score": 0.6,
+          "confidence_score": 0.57,
           "path_relevance": 0.59,
           "lineage_distance": 0,
-          "rationale": "This file defines the base extraction confidence contract used by Week 3 strategies.",
+          "rationale": "This file computes a confidence score for the fast-text extraction strategy.",
           "recent_commit_count": 0,
           "line_blame_hits": 9,
           "rank": 5
         }
       ],
+      "blast_radius": {
+        "primary": {
+          "source": "contract_registry",
+          "subscriber_count": 3,
+          "matched_on_field": true,
+          "subscribers": [
+            {
+              "subscriber_id": "week4-brownfield-cartographer",
+              "fields_consumed": [
+                "doc_id",
+                "extracted_facts",
+                "extracted_facts[].confidence",
+                "entities"
+              ],
+              "breaking_fields": [
+                {
+                  "field": "extracted_facts[].confidence",
+                  "reason": "Confidence scale drives trust weighting and graph annotation quality in downstream cartography."
+                },
+                {
+                  "field": "doc_id",
+                  "reason": "Stable document identity is required to link extraction outputs to lineage or graph nodes."
+                }
+              ],
+              "validation_mode": "WARN",
+              "registered_at": "2026-04-02 16:20:00+00:00",
+              "contact": {
+                "owner": "Week 4 Brownfield Cartographer",
+                "role": "downstream consumer",
+                "email": "birkity.yishak.m@gmail.com"
+              },
+              "contact_summary": "Week 4 Brownfield Cartographer | downstream consumer | birkity.yishak.m@gmail.com",
+              "match_type": "field_match"
+            },
+            {
+              "subscriber_id": "week7-contract-generator",
+              "fields_consumed": [
+                "doc_id",
+                "extracted_facts",
+                "extracted_facts[].confidence",
+                "entities",
+                "extraction_model"
+              ],
+              "breaking_fields": [
+                {
+                  "field": "extracted_facts",
+                  "reason": "The generator depends on the nested fact structure to flatten the dataset and infer fact-level clauses."
+                },
+                {
+                  "field": "extracted_facts[].confidence",
+                  "reason": "Range and drift clauses are generated from the observed fact confidence distribution."
+                }
+              ],
+              "validation_mode": "AUDIT",
+              "registered_at": "2026-04-02 16:20:00+00:00",
+              "contact": {
+                "owner": "Week 7 Contract Generator",
+                "role": "contract consumer",
+                "email": "birkity.yishak.m@gmail.com"
+              },
+              "contact_summary": "Week 7 Contract Generator | contract consumer | birkity.yishak.m@gmail.com",
+              "match_type": "field_match"
+            },
+            {
+              "subscriber_id": "week7-validation-runner",
+              "fields_consumed": [
+                "doc_id",
+                "extracted_facts[].confidence",
+                "source_hash",
+                "extracted_at"
+              ],
+              "breaking_fields": [
+                {
+                  "field": "extracted_facts[].confidence",
+                  "reason": "Confidence is a critical semantic field and should block on range or high-severity drift in enforce mode."
+                },
+                {
+                  "field": "source_hash",
+                  "reason": "Hash integrity is used as part of the contract's structural guarantees."
+                }
+              ],
+              "validation_mode": "ENFORCE",
+              "registered_at": "2026-04-02 16:20:00+00:00",
+              "contact": {
+                "owner": "Week 7 Validation Runner",
+                "role": "enforcement consumer",
+                "email": "birkity.yishak.m@gmail.com"
+              },
+              "contact_summary": "Week 7 Validation Runner | enforcement consumer | birkity.yishak.m@gmail.com",
+              "match_type": "field_match"
+            }
+          ],
+          "summary": "Blast radius derived from contract registry subscribers that explicitly consume the failing field.",
+          "confidence": "high"
+        },
+        "enrichment": {
+          "source": "week4_lineage_enrichment",
+          "matched_nodes": [],
+          "upstream_candidates": [],
+          "downstream_nodes": [],
+          "summary": "The current Week 4 lineage snapshot is a dbt-style graph and does not expose an explicit Week 3 consumer path, so lineage enrichment is partial.",
+          "confidence": "low",
+          "notes": [
+            "No explicit Week 3 or extraction-related nodes were found in the current Week 4 lineage snapshot."
+          ]
+        }
+      },
       "lineage_context": {
         "lineage_shape": "dbt-whole-file",
-        "load_mode": "whole-file-json",
-        "matched_nodes": [],
-        "upstream_candidates": []
-      },
-      "blast_radius": {
-        "affected_nodes": [],
-        "affected_pipelines": [],
-        "summary": "The current Week 4 lineage snapshot is a dbt-style graph and does not expose an explicit consumer for the Week 3 extraction dataset. Known blast radius is therefore limited to the monitored Week 3 interface and any unseen consumers.",
-        "lineage_confidence": "low"
+        "load_mode": "whole-file-json"
       }
     },
     {
-      "violation_id": "fec974b9-5399-40d7-9426-dadf6c9eb6cf",
+      "violation_id": "5911c982-225d-4229-9735-85fbb5d9db23",
       "check_id": "week3-extractions.fact_confidence.drift",
-      "detected_at": "2026-04-01T15:24:58.197122+00:00",
+      "detected_at": "2026-04-02T10:46:44.600710+00:00",
       "field": "fact_confidence",
       "producer_system": "week3-document-intelligence-refinery",
       "dataset_path": "outputs/week3/extractions.jsonl",
@@ -141,13 +246,13 @@
       "message": "fact_confidence mean drifted 700.4 stddev from baseline.",
       "records_failing": 374,
       "sample_failing": [],
-      "matching_violation_log_entries": 2,
+      "matching_violation_log_entries": 3,
       "candidate_files": [
         "src/agents/fact_table.py",
         "src/models/schemas.py",
         "src/strategies/vision.py",
         "src/strategies/ocr.py",
-        "src/strategies/base.py"
+        "src/strategies/fast_text.py"
       ],
       "blame_chain": [
         {
@@ -215,33 +320,132 @@
           "rank": 4
         },
         {
-          "file_path": "src/strategies/base.py",
+          "file_path": "src/strategies/fast_text.py",
           "repo_root": "E:\\10 Academy\\Week 3\\document-intelligence-refinery",
           "commit_hash": "1a3aae070f5d41a56f10f12ce83ad4017bb7138e",
           "author": "Birkity",
           "author_email": "birkity.yishak.m@gmail.com",
           "commit_timestamp": "2026-03-04T12:36:25+00:00",
           "commit_message": "feat: Implement database layer and extraction strategies for Document Intelligence Refinery",
-          "confidence_score": 0.6,
+          "confidence_score": 0.57,
           "path_relevance": 0.59,
           "lineage_distance": 0,
-          "rationale": "This file defines the base extraction confidence contract used by Week 3 strategies.",
+          "rationale": "This file computes a confidence score for the fast-text extraction strategy.",
           "recent_commit_count": 0,
           "line_blame_hits": 9,
           "rank": 5
         }
       ],
+      "blast_radius": {
+        "primary": {
+          "source": "contract_registry",
+          "subscriber_count": 3,
+          "matched_on_field": true,
+          "subscribers": [
+            {
+              "subscriber_id": "week4-brownfield-cartographer",
+              "fields_consumed": [
+                "doc_id",
+                "extracted_facts",
+                "extracted_facts[].confidence",
+                "entities"
+              ],
+              "breaking_fields": [
+                {
+                  "field": "extracted_facts[].confidence",
+                  "reason": "Confidence scale drives trust weighting and graph annotation quality in downstream cartography."
+                },
+                {
+                  "field": "doc_id",
+                  "reason": "Stable document identity is required to link extraction outputs to lineage or graph nodes."
+                }
+              ],
+              "validation_mode": "WARN",
+              "registered_at": "2026-04-02 16:20:00+00:00",
+              "contact": {
+                "owner": "Week 4 Brownfield Cartographer",
+                "role": "downstream consumer",
+                "email": "birkity.yishak.m@gmail.com"
+              },
+              "contact_summary": "Week 4 Brownfield Cartographer | downstream consumer | birkity.yishak.m@gmail.com",
+              "match_type": "field_match"
+            },
+            {
+              "subscriber_id": "week7-contract-generator",
+              "fields_consumed": [
+                "doc_id",
+                "extracted_facts",
+                "extracted_facts[].confidence",
+                "entities",
+                "extraction_model"
+              ],
+              "breaking_fields": [
+                {
+                  "field": "extracted_facts",
+                  "reason": "The generator depends on the nested fact structure to flatten the dataset and infer fact-level clauses."
+                },
+                {
+                  "field": "extracted_facts[].confidence",
+                  "reason": "Range and drift clauses are generated from the observed fact confidence distribution."
+                }
+              ],
+              "validation_mode": "AUDIT",
+              "registered_at": "2026-04-02 16:20:00+00:00",
+              "contact": {
+                "owner": "Week 7 Contract Generator",
+                "role": "contract consumer",
+                "email": "birkity.yishak.m@gmail.com"
+              },
+              "contact_summary": "Week 7 Contract Generator | contract consumer | birkity.yishak.m@gmail.com",
+              "match_type": "field_match"
+            },
+            {
+              "subscriber_id": "week7-validation-runner",
+              "fields_consumed": [
+                "doc_id",
+                "extracted_facts[].confidence",
+                "source_hash",
+                "extracted_at"
+              ],
+              "breaking_fields": [
+                {
+                  "field": "extracted_facts[].confidence",
+                  "reason": "Confidence is a critical semantic field and should block on range or high-severity drift in enforce mode."
+                },
+                {
+                  "field": "source_hash",
+                  "reason": "Hash integrity is used as part of the contract's structural guarantees."
+                }
+              ],
+              "validation_mode": "ENFORCE",
+              "registered_at": "2026-04-02 16:20:00+00:00",
+              "contact": {
+                "owner": "Week 7 Validation Runner",
+                "role": "enforcement consumer",
+                "email": "birkity.yishak.m@gmail.com"
+              },
+              "contact_summary": "Week 7 Validation Runner | enforcement consumer | birkity.yishak.m@gmail.com",
+              "match_type": "field_match"
+            }
+          ],
+          "summary": "Blast radius derived from contract registry subscribers that explicitly consume the failing field.",
+          "confidence": "high"
+        },
+        "enrichment": {
+          "source": "week4_lineage_enrichment",
+          "matched_nodes": [],
+          "upstream_candidates": [],
+          "downstream_nodes": [],
+          "summary": "The current Week 4 lineage snapshot is a dbt-style graph and does not expose an explicit Week 3 consumer path, so lineage enrichment is partial.",
+          "confidence": "low",
+          "notes": [
+            "No explicit Week 3 or extraction-related nodes were found in the current Week 4 lineage snapshot."
+          ]
+        }
+      },
       "lineage_context": {
         "lineage_shape": "dbt-whole-file",
-        "load_mode": "whole-file-json",
-        "matched_nodes": [],
-        "upstream_candidates": []
-      },
-      "blast_radius": {
-        "affected_nodes": [],
-        "affected_pipelines": [],
-        "summary": "The current Week 4 lineage snapshot is a dbt-style graph and does not expose an explicit consumer for the Week 3 extraction dataset. Known blast radius is therefore limited to the monitored Week 3 interface and any unseen consumers.",
-        "lineage_confidence": "low"
+        "load_mode": "whole-file-json"
       }
     }
   ]
