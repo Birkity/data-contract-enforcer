@@ -1,0 +1,15 @@
+{
+  "generated_at": "2026-04-02T11:11:44.256931+00:00",
+  "contract_id": "week3-extractions",
+  "total_changes": 1,
+  "breaking_changes": 1,
+  "backward_compatible_changes": 0,
+  "impacted_systems": [
+    "week4-brownfield-cartographer",
+    "week7-contract-generator",
+    "week7-validation-runner"
+  ],
+  "decision": "FAIL",
+  "ci_gate_blocking": true,
+  "recommendation": "Breaking change detected for fields that active registered consumers depend on. Deployment should be blocked."
+}
