@@ -3,3 +3,4 @@ TRP1 Challenge Week 7_ Data Contract Enforcer.md
 .env
 .venv
 reports/
+.tmp/
