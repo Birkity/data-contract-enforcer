@@ -142,6 +142,8 @@ def build_report_data(
     primary_blast_radius = first_attr.get("blast_radius", {}).get("primary", {})
     enrichment_blast_radius = first_attr.get("blast_radius", {}).get("enrichment", {})
     ai_checks = ai_metrics.get("checks", {})
+    embedding_drift = ai_checks.get("embedding_drift", {})
+    trace_risk = ai_checks.get("trace_contract_risk", {})
 
     real_ai_findings = [
         row
@@ -153,7 +155,6 @@ def build_report_data(
         "Keep consumer-side validation in AUDIT first for any new subscriber, then move to WARN or ENFORCE after a clean baseline is established.",
         "Keep SchemaEvolutionAnalyzer in the producer CI path so breaking schema changes are blocked before consumers see them.",
     ]
-    trace_risk = ai_checks.get("trace_contract_risk", {})
     if trace_risk.get("status") != "PASS":
         recommendations.append(
             "Normalize LangSmith run_type values or narrow the exported trace set before treating trace telemetry as a strict contract boundary."
@@ -175,6 +176,18 @@ def build_report_data(
             continue
         seen.add(item)
         deduped_recommendations.append(item)
+
+    known_limitations = [
+        "Week 4 lineage is canonical and useful now, but the consumer-side enrichment is still dominated by dynamic file-I/O observations rather than a clean explicit Week 3 contract edge."
+    ]
+    if trace_risk.get("status") != "PASS":
+        known_limitations.append(
+            "LangSmith traces still need additional normalization before they can be treated as a strict raw contract boundary."
+        )
+    if embedding_drift.get("status") != "PASS":
+        known_limitations.append(
+            "Embedding drift is still above the current pass threshold, so the AI baseline should be refreshed before stricter enforcement."
+        )
 
     return {
         "generated_at": now_iso(),
@@ -264,10 +277,7 @@ def build_report_data(
         "artifact_state": {
             "snapshot_versions": snapshot_counts,
             "submission_ready": True,
-            "known_limitations": [
-                "Week 4 lineage is canonical now, but it still does not expose a direct Week 3 consumer path, so blast radius enrichment remains weaker than registry-based subscriber impact.",
-                "LangSmith traces currently contain non-canonical run_type values such as prompt and parser.",
-            ],
+            "known_limitations": known_limitations,
         },
         "recommended_actions": deduped_recommendations,
     }
@@ -332,7 +342,7 @@ def render_markdown(report_data: dict[str, Any]) -> str:
             "## Submission view",
             "",
             "- The system is ready for submission because the registry-aware contracts, validation modes, attribution, schema evolution gate, AI extensions, and final report outputs are all present and connected.",
-            "- The main remaining weakness is Week 4 lineage relevance, not Week 4 format: the file is canonical now, but it still lacks an explicit Week 3 consumer path for stronger enrichment.",
+            "- The main remaining weakness is lineage specificity, not missing implementation: Week 4 now contributes canonical enrichment, but the consumer-side graph is still more file-I/O-shaped than contract-edge-shaped.",
         ]
     )
     return "\n".join(lines) + "\n"

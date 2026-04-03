@@ -22,7 +22,7 @@ implementation_model:
   lineage_role: enrichment_only
   trust_boundary_tier: tier_1_registry_plus_lineage
 observations:
-  generated_at: '2026-04-02T20:05:45.810295+00:00'
+  generated_at: '2026-04-02T20:58:17.568065+00:00'
   record_count: 50
   profiled_row_count: 173
   flatten_mode: exploded_repeated_items
@@ -39,7 +39,7 @@ observations:
   - extracted_at
   warnings: []
   snapshot_paths:
-    timestamped: schema_snapshots/contracts/week3-extractions/20260402T200545Z.yaml
+    timestamped: schema_snapshots/contracts/week3-extractions/20260402T205817Z.yaml
     latest: schema_snapshots/contracts/week3-extractions/latest.yaml
 schema:
   doc_id:
@@ -347,7 +347,7 @@ registry:
       email: birkity.yishak.m@gmail.com
     contact_summary: Week 4 Brownfield Cartographer | downstream consumer | birkity.yishak.m@gmail.com
   - subscriber_id: week7-contract-generator
-    fields_consumed:
+    fields_consumed: &id001
     - doc_id
     - extracted_facts
     - extracted_facts[].confidence
@@ -367,7 +367,7 @@ registry:
       email: birkity.yishak.m@gmail.com
     contact_summary: Week 7 Contract Generator | contract consumer | birkity.yishak.m@gmail.com
   - subscriber_id: week7-validation-runner
-    fields_consumed:
+    fields_consumed: &id002
     - doc_id
     - extracted_facts[].confidence
     - source_hash
@@ -405,4 +405,27 @@ lineage:
     - doc_id
     - extracted_facts
     - extracted_facts[].confidence
-  notes: []
+  - id: week7-contract-generator
+    label: week7-contract-generator
+    relationship: REGISTRY_ALIGNED_LINEAGE_CONSUMER
+    fields_consumed: *id001
+    snapshot_root: C:\Users\Ab\OneDrive\Desktop\10 Academy\Week 7\data-contract-enforcer
+    matched_nodes:
+    - dynamic.file_io.contracts/generator.py:51
+    - dynamic.file_io.contracts/generator.py:628
+    - py:contracts/generator.py:51
+    - py:contracts/generator.py:628
+  - id: week7-validation-runner
+    label: week7-validation-runner
+    relationship: REGISTRY_ALIGNED_LINEAGE_CONSUMER
+    fields_consumed: *id002
+    snapshot_root: C:\Users\Ab\OneDrive\Desktop\10 Academy\Week 7\data-contract-enforcer
+    matched_nodes:
+    - dynamic.file_io.contracts/runner.py:102
+    - dynamic.file_io.contracts/runner.py:525
+    - dynamic.file_io.contracts/runner.py:609
+    - py:contracts/runner.py:102
+    - py:contracts/runner.py:525
+  notes:
+  - Consumer-side lineage enrichment was expanded using registry-aligned snapshots in addition to the
+    primary producer snapshot.

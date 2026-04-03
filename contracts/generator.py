@@ -10,7 +10,11 @@ from typing import Any
 import pandas as pd
 import yaml
 
-from lineage_selector import infer_repo_roots_from_records, load_preferred_lineage_snapshot
+from lineage_selector import (
+    infer_repo_roots_from_records,
+    load_lineage_snapshots,
+    load_preferred_lineage_snapshot,
+)
 from registry_tools import contact_summary, get_contract_subscriptions, infer_trust_tier, load_registry
 
 
@@ -367,7 +371,12 @@ def build_schema_clause(column_name: str, series: pd.Series) -> dict[str, Any]:
 
     if profile["dtype"] == "string":
         enum_values = unique_string_values(series)
-        if enum_values and column_name not in {"source_path", "source_hash", "fact_text", "fact_source_excerpt", "fact_entity_refs"}:
+        if (
+            enum_values
+            and clause.get("format") != "date-time"
+            and column_name
+            not in {"source_path", "source_hash", "fact_text", "fact_source_excerpt", "fact_entity_refs"}
+        ):
             clause["enum"] = enum_values
 
     ordered_profile: dict[str, Any] = {
@@ -534,6 +543,91 @@ def build_registry_context(
     }
 
 
+def subscriber_snapshot_patterns(subscriber_id: str) -> dict[str, list[str]]:
+    lowered = subscriber_id.lower()
+    file_patterns: list[str] = []
+    repo_patterns: list[str] = []
+
+    if "contract-generator" in lowered:
+        repo_patterns.extend(["data-contract-enforcer", "week7"])
+        file_patterns.append("contracts/generator.py")
+    elif "validation-runner" in lowered:
+        repo_patterns.extend(["data-contract-enforcer", "week7"])
+        file_patterns.append("contracts/runner.py")
+    elif "brownfield-cartographer" in lowered:
+        repo_patterns.extend(["brownfield-cartographer", "week4"])
+        file_patterns.extend(
+            [
+                "src/agents/hydrologist.py",
+                "src/exporters/week7_lineage.py",
+                "src/cli.py",
+            ]
+        )
+
+    return {"repo_patterns": repo_patterns, "file_patterns": file_patterns}
+
+
+def find_registry_aligned_lineage_consumers(
+    snapshots: list[dict[str, Any]],
+    registry_context: dict[str, Any],
+) -> list[dict[str, Any]]:
+    matches: list[dict[str, Any]] = []
+
+    for subscription in registry_context.get("subscriptions", []):
+        subscriber_id = str(subscription.get("subscriber_id") or "")
+        patterns = subscriber_snapshot_patterns(subscriber_id)
+        if not patterns["repo_patterns"] and not patterns["file_patterns"]:
+            continue
+
+        for snapshot in snapshots:
+            codebase_root = str(snapshot.get("codebase_root") or "")
+            root_text = codebase_root.lower()
+            if patterns["repo_patterns"] and not any(
+                pattern in root_text for pattern in patterns["repo_patterns"]
+            ):
+                continue
+
+            node_hits: list[str] = []
+            for node in snapshot.get("nodes", []) or []:
+                metadata = node.get("metadata", {}) or {}
+                haystack = " ".join(
+                    [
+                        str(node.get("id") or ""),
+                        str(node.get("name") or ""),
+                        str(node.get("source_file") or ""),
+                        str(metadata.get("source_file") or ""),
+                        str(metadata.get("source_file_abs") or ""),
+                    ]
+                ).lower()
+                if patterns["file_patterns"] and not any(
+                    pattern in haystack for pattern in patterns["file_patterns"]
+                ):
+                    continue
+                node_hits.append(str(node.get("id") or node.get("name") or "unknown-node"))
+
+            if node_hits:
+                matches.append(
+                    {
+                        "id": subscriber_id,
+                        "label": subscriber_id,
+                        "relationship": "REGISTRY_ALIGNED_LINEAGE_CONSUMER",
+                        "fields_consumed": subscription.get("fields_consumed", []),
+                        "snapshot_root": codebase_root,
+                        "matched_nodes": node_hits[:5],
+                    }
+                )
+
+    deduped: list[dict[str, Any]] = []
+    seen: set[tuple[str, str]] = set()
+    for item in matches:
+        key = (str(item.get("id")), str(item.get("snapshot_root")))
+        if key in seen:
+            continue
+        seen.add(key)
+        deduped.append(item)
+    return deduped
+
+
 def build_contract(
     contract_id: str,
     source_path: Path,
@@ -544,6 +638,7 @@ def build_contract(
     flatten_metadata: dict[str, Any],
     lineage_snapshot: dict[str, Any],
     lineage_mode: str,
+    lineage_snapshots: list[dict[str, Any]],
     registry_payload: dict[str, Any],
 ) -> dict[str, Any]:
     schema_order = ordered_columns_for_dataset(source_path)
@@ -564,6 +659,15 @@ def build_contract(
         source_terms=make_source_terms(source_path),
     )
     registry_context = build_registry_context(contract_id, registry_path, registry_payload)
+    registry_aligned_consumers = find_registry_aligned_lineage_consumers(
+        lineage_snapshots,
+        registry_context,
+    )
+    if registry_aligned_consumers:
+        downstream.extend(registry_aligned_consumers)
+        lineage_notes.append(
+            "Consumer-side lineage enrichment was expanded using registry-aligned snapshots in addition to the primary producer snapshot."
+        )
     trust_tier = infer_trust_tier(
         has_registry=registry_context["subscriber_count"] > 0,
         has_lineage=bool(downstream or lineage_notes),
@@ -833,6 +937,7 @@ def main() -> int:
     df, flatten_metadata = flatten_for_profile(records)
     preferred_roots = infer_repo_roots_from_records(records)
 
+    lineage_snapshots, _ = load_lineage_snapshots(lineage_path)
     lineage_snapshot, lineage_mode = load_latest_lineage_snapshot(lineage_path, preferred_roots)
     registry_payload = load_registry(registry_path)
     contract_id = make_contract_slug(source_path, args.contract_id)
@@ -846,6 +951,7 @@ def main() -> int:
         flatten_metadata=flatten_metadata,
         lineage_snapshot=lineage_snapshot,
         lineage_mode=lineage_mode,
+        lineage_snapshots=lineage_snapshots,
         registry_payload=registry_payload,
     )
     snapshot_paths = write_contract_snapshot(snapshot_dir, contract_id, contract)

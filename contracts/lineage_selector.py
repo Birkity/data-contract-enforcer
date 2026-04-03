@@ -52,6 +52,12 @@ def load_preferred_lineage_snapshot(
     return snapshot, f"{load_mode}:{selection_mode}"
 
 
+def load_lineage_snapshots(path: Path) -> tuple[list[dict[str, Any]], str]:
+    if not path.exists():
+        raise FileNotFoundError(f"Lineage file not found: {path}")
+    return _load_snapshot_candidates(path)
+
+
 def _load_snapshot_candidates(path: Path) -> tuple[list[dict[str, Any]], str]:
     text = path.read_text(encoding="utf-8")
     lines = [line for line in text.splitlines() if line.strip()]

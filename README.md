@@ -106,8 +106,9 @@ The current trace export contains:
 
 - `153` rows
 - enough volume for the Week 7 requirement
-- helper-span `run_type` values such as `prompt` and `parser` in the raw export
-- a canonical consumer-boundary file at `outputs/traces/runs_contract_boundary.jsonl` with `126` normalized rows
+- a cleaned contract-source file at `outputs/traces/runs.jsonl`
+- a preserved raw backup at `outputs/traces/runs_raw.jsonl`
+- a canonical consumer-boundary file at `outputs/traces/runs_contract_boundary.jsonl` with `153` normalized rows
 
 ## How to rerun the full flow
 
@@ -179,12 +180,8 @@ Verified:
 - all four parse successfully as YAML
 - the Bitol contracts include structural, numeric, registry, and lineage sections
 - the dbt counterparts include generated tests for required fields, enums, patterns, and numeric ranges
-
-Not verified here:
-
-- live `dbt test` execution
-
-That is the only reason the dbt verification claim is artifact-level rather than runtime-level in this environment.
+- live dbt smoke verification now passes via `contracts/dbt_smoke_verify.py`
+- `enforcer_report/dbt_verification.json` records successful `seed`, `run`, and `test` execution
 
 ### Validation
 
@@ -218,16 +215,14 @@ Current CI-gate result:
 
 Current AI findings:
 
-- embedding drift: `WARN`
+- embedding drift: `PASS`
 - prompt input schema validation: `PASS`
 - LLM output schema validation: `PASS`
 - trace contract risk: `PASS`
 
 ## Remaining honest limitations
 
-- Week 4 lineage is now canonical, but it still does not expose a direct Week 3 consumer path, so lineage enrichment is weaker than registry-based impact analysis.
-- Raw trace telemetry still contains helper-span `run_type` values such as `prompt` and `parser`, but the consumer-boundary trace contract file now normalizes them.
-- The embedding drift metric now uses real local Ollama embeddings when available; the current remaining issue is not methodology but the `WARN` result itself, which should be re-baselined before stricter enforcement.
+- Week 4 lineage is now canonical and useful, but it still does not expose a clean explicit Week 3 consumer path, so lineage specificity is weaker than registry-based impact analysis.
 
 ## Best current truth sources
 

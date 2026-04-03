@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-04-02T20:06:51.462135+00:00",
+  "generated_at": "2026-04-02T20:23:28.183220+00:00",
   "architecture_mode": {
     "blast_radius_primary_source": "contract_registry",
     "lineage_role": "enrichment_only",
@@ -23,7 +23,7 @@
   "violation_log_entry_count": 6,
   "attributions": [
     {
-      "violation_id": "7e43f893-e81c-48bd-ab24-34543758fcbe",
+      "violation_id": "b4f337b5-64b3-41f9-8d14-29a5343daae9",
       "check_id": "week3-extractions.fact_confidence.range",
       "detected_at": "2026-04-02T20:06:18.232209+00:00",
       "field": "fact_confidence",
@@ -247,8 +247,44 @@
             "py:src/db/init_db.py:33",
             "py:src/agents/fact_table.py:704"
           ],
+          "registry_aligned_consumers": [
+            {
+              "subscriber_id": "week7-contract-generator",
+              "snapshot_root": "C:\\Users\\Ab\\OneDrive\\Desktop\\10 Academy\\Week 7\\data-contract-enforcer",
+              "matched_nodes": [
+                "dynamic.file_io.contracts/generator.py:51",
+                "dynamic.file_io.contracts/generator.py:628",
+                "py:contracts/generator.py:51",
+                "py:contracts/generator.py:628"
+              ],
+              "fields_consumed": [
+                "doc_id",
+                "extracted_facts",
+                "extracted_facts[].confidence",
+                "entities",
+                "extraction_model"
+              ]
+            },
+            {
+              "subscriber_id": "week7-validation-runner",
+              "snapshot_root": "C:\\Users\\Ab\\OneDrive\\Desktop\\10 Academy\\Week 7\\data-contract-enforcer",
+              "matched_nodes": [
+                "dynamic.file_io.contracts/runner.py:102",
+                "dynamic.file_io.contracts/runner.py:525",
+                "dynamic.file_io.contracts/runner.py:609",
+                "py:contracts/runner.py:102",
+                "py:contracts/runner.py:525"
+              ],
+              "fields_consumed": [
+                "doc_id",
+                "extracted_facts[].confidence",
+                "source_hash",
+                "extracted_at"
+              ]
+            }
+          ],
           "summary": "Lineage traversal found downstream enrichment nodes that may reflect transitive propagation.",
-          "confidence": "medium",
+          "confidence": "high",
           "notes": []
         }
       },
@@ -258,7 +294,7 @@
       }
     },
     {
-      "violation_id": "8af070ed-812a-48e7-967e-dfcbefb79f72",
+      "violation_id": "12f2fc49-d84b-4939-9f00-2c4252cf9b39",
       "check_id": "week3-extractions.fact_confidence.drift",
       "detected_at": "2026-04-02T20:06:18.232209+00:00",
       "field": "fact_confidence",
@@ -476,8 +512,44 @@
             "py:src/db/init_db.py:33",
             "py:src/agents/fact_table.py:704"
           ],
+          "registry_aligned_consumers": [
+            {
+              "subscriber_id": "week7-contract-generator",
+              "snapshot_root": "C:\\Users\\Ab\\OneDrive\\Desktop\\10 Academy\\Week 7\\data-contract-enforcer",
+              "matched_nodes": [
+                "dynamic.file_io.contracts/generator.py:51",
+                "dynamic.file_io.contracts/generator.py:628",
+                "py:contracts/generator.py:51",
+                "py:contracts/generator.py:628"
+              ],
+              "fields_consumed": [
+                "doc_id",
+                "extracted_facts",
+                "extracted_facts[].confidence",
+                "entities",
+                "extraction_model"
+              ]
+            },
+            {
+              "subscriber_id": "week7-validation-runner",
+              "snapshot_root": "C:\\Users\\Ab\\OneDrive\\Desktop\\10 Academy\\Week 7\\data-contract-enforcer",
+              "matched_nodes": [
+                "dynamic.file_io.contracts/runner.py:102",
+                "dynamic.file_io.contracts/runner.py:525",
+                "dynamic.file_io.contracts/runner.py:609",
+                "py:contracts/runner.py:102",
+                "py:contracts/runner.py:525"
+              ],
+              "fields_consumed": [
+                "doc_id",
+                "extracted_facts[].confidence",
+                "source_hash",
+                "extracted_at"
+              ]
+            }
+          ],
           "summary": "Lineage traversal found downstream enrichment nodes that may reflect transitive propagation.",
-          "confidence": "medium",
+          "confidence": "high",
           "notes": []
         }
       },

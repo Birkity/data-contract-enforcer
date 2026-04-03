@@ -19,10 +19,11 @@ from registry_tools import get_contract_subscriptions, load_registry
 
 ALLOWED_TRACE_RUN_TYPES = {"llm", "chain", "tool", "retriever", "embedding"}
 INTERNAL_TRACE_RUN_TYPES = {
-    "prompt": "prompt_helper_span",
-    "parser": "parser_helper_span",
+    "prompt": {"run_type": "chain", "reason": "prompt_helper_span"},
+    "parser": {"run_type": "tool", "reason": "parser_helper_span"},
 }
 DEFAULT_CANONICAL_TRACE_OUTPUT = "outputs/traces/runs_contract_boundary.jsonl"
+DEFAULT_EMBEDDING_BASELINE = "schema_snapshots/ai/embedding_baseline.json"
 EMBEDDING_MODEL_HINTS = ("embed", "embedding", "nomic-embed", "mxbai-embed")
 TOKEN_RE = re.compile(r"[a-z0-9]+")
 
@@ -35,6 +36,8 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--week2", default="outputs/week2/verdicts.jsonl")
     parser.add_argument("--traces", default="outputs/traces/runs.jsonl")
     parser.add_argument("--canonical-traces-output", default=DEFAULT_CANONICAL_TRACE_OUTPUT)
+    parser.add_argument("--embedding-baseline", default=DEFAULT_EMBEDDING_BASELINE)
+    parser.add_argument("--refresh-embedding-baseline", action="store_true")
     parser.add_argument("--registry", default="contract_registry/subscriptions.yaml")
     parser.add_argument("--output", default="enforcer_report/ai_metrics.json")
     parser.add_argument("--violation-log", default="violation_log/violations.jsonl")
@@ -67,6 +70,17 @@ def write_jsonl(path: Path, rows: list[dict[str, Any]]) -> None:
             handle.write(json.dumps(row, ensure_ascii=False) + "\n")
 
 
+def load_json(path: Path) -> dict[str, Any] | None:
+    if not path.exists():
+        return None
+    return json.loads(path.read_text(encoding="utf-8"))
+
+
+def write_json(path: Path, payload: dict[str, Any]) -> None:
+    ensure_parent(path)
+    path.write_text(json.dumps(payload, indent=2), encoding="utf-8")
+
+
 def parse_iso(value: Any) -> datetime:
     text = str(value)
     return datetime.fromisoformat(text.replace("Z", "+00:00"))
@@ -92,7 +106,7 @@ def tokenize(text: str) -> list[str]:
     return TOKEN_RE.findall(text.lower())
 
 
-def extract_fact_text_windows(week3_rows: list[dict[str, Any]]) -> tuple[list[str], list[str]]:
+def extract_fact_texts(week3_rows: list[dict[str, Any]]) -> list[str]:
     documents = sorted(
         week3_rows,
         key=lambda row: parse_iso(row.get("extracted_at") or now_iso()),
@@ -105,7 +119,11 @@ def extract_fact_text_windows(week3_rows: list[dict[str, Any]]) -> tuple[list[st
             if text:
                 fact_texts.append((extracted_at, text))
 
-    ordered_texts = [text for _, text in fact_texts]
+    return [text for _, text in fact_texts]
+
+
+def extract_fact_text_windows(week3_rows: list[dict[str, Any]]) -> tuple[list[str], list[str]]:
+    ordered_texts = extract_fact_texts(week3_rows)
     midpoint = max(len(ordered_texts) // 2, 1)
     baseline_texts = ordered_texts[:midpoint]
     current_texts = ordered_texts[midpoint:] or ordered_texts[:midpoint]
@@ -153,6 +171,14 @@ def average_vectors(vectors: list[list[float]]) -> list[float]:
 def top_shifted_tokens(left_texts: list[str], right_texts: list[str], limit: int = 8) -> list[str]:
     left_counts = Counter(token for text in left_texts for token in tokenize(text))
     right_counts = Counter(token for text in right_texts for token in tokenize(text))
+    return top_shifted_tokens_from_counts(left_counts, right_counts, limit=limit)
+
+
+def top_shifted_tokens_from_counts(
+    left_counts: Counter[str],
+    right_counts: Counter[str],
+    limit: int = 8,
+) -> list[str]:
     scored = []
     for token in set(left_counts) | set(right_counts):
         delta = abs(left_counts[token] - right_counts[token])
@@ -161,6 +187,10 @@ def top_shifted_tokens(left_texts: list[str], right_texts: list[str], limit: int
         scored.append((delta, token))
     scored.sort(reverse=True)
     return [token for _, token in scored[:limit]]
+
+
+def token_count_map(texts: list[str]) -> dict[str, int]:
+    return dict(sorted(Counter(token for text in texts for token in tokenize(text)).items()))
 
 
 def post_json(url: str, payload: dict[str, Any], timeout: int = 30) -> dict[str, Any]:
@@ -263,11 +293,10 @@ def fetch_ollama_embeddings(
     return vectors
 
 
-def compute_embedding_drift(
-    week3_rows: list[dict[str, Any]],
+def build_embedding_representation(
+    texts: list[str],
     trace_rows: list[dict[str, Any]],
 ) -> dict[str, Any]:
-    baseline_texts, current_texts = extract_fact_text_windows(week3_rows)
     metric_source = "deterministic_lexical_surrogate"
     provider = "local-hash"
     model = "hashed-token-centroid"
@@ -277,27 +306,89 @@ def compute_embedding_drift(
     embed_model, model_reason = discover_embedding_model(base_url)
     if embed_model and base_url:
         try:
-            baseline_vectors = fetch_ollama_embeddings(base_url, embed_model, baseline_texts)
-            current_vectors = fetch_ollama_embeddings(base_url, embed_model, current_texts)
-            drift_score = cosine_distance(
-                average_vectors(baseline_vectors),
-                average_vectors(current_vectors),
-            )
+            vectors = fetch_ollama_embeddings(base_url, embed_model, texts)
+            centroid_vector = average_vectors(vectors)
             metric_source = "ollama_embeddings"
             provider = base_url
             model = embed_model
         except Exception as exc:  # pragma: no cover - depends on local runtime
-            drift_score = cosine_distance(centroid(baseline_texts), centroid(current_texts))
+            centroid_vector = centroid(texts)
             fallback_reason = (
                 f"Embedding provider was discovered but the embedding request failed: {exc}"
             )
     else:
-        drift_score = cosine_distance(centroid(baseline_texts), centroid(current_texts))
+        centroid_vector = centroid(texts)
         fallback_reason = model_reason
+
+    return {
+        "centroid": centroid_vector,
+        "metric_source": metric_source,
+        "provider": provider,
+        "model": model,
+        "fallback_reason": fallback_reason,
+        "text_count": len(texts),
+        "token_counts": token_count_map(texts),
+    }
+
+
+def persist_embedding_baseline(
+    path: Path,
+    representation: dict[str, Any],
+    *,
+    baseline_action: str,
+) -> dict[str, Any]:
+    payload = {
+        "generated_at": now_iso(),
+        "baseline_action": baseline_action,
+        "metric_source": representation["metric_source"],
+        "provider": representation["provider"],
+        "model": representation["model"],
+        "fallback_reason": representation["fallback_reason"],
+        "text_count": representation["text_count"],
+        "token_counts": representation["token_counts"],
+        "centroid": representation["centroid"],
+    }
+    write_json(path, payload)
+    return payload
+
+
+def compute_embedding_drift(
+    week3_rows: list[dict[str, Any]],
+    trace_rows: list[dict[str, Any]],
+    baseline_path: Path,
+    *,
+    refresh_baseline: bool = False,
+) -> dict[str, Any]:
+    current_texts = extract_fact_texts(week3_rows)
+    current_representation = build_embedding_representation(current_texts, trace_rows)
+    baseline_payload = load_json(baseline_path)
+
+    baseline_action = "used_existing"
+    if refresh_baseline or not baseline_payload:
+        baseline_action = "refreshed" if refresh_baseline and baseline_payload else "created"
+        baseline_payload = persist_embedding_baseline(
+            baseline_path,
+            current_representation,
+            baseline_action=baseline_action,
+        )
+        drift_score = 0.0
+    else:
+        baseline_vector = baseline_payload.get("centroid") or []
+        current_vector = current_representation["centroid"]
+        if not baseline_vector or len(baseline_vector) != len(current_vector):
+            baseline_action = "recreated_due_to_shape_mismatch"
+            baseline_payload = persist_embedding_baseline(
+                baseline_path,
+                current_representation,
+                baseline_action=baseline_action,
+            )
+            drift_score = 0.0
+        else:
+            drift_score = cosine_distance(baseline_vector, current_vector)
 
     status = status_from_rate(drift_score, warn_threshold=0.18, fail_threshold=0.35)
     notes = []
-    if metric_source == "ollama_embeddings":
+    if current_representation["metric_source"] == "ollama_embeddings":
         notes.append(
             "This metric used a real local embedding provider, so the drift score reflects semantic similarity rather than token hashing alone."
         )
@@ -305,66 +396,80 @@ def compute_embedding_drift(
         notes.append(
             "This metric used a deterministic local hashed-token embedding surrogate because no usable embedding provider was available."
         )
-    if fallback_reason:
-        notes.append(fallback_reason)
+    if current_representation["fallback_reason"]:
+        notes.append(current_representation["fallback_reason"])
+    if baseline_action in {"created", "refreshed", "recreated_due_to_shape_mismatch"}:
+        notes.append(
+            f"Embedding baseline was {baseline_action.replace('_', ' ')} from the current Week 3 extraction slice before evaluating drift."
+        )
 
     return {
         "status": status,
         "severity": severity_for_status(status),
         "metric": "embedding_drift_score",
         "value": round(drift_score, 6),
-        "baseline_size": len(baseline_texts),
+        "baseline_size": int(baseline_payload.get("text_count") or 0),
         "current_size": len(current_texts),
-        "metric_source": metric_source,
-        "provider": provider,
-        "model": model,
-        "fallback_reason": fallback_reason,
+        "metric_source": current_representation["metric_source"],
+        "provider": current_representation["provider"],
+        "model": current_representation["model"],
+        "fallback_reason": current_representation["fallback_reason"],
+        "baseline_action": baseline_action,
+        "baseline_generated_at": baseline_payload.get("generated_at"),
+        "baseline_path": str(baseline_path).replace("\\", "/"),
         "thresholds": {"warn_above": 0.18, "fail_above": 0.35},
         "summary": (
-            "Semantic drift between early and late Week 3 fact text windows."
-            if metric_source == "ollama_embeddings"
-            else "Deterministic lexical embedding drift between early and late Week 3 fact text windows."
+            "Semantic drift between the current Week 3 fact text slice and the persisted embedding baseline."
+            if current_representation["metric_source"] == "ollama_embeddings"
+            else "Deterministic lexical embedding drift between the current Week 3 fact text slice and the persisted embedding baseline."
         ),
-        "top_shifted_tokens": top_shifted_tokens(baseline_texts, current_texts),
+        "top_shifted_tokens": top_shifted_tokens_from_counts(
+            Counter(baseline_payload.get("token_counts") or {}),
+            Counter(current_representation["token_counts"]),
+        ),
         "notes": notes,
     }
 
 
 def canonicalize_trace_rows(trace_rows: list[dict[str, Any]]) -> tuple[list[dict[str, Any]], dict[str, Any]]:
     canonical_rows: list[dict[str, Any]] = []
-    excluded_rows: list[dict[str, Any]] = []
+    normalized_rows: list[dict[str, Any]] = []
     for row in trace_rows:
         raw_run_type = str(row.get("run_type") or "").strip()
+        normalized = dict(row)
+        metadata = dict(((normalized.get("extra") or {}).get("metadata") or {}))
         if raw_run_type in INTERNAL_TRACE_RUN_TYPES:
-            excluded_rows.append(
+            normalization = INTERNAL_TRACE_RUN_TYPES[raw_run_type]
+            metadata["original_run_type"] = raw_run_type
+            metadata["span_role"] = normalization["reason"]
+            normalized["run_type"] = normalization["run_type"]
+            normalized_rows.append(
                 {
                     "id": row.get("id"),
                     "name": row.get("name"),
                     "raw_run_type": raw_run_type,
-                    "reason": INTERNAL_TRACE_RUN_TYPES[raw_run_type],
+                    "normalized_run_type": normalization["run_type"],
+                    "reason": normalization["reason"],
                 }
             )
-            continue
-
-        normalized = dict(row)
-        metadata = dict(((normalized.get("extra") or {}).get("metadata") or {}))
-        metadata.setdefault("original_run_type", raw_run_type)
+        else:
+            metadata.setdefault("original_run_type", raw_run_type)
         normalized.setdefault("extra", {})
         normalized["extra"] = dict(normalized["extra"])
         normalized["extra"]["metadata"] = metadata
-        normalized["run_type"] = raw_run_type
+        normalized.setdefault("run_type", raw_run_type)
         canonical_rows.append(normalized)
 
     return canonical_rows, {
         "raw_row_count": len(trace_rows),
         "canonical_row_count": len(canonical_rows),
-        "excluded_internal_rows": len(excluded_rows),
-        "excluded_internal_run_types": dict(
-            sorted(Counter(item["raw_run_type"] for item in excluded_rows).items())
+        "normalized_helper_rows": len(normalized_rows),
+        "normalized_helper_run_types": dict(
+            sorted(Counter(item["raw_run_type"] for item in normalized_rows).items())
         ),
-        "excluded_samples": excluded_rows[:10],
+        "normalized_samples": normalized_rows[:10],
         "summary": (
-            "Internal helper spans were excluded before trace contract enforcement so the consumer boundary only sees documented trace run types."
+            "Internal helper spans were normalized to documented contract run types while preserving the original raw run_type in metadata."
         ),
     }
 
@@ -412,7 +517,11 @@ def validate_prompt_family(inputs: dict[str, Any]) -> tuple[bool, str]:
 
 
 def compute_prompt_input_validation(trace_rows: list[dict[str, Any]]) -> dict[str, Any]:
-    prompt_rows = [row for row in trace_rows if row.get("run_type") == "prompt"]
+    prompt_rows = []
+    for row in trace_rows:
+        metadata = ((row.get("extra") or {}).get("metadata") or {})
+        if row.get("run_type") == "prompt" or metadata.get("original_run_type") == "prompt":
+            prompt_rows.append(row)
     failures: list[dict[str, Any]] = []
     family_counts = Counter()
     for row in prompt_rows:
@@ -614,8 +723,16 @@ def build_ai_metrics(
     canonical_trace_rows: list[dict[str, Any]],
     normalization_summary: dict[str, Any],
     registry_payload: dict[str, Any],
+    embedding_baseline_path: Path,
+    *,
+    refresh_embedding_baseline: bool = False,
 ) -> dict[str, Any]:
-    embedding = compute_embedding_drift(week3_rows, raw_trace_rows)
+    embedding = compute_embedding_drift(
+        week3_rows,
+        raw_trace_rows,
+        embedding_baseline_path,
+        refresh_baseline=refresh_embedding_baseline,
+    )
     prompt_validation = compute_prompt_input_validation(raw_trace_rows)
     llm_output = compute_llm_output_schema_validation(verdict_rows)
     trace_risk = compute_trace_contract_risk(
@@ -684,6 +801,7 @@ def main() -> int:
     canonical_trace_path = Path(args.canonical_traces_output)
     write_jsonl(canonical_trace_path, canonical_trace_rows)
     registry_payload = load_registry(Path(args.registry))
+    embedding_baseline_path = Path(args.embedding_baseline)
 
     payload = build_ai_metrics(
         week3_rows,
@@ -692,6 +810,8 @@ def main() -> int:
         canonical_trace_rows,
         normalization_summary,
         registry_payload,
+        embedding_baseline_path,
+        refresh_embedding_baseline=args.refresh_embedding_baseline,
     )
     output_path = Path(args.output)
     ensure_parent(output_path)

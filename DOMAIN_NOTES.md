@@ -273,15 +273,15 @@ But lineage enrichment will become far better once the Week 4 graph includes an 
 
 Another real limitation is trace quality:
 
-- the raw export `outputs/traces/runs.jsonl` still contains helper-span `run_type` values such as `prompt` and `parser`
-- the Week 7 consumer-boundary contract file now normalizes those into `outputs/traces/runs_contract_boundary.jsonl`
-- trace contract risk at the consumer boundary is therefore fixed, but the raw upstream export remains noisy
+- the Week 7 repo now keeps a cleaned contract-source trace file at `outputs/traces/runs.jsonl`
+- the original raw export is preserved at `outputs/traces/runs_raw.jsonl`
+- the consumer-boundary contract file at `outputs/traces/runs_contract_boundary.jsonl` now validates cleanly
 
-The remaining AI-side warning is now embedding drift:
+The AI-side embedding metric is now in a stronger state as well:
 
-- the metric now uses real local Ollama embeddings when available
-- the current result is still `WARN`
-- that means the extraction slice should be re-baselined before stricter AI enforcement tiers
+- the metric uses real local Ollama embeddings when available
+- the current result is `PASS`
+- the persisted baseline now reflects the current Week 3 extraction slice
 
 ## Final note
 

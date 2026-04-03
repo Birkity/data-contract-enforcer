@@ -10,7 +10,7 @@ from typing import Any
 
 import yaml
 
-from lineage_selector import load_preferred_lineage_snapshot
+from lineage_selector import load_lineage_snapshots, load_preferred_lineage_snapshot
 from registry_tools import contact_summary, get_field_subscriptions, load_registry
 
 
@@ -691,14 +691,102 @@ def build_registry_blast_radius(
     }
 
 
-def build_lineage_enrichment(lineage_walk: dict[str, Any], lineage: dict[str, Any]) -> dict[str, Any]:
+def subscriber_snapshot_patterns(subscriber_id: str) -> dict[str, list[str]]:
+    lowered = subscriber_id.lower()
+    file_patterns: list[str] = []
+    repo_patterns: list[str] = []
+
+    if "contract-generator" in lowered:
+        repo_patterns.extend(["data-contract-enforcer", "week7"])
+        file_patterns.append("contracts/generator.py")
+    elif "validation-runner" in lowered:
+        repo_patterns.extend(["data-contract-enforcer", "week7"])
+        file_patterns.append("contracts/runner.py")
+    elif "brownfield-cartographer" in lowered:
+        repo_patterns.extend(["brownfield-cartographer", "week4"])
+        file_patterns.extend(
+            [
+                "src/agents/hydrologist.py",
+                "src/exporters/week7_lineage.py",
+                "src/cli.py",
+            ]
+        )
+
+    return {"repo_patterns": repo_patterns, "file_patterns": file_patterns}
+
+
+def find_registry_aligned_consumer_nodes(
+    snapshots: list[dict[str, Any]],
+    subscribers: list[dict[str, Any]],
+) -> list[dict[str, Any]]:
+    matches: list[dict[str, Any]] = []
+    for subscriber in subscribers:
+        subscriber_id = str(subscriber.get("subscriber_id") or "")
+        patterns = subscriber_snapshot_patterns(subscriber_id)
+        if not patterns["repo_patterns"] and not patterns["file_patterns"]:
+            continue
+
+        for snapshot in snapshots:
+            codebase_root = str(snapshot.get("codebase_root") or "")
+            root_text = codebase_root.lower()
+            if patterns["repo_patterns"] and not any(
+                pattern in root_text for pattern in patterns["repo_patterns"]
+            ):
+                continue
+
+            node_hits: list[str] = []
+            for node in snapshot.get("nodes", []) or []:
+                metadata = node.get("metadata", {}) or {}
+                haystack = " ".join(
+                    [
+                        str(node.get("id") or ""),
+                        str(node.get("name") or ""),
+                        str(node.get("source_file") or ""),
+                        str(metadata.get("source_file") or ""),
+                        str(metadata.get("source_file_abs") or ""),
+                    ]
+                ).lower()
+                if patterns["file_patterns"] and not any(
+                    pattern in haystack for pattern in patterns["file_patterns"]
+                ):
+                    continue
+                node_hits.append(str(node.get("id") or node.get("name") or "unknown-node"))
+
+            if node_hits:
+                matches.append(
+                    {
+                        "subscriber_id": subscriber_id,
+                        "snapshot_root": codebase_root,
+                        "matched_nodes": node_hits[:5],
+                        "fields_consumed": subscriber.get("fields_consumed", []),
+                    }
+                )
+
+    deduped: list[dict[str, Any]] = []
+    seen: set[tuple[str, str]] = set()
+    for item in matches:
+        key = (str(item.get("subscriber_id")), str(item.get("snapshot_root")))
+        if key in seen:
+            continue
+        seen.add(key)
+        deduped.append(item)
+    return deduped
+
+
+def build_lineage_enrichment(
+    lineage_walk: dict[str, Any],
+    lineage: dict[str, Any],
+    registry_subscribers: list[dict[str, Any]],
+    all_snapshots: list[dict[str, Any]],
+) -> dict[str, Any]:
     downstream_nodes = [node["node_id"] for node in lineage_walk.get("downstream_nodes", [])]
     upstream_nodes = [node["node_id"] for node in lineage_walk.get("upstream_candidates", [])]
     notes = list(lineage_walk.get("notes", []))
+    consumer_matches = find_registry_aligned_consumer_nodes(all_snapshots, registry_subscribers)
 
-    if downstream_nodes:
+    if downstream_nodes or consumer_matches:
         summary = "Lineage traversal found downstream enrichment nodes that may reflect transitive propagation."
-        confidence = "medium"
+        confidence = "high" if consumer_matches else "medium"
     else:
         shape = lineage.get("shape")
         if shape == "dbt-whole-file":
@@ -714,6 +802,7 @@ def build_lineage_enrichment(lineage_walk: dict[str, Any], lineage: dict[str, An
         "matched_nodes": lineage_walk.get("matched_nodes", []),
         "upstream_candidates": upstream_nodes,
         "downstream_nodes": downstream_nodes,
+        "registry_aligned_consumers": consumer_matches,
         "summary": summary,
         "confidence": confidence,
         "notes": notes,
@@ -812,6 +901,7 @@ def main() -> int:
     repo_roots = infer_repo_roots_from_contract(contract, workspace_root)
     if not repo_roots:
         raise SystemExit("Could not infer any upstream git repository roots from the contract dataset.")
+    all_lineage_snapshots, _ = load_lineage_snapshots(lineage_path)
     lineage_snapshot, lineage_mode = load_lineage_snapshot(lineage_path, repo_roots)
     lineage = normalize_lineage(lineage_snapshot, lineage_mode)
 
@@ -846,7 +936,12 @@ def main() -> int:
         contract_id=contract.get("id", contract_path.stem),
         failing_field=normalized_failures[0]["field"],
     )
-    lineage_enrichment = build_lineage_enrichment(lineage_walk, lineage)
+    lineage_enrichment = build_lineage_enrichment(
+        lineage_walk,
+        lineage,
+        registry_blast_radius.get("subscribers", []),
+        all_lineage_snapshots,
+    )
     payload = build_output(
         report_path=report_path,
         contract_path=contract_path,

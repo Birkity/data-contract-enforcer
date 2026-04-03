@@ -4,14 +4,16 @@ models:
   description: dbt-compatible counterpart for generated contract week3-extractions built from outputs/week3/extractions.jsonl.
   meta:
     generated_from_contract: week3-extractions
-    generated_at: '2026-04-02T20:05:45.810295+00:00'
+    generated_at: '2026-04-02T20:58:17.568065+00:00'
     source_path: outputs/week3/extractions.jsonl
     blast_radius_primary_source: contract_registry
     registry_subscribers:
     - week4-brownfield-cartographer
     - week7-contract-generator
     - week7-validation-runner
-    lineage_notes: []
+    lineage_notes:
+    - Consumer-side lineage enrichment was expanded using registry-aligned snapshots in addition to the
+      primary producer snapshot.
   columns:
   - name: doc_id
     description: Primary identifier for the extracted document record.

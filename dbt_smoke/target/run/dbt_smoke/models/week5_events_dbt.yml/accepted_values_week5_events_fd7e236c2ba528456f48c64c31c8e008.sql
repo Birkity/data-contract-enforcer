@@ -1,0 +1,36 @@
+
+    
+    select
+      count(*) as failures,
+      count(*) != 0 as should_warn,
+      count(*) != 0 as should_error
+    from (
+      
+    
+  
+    
+    
+
+with all_values as (
+
+    select
+        payload_rules_to_evaluate as value_field,
+        count(*) as n_records
+
+    from "dbt_smoke"."main"."week5_events"
+    group by payload_rules_to_evaluate
+
+)
+
+select *
+from all_values
+where value_field not in (
+    'REG-001|REG-002|REG-003|REG-004|REG-005|REG-006'
+)
+
+
+
+  
+  
+      
+    ) dbt_internal_test
