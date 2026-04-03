@@ -134,6 +134,26 @@ Use the repo virtualenv:
 .\.venv\Scripts\python.exe
 ```
 
+## Automated tests
+
+The repo now includes a focused Python unit test suite for the core Week 7 components:
+
+- `ContractGenerator`
+- `ValidationRunner`
+- `ViolationAttributor`
+- `ContractRegistry` helper logic
+- `SchemaEvolutionAnalyzer`
+- `AI Contract Extensions`
+- `ReportGenerator`
+
+Run the suite with:
+
+```powershell
+.\.venv\Scripts\python.exe -m unittest discover -s tests -t . -v
+```
+
+The tests are intentionally logic-focused. They cover contract clause construction, validation failure detection, registry blast-radius matching, lineage traversal, schema diff classification, AI metric construction, violation-log integration, and final report assembly without mutating the live generated artifacts.
+
 ### 1. Generate contracts
 
 ```powershell
