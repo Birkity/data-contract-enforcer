@@ -1,0 +1,400 @@
+kind: DataContract
+apiVersion: v3.0.0
+id: week3-extractions
+info:
+  title: Week 3 Extractions Contract
+  version: 1.1.0
+  owner: week7-contract-generator
+  description: Generated from the live week3/extractions JSONL output using profiling-based inference.
+    The contract reflects the current serialized artifact present in the repository.
+servers:
+  local:
+    type: local
+    path: outputs/week3/extractions.jsonl
+    format: jsonl
+terms:
+  usage: Internal inter-system data contract generated from the observed output snapshot at outputs/week3/extractions.jsonl.
+  limitations: Registry subscribers are authoritative for blast radius; lineage remains enrichment-only
+    and may be incomplete.
+implementation_model:
+  enforcement_boundary: consumer
+  blast_radius_primary_source: contract_registry
+  lineage_role: enrichment_only
+  trust_boundary_tier: tier_1_registry_plus_lineage
+observations:
+  generated_at: '2026-04-02T13:29:09.543912+00:00'
+  record_count: 50
+  profiled_row_count: 173
+  flatten_mode: exploded_repeated_items
+  repeated_field: extracted_facts
+  observed_keys:
+  - doc_id
+  - source_path
+  - source_hash
+  - extracted_facts
+  - entities
+  - extraction_model
+  - processing_time_ms
+  - token_count
+  - extracted_at
+  warnings: []
+schema:
+  doc_id:
+    type: string
+    description: Primary identifier for the extracted document record.
+    required: true
+    format: uuid
+    profile:
+      dtype: string
+      null_fraction: 0.0
+      cardinality_estimate: 50
+      sample_values:
+      - 6237da6c-5fc3-521d-90ca-d53f2e71f058
+      - 8256dd55-634b-5b08-966a-c9eb94e3d234
+      - 7688d619-8cdb-5fb7-8c8e-9835c482f165
+      - 7e045353-80a2-59bb-89d5-97dd8ae5cafb
+      - fecd6168-a53d-5434-871c-e209868ab728
+  source_path:
+    type: string
+    description: Original source path or URL for the document.
+    required: true
+    profile:
+      dtype: string
+      null_fraction: 0.0
+      cardinality_estimate: 50
+      sample_values:
+      - E:\10 Academy\Week 3\document-intelligence-refinery\data\2013-E.C-Assigned-regular-budget-and-expense.pdf
+      - E:\10 Academy\Week 3\document-intelligence-refinery\data\2013-E.C-Audit-finding-information.pdf
+      - E:\10 Academy\Week 3\document-intelligence-refinery\data\2013-E.C-Procurement-information.pdf
+      - E:\10 Academy\Week 3\document-intelligence-refinery\data\2018_Audited_Financial_Statement_Report.pdf
+      - E:\10 Academy\Week 3\document-intelligence-refinery\data\20191010_Pharmaceutical-Manufacturing-Opportunites-in-Ethiopia_VF.pdf
+  source_hash:
+    type: string
+    description: SHA-256 content hash of the source document.
+    required: true
+    pattern: ^[a-f0-9]{64}$
+    profile:
+      dtype: string
+      null_fraction: 0.0
+      cardinality_estimate: 48
+      sample_values:
+      - 45bc9cf4ff5ce1ac41a5240e6cc71e9b9809a25e078259afced4ebfcd7014b85
+      - 7b8976e32efc895a1ab0f78fb4376f3e1431dfa432b4c61b4427b30b1e103ab8
+      - 4a67ebdf892c8fce342935b5e109795989d03cfd0602781fb2ea586b2c8c1ca1
+      - 70e44e10d0776e9c5632c878614e1aec5b7ccdd5c9daeead5eeccf6b28fbc826
+      - d0effa290ba25144ec6bd70009d086c319d39474f05afb15b4b5531fc05d3816
+  entities_count:
+    type: integer
+    description: Number of entities linked to the document record.
+    required: true
+    profile:
+      dtype: integer
+      null_fraction: 0.0
+      cardinality_estimate: 23
+      sample_values:
+      - '0'
+      - '7'
+      - '11'
+      - '10'
+      - '20'
+      observed_min: 0.0
+      observed_max: 76.0
+      observed_mean: 32.520231
+      observed_stddev: 19.680468
+      observed_p50: 25.0
+      observed_p95: 76.0
+  extraction_model:
+    type: string
+    description: Extraction strategy or model label used to produce the record.
+    required: true
+    enum:
+    - layout_aware
+    - layout_aware+llm_assisted
+    - layout_aware+llm_assisted+regex
+    - layout_aware+regex
+    - layout_aware+table_parse
+    - ocr_heavy
+    - ocr_heavy+llm_assisted+regex
+    profile:
+      dtype: string
+      null_fraction: 0.0
+      cardinality_estimate: 7
+      sample_values:
+      - ocr_heavy
+      - layout_aware+llm_assisted
+      - layout_aware
+      - layout_aware+llm_assisted+regex
+      - ocr_heavy+llm_assisted+regex
+  processing_time_ms:
+    type: integer
+    description: End-to-end extraction processing time in milliseconds.
+    required: true
+    profile:
+      dtype: integer
+      null_fraction: 0.0
+      cardinality_estimate: 43
+      sample_values:
+      - '867'
+      - '5'
+      - '7'
+      - '158'
+      - '6'
+      observed_min: 5.0
+      observed_max: 2373.0
+      observed_mean: 994.450867
+      observed_stddev: 913.110499
+      observed_p50: 781.0
+      observed_p95: 2249.0
+  token_count_input:
+    type: integer
+    description: Approximate input token count used by the extraction workflow.
+    required: true
+    profile:
+      dtype: integer
+      null_fraction: 0.0
+      cardinality_estimate: 32
+      sample_values:
+      - '0'
+      - '313'
+      - '384'
+      - '1421'
+      - '300'
+      observed_min: 0.0
+      observed_max: 3065.0
+      observed_mean: 965.283237
+      observed_stddev: 798.582455
+      observed_p50: 862.0
+      observed_p95: 1971.0
+  token_count_output:
+    type: integer
+    description: Approximate output token count produced by the extraction workflow.
+    required: true
+    profile:
+      dtype: integer
+      null_fraction: 0.0
+      cardinality_estimate: 28
+      sample_values:
+      - '0'
+      - '24'
+      - '15'
+      - '14'
+      - '40'
+      observed_min: 0.0
+      observed_max: 252.0
+      observed_mean: 129.450867
+      observed_stddev: 89.592905
+      observed_p50: 113.0
+      observed_p95: 252.0
+  extracted_at:
+    type: string
+    description: Timestamp when the extraction record was produced.
+    required: true
+    format: date-time
+    profile:
+      dtype: string
+      null_fraction: 0.0
+      cardinality_estimate: 50
+      sample_values:
+      - '2026-04-02T12:38:01.067888+00:00'
+      - '2026-04-02T12:38:01.213493+00:00'
+      - '2026-04-02T12:38:01.324784+00:00'
+      - '2026-04-02T12:38:01.465215+00:00'
+      - '2026-04-02T12:38:02.670678+00:00'
+  fact_fact_id:
+    type: string
+    description: Primary identifier for the extracted fact.
+    format: uuid
+    profile:
+      dtype: string
+      null_fraction: 0.213873
+      cardinality_estimate: 136
+      sample_values:
+      - 2fa76b83-dab0-51e0-beeb-418c23c2bab5
+      - d62b9e94-fd2d-5d34-8271-57db20a4386c
+      - 4af41b0f-fa79-5cfd-b3e4-9f5ac140584e
+      - ae9ec6ca-c231-53ea-b5c5-2d2799f3605c
+      - 3be22619-cf74-5901-b2bb-ad3becc01fc4
+  fact_text:
+    type: string
+    description: Plain-English extracted fact text.
+    profile:
+      dtype: string
+      null_fraction: 0.213873
+      cardinality_estimate: 81
+      sample_values:
+      - 'East African pharmaceutical sector market size: 6'
+      - 'market size: 11'
+      - 'motor class of business share: 32.5 %'
+      - 'motor class of business share (previous year): 38 %'
+      - 'motor class of business share: 28.2 %'
+  fact_entity_refs_count:
+    type: number
+    description: Number of entity references linked from the extracted fact.
+    profile:
+      dtype: number
+      null_fraction: 0.213873
+      cardinality_estimate: 4
+      sample_values:
+      - '2.0'
+      - '3.0'
+      - '1.0'
+      - '0.0'
+      observed_min: 0.0
+      observed_max: 3.0
+      observed_mean: 1.522059
+      observed_stddev: 0.942549
+      observed_p50: 2.0
+      observed_p95: 3.0
+  fact_entity_refs:
+    type: string
+    description: Entity identifiers referenced by the extracted fact.
+    profile:
+      dtype: string
+      null_fraction: 0.381503
+      cardinality_estimate: 98
+      sample_values:
+      - 74fb2b49-0696-500d-bf7a-bdc536a9a60f|8757011d-10d6-5af7-9b61-80ae422e9f13
+      - eccde843-4e54-5187-966a-a0eb4073eb31|c818d6bf-ad34-5b0e-a7cc-6af6887c084e|2917fcab-f0fa-5d55-9bf7-876d47c35927
+      - eccde843-4e54-5187-966a-a0eb4073eb31|c818d6bf-ad34-5b0e-a7cc-6af6887c084e|2639f270-f6d9-5c0b-aadb-15cf600fd450
+      - e5e7a76f-5d64-5fba-92f7-6e04a3619fbd|265ecfd0-3e5f-526a-8ffa-1140faecd6d4|41a1e6b6-7727-5ab9-a45b-cc56251a2c30
+      - e5e7a76f-5d64-5fba-92f7-6e04a3619fbd|265ecfd0-3e5f-526a-8ffa-1140faecd6d4|64a8b229-4670-5bc3-912c-59d13c31fcda
+  fact_confidence:
+    type: number
+    description: Confidence value for the extracted fact. This must remain in the 0.0-1.0 range.
+    minimum: 0.0
+    maximum: 1.0
+    profile:
+      dtype: number
+      null_fraction: 0.213873
+      cardinality_estimate: 4
+      sample_values:
+      - '0.75'
+      - '0.7'
+      - '0.55'
+      - '0.9'
+      observed_min: 0.55
+      observed_max: 0.9
+      observed_mean: 0.818015
+      observed_stddev: 0.087702
+      observed_p50: 0.9
+      observed_p95: 0.9
+  fact_page_ref:
+    type: number
+    description: Source page number associated with the extracted fact.
+    profile:
+      dtype: number
+      null_fraction: 0.213873
+      cardinality_estimate: 9
+      sample_values:
+      - '6.0'
+      - '11.0'
+      - '67.0'
+      - '73.0'
+      - '35.0'
+      observed_min: 1.0
+      observed_max: 73.0
+      observed_mean: 23.330882
+      observed_stddev: 20.634044
+      observed_p50: 5.0
+      observed_p95: 67.0
+  fact_source_excerpt:
+    type: string
+    description: Supporting excerpt copied from the source document for the extracted fact.
+    profile:
+      dtype: string
+      null_fraction: 0.213873
+      cardinality_estimate: 18
+      sample_values:
+      - Investment - Why do business in Ethiopia? Growing Economy, Opportunities to invest Benefit based
+        on dynamic market with in high value tailored enabling access to East African pharmaceutical sector
+        environment market including specialized...
+      - Investment - Why do business in Ethiopia? Growing Economy, Opportunities to invest Benefit based
+        on dynamic market with in high value tailored enabling access to East African pharmaceutical sector
+        environment market 11
+      - "Notes to Financial Statements ETHIO RE Rising with Africa For the year ended 30 June 2020 (4)\
+        \ Financial risk review (Continued) Concentration of underwriting risk The Company\u2019s concentration\
+        \ of reinsurance risk is determined by class of..."
+      - ETHIO RE Notes to Financial Statements Annual Report For the year ended 30 June 2021 2020/21 (4)
+        Financial risk review (Continued) (a) Underwriting risk(continued) Concentration of underwriting
+        risk(continued) As can be observed from the...
+      - "ETHIOPIAN REINSURANCE S.C EETTHHIIOO RREE RRiissiinngg wwiitthh AAffrriiccaa STATEMENT OF DIRECTORS\u2019\
+        \ RESPONSIBILITIES 22002212//2223 NOTICE OF THE 7TH ANNUAL ORDINARY GENERAL MEETING OF SHAREHOLDERS\
+        \ Notice is hereby given to the Sharehol..."
+registry:
+  role: primary_blast_radius_source
+  path: contract_registry/subscriptions.yaml
+  subscriber_count: 3
+  subscriptions:
+  - subscriber_id: week4-brownfield-cartographer
+    fields_consumed:
+    - doc_id
+    - extracted_facts
+    - extracted_facts[].confidence
+    - entities
+    breaking_fields:
+    - field: extracted_facts[].confidence
+      reason: Confidence scale drives trust weighting and graph annotation quality in downstream cartography.
+    - field: doc_id
+      reason: Stable document identity is required to link extraction outputs to lineage or graph nodes.
+    validation_mode: WARN
+    registered_at: 2026-04-02 16:20:00+00:00
+    contact:
+      owner: Week 4 Brownfield Cartographer
+      role: downstream consumer
+      email: birkity.yishak.m@gmail.com
+    contact_summary: Week 4 Brownfield Cartographer | downstream consumer | birkity.yishak.m@gmail.com
+  - subscriber_id: week7-contract-generator
+    fields_consumed:
+    - doc_id
+    - extracted_facts
+    - extracted_facts[].confidence
+    - entities
+    - extraction_model
+    breaking_fields:
+    - field: extracted_facts
+      reason: The generator depends on the nested fact structure to flatten the dataset and infer fact-level
+        clauses.
+    - field: extracted_facts[].confidence
+      reason: Range and drift clauses are generated from the observed fact confidence distribution.
+    validation_mode: AUDIT
+    registered_at: 2026-04-02 16:20:00+00:00
+    contact:
+      owner: Week 7 Contract Generator
+      role: contract consumer
+      email: birkity.yishak.m@gmail.com
+    contact_summary: Week 7 Contract Generator | contract consumer | birkity.yishak.m@gmail.com
+  - subscriber_id: week7-validation-runner
+    fields_consumed:
+    - doc_id
+    - extracted_facts[].confidence
+    - source_hash
+    - extracted_at
+    breaking_fields:
+    - field: extracted_facts[].confidence
+      reason: Confidence is a critical semantic field and should block on range or high-severity drift
+        in enforce mode.
+    - field: source_hash
+      reason: Hash integrity is used as part of the contract's structural guarantees.
+    validation_mode: ENFORCE
+    registered_at: 2026-04-02 16:20:00+00:00
+    contact:
+      owner: Week 7 Validation Runner
+      role: enforcement consumer
+      email: birkity.yishak.m@gmail.com
+    contact_summary: Week 7 Validation Runner | enforcement consumer | birkity.yishak.m@gmail.com
+  notes:
+  - Registry subscriptions are the primary source of blast-radius reasoning for this contract.
+  - Registry subscriptions are the primary source of blast-radius reasoning in the updated Week 7 architecture.
+  - Lineage remains useful, but only as enrichment for internal propagation once a subscribed consumer
+    has already been identified.
+  - Some subscriber links below are Week 7 equivalents of the Week 6-style consumer boundary described
+    in the updated docs.
+lineage:
+  role: enrichment_only
+  source_snapshot:
+    path: outputs/week4/lineage_snapshots.jsonl
+    load_mode: jsonl-last-line
+  downstream_enrichment: []
+  notes:
+  - Canonical lineage snapshot loaded, but no explicit downstream consumers were found for the current
+    source dataset.

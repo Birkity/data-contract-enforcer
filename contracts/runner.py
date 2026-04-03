@@ -499,6 +499,19 @@ def decorate_results_for_mode(mode: str, results: list[dict[str, Any]]) -> list[
     return decorated
 
 
+def attach_result_statistics(results: list[dict[str, Any]], total_rows: int) -> list[dict[str, Any]]:
+    enriched_results: list[dict[str, Any]] = []
+    denominator = max(total_rows, 1)
+    for result in results:
+        enriched = dict(result)
+        failing_fraction = float(result.get("records_failing", 0)) / denominator
+        enriched["records_total"] = total_rows
+        enriched["failing_fraction"] = round(failing_fraction, 6)
+        enriched["failing_percent"] = round(failing_fraction * 100.0, 2)
+        enriched_results.append(enriched)
+    return enriched_results
+
+
 def append_violations(
     path: Path,
     report_id: str,
@@ -528,6 +541,8 @@ def append_violations(
                 "message": result["message"],
                 "sample_values": result["sample_failing"],
                 "records_failing": result["records_failing"],
+                "records_total": result.get("records_total"),
+                "failing_percent": result.get("failing_percent"),
                 "check_id": result["check_id"],
             }
             handle.write(json.dumps(violation_entry) + "\n")
@@ -548,6 +563,7 @@ def build_report(
     data_path: Path,
     mode: str,
     registry_subscriptions: list[dict[str, Any]],
+    row_count: int,
     results: list[dict[str, Any]],
 ) -> dict[str, Any]:
     report_id = str(uuid.uuid4())
@@ -571,6 +587,7 @@ def build_report(
         "validation_mode": mode.upper(),
         "blocking": blocking,
         "decision": decision,
+        "profiled_row_count": row_count,
         "total_checks": len(results),
         "passed": counts["passed"],
         "failed": counts["failed"],
@@ -630,8 +647,16 @@ def main() -> int:
             )
         )
 
+    results = attach_result_statistics(results, int(len(df)))
     results = decorate_results_for_mode(args.mode, results)
-    report = build_report(contract_id, data_path, args.mode, registry_subscriptions, results)
+    report = build_report(
+        contract_id,
+        data_path,
+        args.mode,
+        registry_subscriptions,
+        int(len(df)),
+        results,
+    )
     write_report(output_path, report)
     append_violations(
         path=violation_log_path,

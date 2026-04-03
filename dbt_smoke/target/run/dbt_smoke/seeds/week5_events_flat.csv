@@ -1,0 +1,11 @@
+
+    
+    
+    truncate table "dbt_smoke"."main"."week5_events_flat";
+    -- dbt seed --
+    
+          COPY "dbt_smoke"."main"."week5_events_flat" FROM 'C:\Users\Ab\OneDrive\Desktop\10 Academy\Week 7\data-contract-enforcer\dbt_smoke\seeds\week5_events_flat.csv' (FORMAT CSV, HEADER TRUE, DELIMITER ',')
+        
+
+;
+  

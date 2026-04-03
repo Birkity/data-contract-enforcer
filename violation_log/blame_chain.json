@@ -1,9 +1,17 @@
 {
-  "generated_at": "2026-04-02T10:47:09.964203+00:00",
+  "generated_at": "2026-04-02T20:23:28.183220+00:00",
   "architecture_mode": {
     "blast_radius_primary_source": "contract_registry",
     "lineage_role": "enrichment_only",
     "enforcement_boundary": "consumer"
+  },
+  "confidence_scoring_method": {
+    "summary": "Confidence blends file-path relevance, line-level git blame hits, and recent commit context.",
+    "components": [
+      "path relevance to the failing field",
+      "git blame hits on relevant line ranges",
+      "recent commit support within the selected window"
+    ]
   },
   "source_report": "validation_reports\\injected_violation.json",
   "contract_path": "generated_contracts\\week3_extractions.yaml",
@@ -15,22 +23,22 @@
   "violation_log_entry_count": 6,
   "attributions": [
     {
-      "violation_id": "25678648-47cc-42c7-94e1-e542d322d55a",
+      "violation_id": "b4f337b5-64b3-41f9-8d14-29a5343daae9",
       "check_id": "week3-extractions.fact_confidence.range",
-      "detected_at": "2026-04-02T10:46:44.600710+00:00",
+      "detected_at": "2026-04-02T20:06:18.232209+00:00",
       "field": "fact_confidence",
       "producer_system": "week3-document-intelligence-refinery",
       "dataset_path": "outputs/week3/extractions.jsonl",
       "status": "FAIL",
       "severity": "CRITICAL",
       "message": "fact_confidence is outside the configured range. Breaking change detected.",
-      "records_failing": 374,
+      "records_failing": 136,
       "sample_failing": [
-        "100.0",
-        "100.0",
-        "100.0",
-        "100.0",
-        "100.0"
+        "75.0",
+        "75.0",
+        "75.0",
+        "75.0",
+        "75.0"
       ],
       "matching_violation_log_entries": 3,
       "candidate_files": [
@@ -219,32 +227,83 @@
         },
         "enrichment": {
           "source": "week4_lineage_enrichment",
-          "matched_nodes": [],
+          "matched_nodes": [
+            "\n                    INSERT INTO fact_tables\n                        (document_id, key, value, unit, page_ref, content_hash,\n                         entity, metric, period, section, bbox_json,\n                         extraction_method, confidence, created_at)\n                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)\n                    ",
+            "DELETE FROM fact_tables WHERE document_id = ?",
+            "PRAGMA table_info(fact_tables)",
+            "SELECT * FROM fact_tables",
+            "SELECT COUNT(*) FROM fact_tables",
+            "SELECT name FROM sqlite_master WHERE type='table' AND name='fact_tables'",
+            "dynamic.sql_exec.src/agents/fact_table.py:704",
+            "py:src/agents/fact_table.py:727"
+          ],
           "upstream_candidates": [],
-          "downstream_nodes": [],
-          "summary": "The current Week 4 lineage snapshot is a dbt-style graph and does not expose an explicit Week 3 consumer path, so lineage enrichment is partial.",
-          "confidence": "low",
-          "notes": [
-            "No explicit Week 3 or extraction-related nodes were found in the current Week 4 lineage snapshot."
-          ]
+          "downstream_nodes": [
+            "py:src/db/repo.py:209",
+            "py:src/agents/fact_table.py:691",
+            "py:src/db/init_db.py:39",
+            "py:tests/test_fact_table.py:243",
+            "py:tests/test_fact_table.py:133",
+            "py:src/db/init_db.py:33",
+            "py:src/agents/fact_table.py:704"
+          ],
+          "registry_aligned_consumers": [
+            {
+              "subscriber_id": "week7-contract-generator",
+              "snapshot_root": "C:\\Users\\Ab\\OneDrive\\Desktop\\10 Academy\\Week 7\\data-contract-enforcer",
+              "matched_nodes": [
+                "dynamic.file_io.contracts/generator.py:51",
+                "dynamic.file_io.contracts/generator.py:628",
+                "py:contracts/generator.py:51",
+                "py:contracts/generator.py:628"
+              ],
+              "fields_consumed": [
+                "doc_id",
+                "extracted_facts",
+                "extracted_facts[].confidence",
+                "entities",
+                "extraction_model"
+              ]
+            },
+            {
+              "subscriber_id": "week7-validation-runner",
+              "snapshot_root": "C:\\Users\\Ab\\OneDrive\\Desktop\\10 Academy\\Week 7\\data-contract-enforcer",
+              "matched_nodes": [
+                "dynamic.file_io.contracts/runner.py:102",
+                "dynamic.file_io.contracts/runner.py:525",
+                "dynamic.file_io.contracts/runner.py:609",
+                "py:contracts/runner.py:102",
+                "py:contracts/runner.py:525"
+              ],
+              "fields_consumed": [
+                "doc_id",
+                "extracted_facts[].confidence",
+                "source_hash",
+                "extracted_at"
+              ]
+            }
+          ],
+          "summary": "Lineage traversal found downstream enrichment nodes that may reflect transitive propagation.",
+          "confidence": "high",
+          "notes": []
         }
       },
       "lineage_context": {
-        "lineage_shape": "dbt-whole-file",
-        "load_mode": "whole-file-json"
+        "lineage_shape": "canonical",
+        "load_mode": "jsonl:matched-root"
       }
     },
     {
-      "violation_id": "5911c982-225d-4229-9735-85fbb5d9db23",
+      "violation_id": "12f2fc49-d84b-4939-9f00-2c4252cf9b39",
       "check_id": "week3-extractions.fact_confidence.drift",
-      "detected_at": "2026-04-02T10:46:44.600710+00:00",
+      "detected_at": "2026-04-02T20:06:18.232209+00:00",
       "field": "fact_confidence",
       "producer_system": "week3-document-intelligence-refinery",
       "dataset_path": "outputs/week3/extractions.jsonl",
       "status": "FAIL",
       "severity": "HIGH",
-      "message": "fact_confidence mean drifted 700.4 stddev from baseline.",
-      "records_failing": 374,
+      "message": "fact_confidence mean drifted 923.4 stddev from baseline.",
+      "records_failing": 136,
       "sample_failing": [],
       "matching_violation_log_entries": 3,
       "candidate_files": [
@@ -433,19 +492,70 @@
         },
         "enrichment": {
           "source": "week4_lineage_enrichment",
-          "matched_nodes": [],
+          "matched_nodes": [
+            "\n                    INSERT INTO fact_tables\n                        (document_id, key, value, unit, page_ref, content_hash,\n                         entity, metric, period, section, bbox_json,\n                         extraction_method, confidence, created_at)\n                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)\n                    ",
+            "DELETE FROM fact_tables WHERE document_id = ?",
+            "PRAGMA table_info(fact_tables)",
+            "SELECT * FROM fact_tables",
+            "SELECT COUNT(*) FROM fact_tables",
+            "SELECT name FROM sqlite_master WHERE type='table' AND name='fact_tables'",
+            "dynamic.sql_exec.src/agents/fact_table.py:704",
+            "py:src/agents/fact_table.py:727"
+          ],
           "upstream_candidates": [],
-          "downstream_nodes": [],
-          "summary": "The current Week 4 lineage snapshot is a dbt-style graph and does not expose an explicit Week 3 consumer path, so lineage enrichment is partial.",
-          "confidence": "low",
-          "notes": [
-            "No explicit Week 3 or extraction-related nodes were found in the current Week 4 lineage snapshot."
-          ]
+          "downstream_nodes": [
+            "py:src/db/repo.py:209",
+            "py:src/agents/fact_table.py:691",
+            "py:src/db/init_db.py:39",
+            "py:tests/test_fact_table.py:243",
+            "py:tests/test_fact_table.py:133",
+            "py:src/db/init_db.py:33",
+            "py:src/agents/fact_table.py:704"
+          ],
+          "registry_aligned_consumers": [
+            {
+              "subscriber_id": "week7-contract-generator",
+              "snapshot_root": "C:\\Users\\Ab\\OneDrive\\Desktop\\10 Academy\\Week 7\\data-contract-enforcer",
+              "matched_nodes": [
+                "dynamic.file_io.contracts/generator.py:51",
+                "dynamic.file_io.contracts/generator.py:628",
+                "py:contracts/generator.py:51",
+                "py:contracts/generator.py:628"
+              ],
+              "fields_consumed": [
+                "doc_id",
+                "extracted_facts",
+                "extracted_facts[].confidence",
+                "entities",
+                "extraction_model"
+              ]
+            },
+            {
+              "subscriber_id": "week7-validation-runner",
+              "snapshot_root": "C:\\Users\\Ab\\OneDrive\\Desktop\\10 Academy\\Week 7\\data-contract-enforcer",
+              "matched_nodes": [
+                "dynamic.file_io.contracts/runner.py:102",
+                "dynamic.file_io.contracts/runner.py:525",
+                "dynamic.file_io.contracts/runner.py:609",
+                "py:contracts/runner.py:102",
+                "py:contracts/runner.py:525"
+              ],
+              "fields_consumed": [
+                "doc_id",
+                "extracted_facts[].confidence",
+                "source_hash",
+                "extracted_at"
+              ]
+            }
+          ],
+          "summary": "Lineage traversal found downstream enrichment nodes that may reflect transitive propagation.",
+          "confidence": "high",
+          "notes": []
         }
       },
       "lineage_context": {
-        "lineage_shape": "dbt-whole-file",
-        "load_mode": "whole-file-json"
+        "lineage_shape": "canonical",
+        "load_mode": "jsonl:matched-root"
       }
     }
   ]

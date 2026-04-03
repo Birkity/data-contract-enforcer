@@ -1,0 +1,383 @@
+kind: DataContract
+apiVersion: v3.0.0
+id: week3-extractions
+info:
+  title: Week 3 Extractions Contract
+  version: 1.1.0
+  owner: week7-contract-generator
+  description: Generated from the live week3/extractions JSONL output using profiling-based inference.
+    The contract reflects the current serialized artifact present in the repository.
+servers:
+  local:
+    type: local
+    path: outputs/week3/extractions.jsonl
+    format: jsonl
+terms:
+  usage: Internal inter-system data contract generated from the observed output snapshot at outputs/week3/extractions.jsonl.
+  limitations: Registry subscribers are authoritative for blast radius; lineage remains enrichment-only
+    and may be incomplete.
+implementation_model:
+  enforcement_boundary: consumer
+  blast_radius_primary_source: contract_registry
+  lineage_role: enrichment_only
+  trust_boundary_tier: tier_1_registry_plus_lineage
+observations:
+  generated_at: '2026-04-02T11:42:31.605844+00:00'
+  record_count: 50
+  profiled_row_count: 402
+  flatten_mode: exploded_repeated_items
+  repeated_field: extracted_facts
+  observed_keys:
+  - doc_id
+  - source_path
+  - source_hash
+  - extracted_facts
+  - entities
+  - extraction_model
+  - processing_time_ms
+  - token_count
+  - extracted_at
+  warnings: []
+schema:
+  doc_id:
+    type: string
+    description: Primary identifier for the extracted document record.
+    required: true
+    format: uuid
+    profile:
+      dtype: string
+      null_fraction: 0.0
+      cardinality_estimate: 40
+      sample_values:
+      - fe37b8a8-5a66-5802-a021-aeedd736a227
+      - 22f7512d-0e44-5029-b4dc-eb77b3093c19
+      - d23841d2-a27f-5505-921d-a18c162e575c
+      - e46ecb86-9442-5a4e-b39f-5e5d7816a4f2
+      - 8bdbfef0-65c6-58a8-8682-52e92a3b84b1
+  source_path:
+    type: string
+    description: Original source path or URL for the document.
+    required: true
+    profile:
+      dtype: string
+      null_fraction: 0.0
+      cardinality_estimate: 39
+      sample_values:
+      - E:\10 Academy\Week 3\document-intelligence-refinery\data\CBE ANNUAL REPORT 2023-24.pdf
+      - E:\10 Academy\Week 3\document-intelligence-refinery\data\Audit Report - 2023.pdf
+      - E:\10 Academy\Week 3\document-intelligence-refinery\data\fta_performance_survey_final_report_2022.pdf
+      - E:\10 Academy\Week 3\document-intelligence-refinery\data\tax_expenditure_ethiopia_2021_22.pdf
+      - E:\10 Academy\Week 3\document-intelligence-refinery\data\Annual_Report_JUNE-2023.pdf
+  source_hash:
+    type: string
+    description: SHA-256 content hash of the source document.
+    required: true
+    pattern: ^[a-f0-9]{64}$
+    profile:
+      dtype: string
+      null_fraction: 0.0
+      cardinality_estimate: 38
+      sample_values:
+      - cafb11ca016fe4870c945fc2f8fe8b5fcc86bf6ee56da5327d4fd446456a7050
+      - 62213e3af42b0198d66aa799a8b0df5eb9c6cc1473ff222b5268c72c8cd08ee0
+      - 4dcf8792cc25a98826f4c9d28da108716744c49e444273983e06a6d72bb90154
+      - 212dc42370e200d430dcbd690970f879b0b82558edb1b5eaef04be9e1b51fa8a
+      - c9ddc16ac77d590e2ac35f8885ccfe17921549b110b480059ba95df7f5529fd0
+  entities_count:
+    type: integer
+    description: Number of entities linked to the document record.
+    required: true
+    profile:
+      dtype: integer
+      null_fraction: 0.0
+      cardinality_estimate: 18
+      sample_values:
+      - '6'
+      - '0'
+      - '18'
+      - '48'
+      - '127'
+      observed_min: 0.0
+      observed_max: 127.0
+      observed_mean: 50.925373
+      observed_stddev: 45.068852
+      observed_p50: 47.0
+      observed_p95: 127.0
+  extraction_model:
+    type: string
+    description: Extraction strategy or model label used to produce the record.
+    required: true
+    profile:
+      dtype: string
+      null_fraction: 0.0
+      cardinality_estimate: 12
+      sample_values:
+      - layout_aware+regex
+      - vision_augmented
+      - layout_aware+regex+table_parse
+      - layout_aware+llm_assisted+regex
+      - layout_aware
+  processing_time_ms:
+    type: integer
+    description: End-to-end extraction processing time in milliseconds.
+    required: true
+    profile:
+      dtype: integer
+      null_fraction: 0.0
+      cardinality_estimate: 49
+      sample_values:
+      - '36205'
+      - '341'
+      - '30598'
+      - '19851'
+      - '43042'
+      observed_min: 7.0
+      observed_max: 279256.0
+      observed_mean: 61470.497512
+      observed_stddev: 76363.127334
+      observed_p50: 17800.0
+      observed_p95: 196699.0
+  token_count_input:
+    type: integer
+    description: Approximate input token count used by the extraction workflow.
+    required: true
+    profile:
+      dtype: integer
+      null_fraction: 0.0
+      cardinality_estimate: 21
+      sample_values:
+      - '122'
+      - '0'
+      - '87'
+      - '237'
+      - '935'
+      observed_min: 0.0
+      observed_max: 1015.0
+      observed_mean: 451.313433
+      observed_stddev: 420.228986
+      observed_p50: 161.0
+      observed_p95: 1015.0
+  token_count_output:
+    type: integer
+    description: Approximate output token count produced by the extraction workflow.
+    required: true
+    profile:
+      dtype: integer
+      null_fraction: 0.0
+      cardinality_estimate: 15
+      sample_values:
+      - '59'
+      - '0'
+      - '37'
+      - '85'
+      - '176'
+      observed_min: 0.0
+      observed_max: 256.0
+      observed_mean: 123.81592
+      observed_stddev: 80.439881
+      observed_p50: 115.0
+      observed_p95: 256.0
+  extracted_at:
+    type: string
+    description: Timestamp when the extraction record was produced.
+    required: true
+    format: date-time
+    profile:
+      dtype: string
+      null_fraction: 0.0
+      cardinality_estimate: 40
+      sample_values:
+      - '2026-03-05T13:46:05.529684+00:00'
+      - '2026-03-03T09:47:15.326679+00:00'
+      - '2026-03-06T14:14:23.835591+00:00'
+      - '2026-03-07T16:44:23.038222+00:00'
+      - '2026-03-03T09:47:13.815549+00:00'
+  fact_fact_id:
+    type: string
+    description: Primary identifier for the extracted fact.
+    format: uuid
+    profile:
+      dtype: string
+      null_fraction: 0.069652
+      cardinality_estimate: 66
+      sample_values:
+      - 250be8e7-6ba8-5c43-9c06-0acaeaf76d78
+      - b67a2714-7e98-547c-9a81-bbd4553488f7
+      - b4b9e0e8-ca74-5a03-b2f0-7274e7c9bb11
+      - 1234f7bf-4f80-5e75-aac1-a3266dd265f2
+      - d29f28f9-ed84-5bb8-b1c5-fcdd830f3106
+  fact_text:
+    type: string
+    description: Plain-English extracted fact text.
+    profile:
+      dtype: string
+      null_fraction: 0.069652
+      cardinality_estimate: 216
+      sample_values:
+      - 'The various foreign currencies to which the Group is exposed to are summarized below: 30'
+      - 'AED: 1,069'
+      - 'CAD: 701'
+      - 'CHF: 1,554'
+      - 'DJF: 64,331'
+  fact_entity_refs_count:
+    type: number
+    description: Number of entity references linked from the extracted fact.
+    profile:
+      dtype: number
+      null_fraction: 0.069652
+      cardinality_estimate: 3
+      sample_values:
+      - '0.0'
+      - '2.0'
+      - '1.0'
+      observed_min: 0.0
+      observed_max: 2.0
+      observed_mean: 0.930481
+      observed_stddev: 0.754242
+      observed_p50: 1.0
+      observed_p95: 2.0
+  fact_entity_refs:
+    type: string
+    description: Entity identifiers referenced by the extracted fact.
+    profile:
+      dtype: string
+      null_fraction: 0.368159
+      cardinality_estimate: 68
+      sample_values:
+      - 1b1901ce-f026-59d7-9973-df8feb2f6b4a|0f104242-c4df-5346-b36a-5c6b18cbd882
+      - b326fc93-8b0a-5888-887b-e9f426046b55
+      - d0b9ddc6-905e-529d-a390-396adcbe508c
+      - 480c5067-3a62-511a-a2cb-22679752a0a2|da1d5d6a-dcc3-5f71-b5b4-ba03b99c4855
+      - 480c5067-3a62-511a-a2cb-22679752a0a2|7eb9f84d-77b7-57d8-996a-6cf9bce0a6b6
+  fact_confidence:
+    type: number
+    description: Confidence value for the extracted fact. This must remain in the 0.0-1.0 range.
+    minimum: 0.0
+    maximum: 1.0
+    profile:
+      dtype: number
+      null_fraction: 0.069652
+      cardinality_estimate: 6
+      sample_values:
+      - '1.0'
+      - '0.55'
+      - '0.7'
+      - '0.9'
+      - '0.75'
+      observed_min: 0.55
+      observed_max: 1.0
+      observed_mean: 0.806364
+      observed_stddev: 0.113985
+      observed_p50: 0.75
+      observed_p95: 1.0
+  fact_page_ref:
+    type: number
+    description: Source page number associated with the extracted fact.
+    profile:
+      dtype: number
+      null_fraction: 0.069652
+      cardinality_estimate: 21
+      sample_values:
+      - '81.0'
+      - '1.0'
+      - '18.0'
+      - '76.0'
+      - '88.0'
+      observed_min: 1.0
+      observed_max: 88.0
+      observed_mean: 29.173797
+      observed_stddev: 32.7689
+      observed_p50: 10.0
+      observed_p95: 81.0
+  fact_source_excerpt:
+    type: string
+    description: Supporting excerpt copied from the source document for the extracted fact.
+    profile:
+      dtype: string
+      null_fraction: 0.069652
+      cardinality_estimate: 98
+      sample_values:
+      - 'The various foreign currencies to which the Group is exposed to are summarized below: 30'
+      - 'AED: 1,069'
+      - 'CAD: 701'
+      - 'CHF: 1,554'
+      - 'DJF: 64,331'
+registry:
+  role: primary_blast_radius_source
+  path: contract_registry/subscriptions.yaml
+  subscriber_count: 3
+  subscriptions:
+  - subscriber_id: week4-brownfield-cartographer
+    fields_consumed:
+    - doc_id
+    - extracted_facts
+    - extracted_facts[].confidence
+    - entities
+    breaking_fields:
+    - field: extracted_facts[].confidence
+      reason: Confidence scale drives trust weighting and graph annotation quality in downstream cartography.
+    - field: doc_id
+      reason: Stable document identity is required to link extraction outputs to lineage or graph nodes.
+    validation_mode: WARN
+    registered_at: 2026-04-02 16:20:00+00:00
+    contact:
+      owner: Week 4 Brownfield Cartographer
+      role: downstream consumer
+      email: birkity.yishak.m@gmail.com
+    contact_summary: Week 4 Brownfield Cartographer | downstream consumer | birkity.yishak.m@gmail.com
+  - subscriber_id: week7-contract-generator
+    fields_consumed:
+    - doc_id
+    - extracted_facts
+    - extracted_facts[].confidence
+    - entities
+    - extraction_model
+    breaking_fields:
+    - field: extracted_facts
+      reason: The generator depends on the nested fact structure to flatten the dataset and infer fact-level
+        clauses.
+    - field: extracted_facts[].confidence
+      reason: Range and drift clauses are generated from the observed fact confidence distribution.
+    validation_mode: AUDIT
+    registered_at: 2026-04-02 16:20:00+00:00
+    contact:
+      owner: Week 7 Contract Generator
+      role: contract consumer
+      email: birkity.yishak.m@gmail.com
+    contact_summary: Week 7 Contract Generator | contract consumer | birkity.yishak.m@gmail.com
+  - subscriber_id: week7-validation-runner
+    fields_consumed:
+    - doc_id
+    - extracted_facts[].confidence
+    - source_hash
+    - extracted_at
+    breaking_fields:
+    - field: extracted_facts[].confidence
+      reason: Confidence is a critical semantic field and should block on range or high-severity drift
+        in enforce mode.
+    - field: source_hash
+      reason: Hash integrity is used as part of the contract's structural guarantees.
+    validation_mode: ENFORCE
+    registered_at: 2026-04-02 16:20:00+00:00
+    contact:
+      owner: Week 7 Validation Runner
+      role: enforcement consumer
+      email: birkity.yishak.m@gmail.com
+    contact_summary: Week 7 Validation Runner | enforcement consumer | birkity.yishak.m@gmail.com
+  notes:
+  - Registry subscriptions are the primary source of blast-radius reasoning for this contract.
+  - Registry subscriptions are the primary source of blast-radius reasoning in the updated Week 7 architecture.
+  - Lineage remains useful, but only as enrichment for internal propagation once a subscribed consumer
+    has already been identified.
+  - Some subscriber links below are Week 7 equivalents of the Week 6-style consumer boundary described
+    in the updated docs.
+lineage:
+  role: enrichment_only
+  source_snapshot:
+    path: outputs/week4/lineage_snapshots.jsonl
+    load_mode: whole-file-json
+  downstream_enrichment: []
+  notes:
+  - Week 4 lineage is currently a dbt-style whole-file graph, not the canonical Week 7 node/edge snapshot.
+  - No explicit consumer for the current source dataset was found in the current lineage file, so lineage
+    enrichment is partial.

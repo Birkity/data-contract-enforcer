@@ -1,0 +1,22 @@
+
+    
+    
+
+with all_values as (
+
+    select
+        payload_is_coherent as value_field,
+        count(*) as n_records
+
+    from "dbt_smoke"."main"."week5_events"
+    group by payload_is_coherent
+
+)
+
+select *
+from all_values
+where value_field not in (
+    'True'
+)
+
+

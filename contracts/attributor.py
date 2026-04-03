@@ -10,6 +10,7 @@ from typing import Any
 
 import yaml
 
+from lineage_selector import load_lineage_snapshots, load_preferred_lineage_snapshot
 from registry_tools import contact_summary, get_field_subscriptions, load_registry
 
 
@@ -79,7 +80,7 @@ def load_json(path: Path) -> dict[str, Any]:
 
 def load_jsonl(path: Path) -> list[dict[str, Any]]:
     rows: list[dict[str, Any]] = []
-    with path.open(encoding="utf-8") as handle:
+    with path.open(encoding="utf-8-sig") as handle:
         for raw_line in handle:
             line = raw_line.strip()
             if not line:
@@ -92,24 +93,11 @@ def load_contract(path: Path) -> dict[str, Any]:
     return yaml.safe_load(path.read_text(encoding="utf-8"))
 
 
-def load_lineage_snapshot(path: Path) -> tuple[dict[str, Any], str]:
-    text = path.read_text(encoding="utf-8")
-    lines = [line for line in text.splitlines() if line.strip()]
-
-    if lines:
-        try:
-            last = json.loads(lines[-1])
-            if isinstance(last, dict):
-                return last, "jsonl-last-line"
-        except json.JSONDecodeError:
-            pass
-
-    payload = json.loads(text)
-    if isinstance(payload, dict):
-        return payload, "whole-file-json"
-    if isinstance(payload, list) and payload and isinstance(payload[-1], dict):
-        return payload[-1], "json-array-last-item"
-    raise ValueError(f"Unsupported lineage snapshot format in {path}")
+def load_lineage_snapshot(
+    path: Path,
+    preferred_roots: list[Path] | None = None,
+) -> tuple[dict[str, Any], str]:
+    return load_preferred_lineage_snapshot(path, preferred_roots)
 
 
 def find_git_root(start: Path) -> Path | None:
@@ -200,16 +188,18 @@ def load_violation_log(path: Path) -> list[dict[str, Any]]:
 
 def normalize_lineage(snapshot: dict[str, Any], load_mode: str) -> dict[str, Any]:
     if "nodes" in snapshot and "edges" in snapshot:
-        nodes = {
-            node["node_id"]: {
-                "id": node["node_id"],
-                "type": node.get("type", "UNKNOWN"),
-                "label": node.get("label", node["node_id"]),
+        nodes = {}
+        for node in snapshot.get("nodes", []):
+            node_id = node.get("node_id") or node.get("id")
+            if not node_id:
+                continue
+            node_id = str(node_id)
+            nodes[node_id] = {
+                "id": node_id,
+                "type": node.get("type") or node.get("node_type") or "UNKNOWN",
+                "label": node.get("label") or node.get("name") or node_id,
                 "metadata": node.get("metadata", {}),
             }
-            for node in snapshot.get("nodes", [])
-            if node.get("node_id")
-        }
         return {
             "shape": "canonical",
             "load_mode": load_mode,
@@ -254,24 +244,44 @@ def seed_lineage_nodes(
     notes: list[str] = []
     seeds: list[str] = []
     nodes = lineage.get("nodes", {})
-    repo_tokens = set()
-    for root in repo_roots:
-        repo_tokens.update(token for token in re.split(r"[^a-z0-9]+", root.name.lower()) if token)
-
-    field_tokens = set(token for token in failure_field.lower().split("_") if token and token != "fact")
-    system_tokens = set(token for token in re.split(r"[^a-z0-9]+", system_id.lower()) if token)
-    all_tokens = system_tokens | repo_tokens | field_tokens
+    field_tokens = set(token for token in failure_field.lower().split("_") if token)
+    contextual_tokens = {
+        token
+        for token in re.split(r"[^a-z0-9]+", system_id.lower())
+        if token and token not in {"week3", "week5", "document", "intelligence", "refinery"}
+    }
+    scored: list[tuple[int, str]] = []
 
     for node_id, node in nodes.items():
-        haystack = " ".join(
+        metadata = node.get("metadata", {}) or {}
+        focused_haystack = " ".join(
             [
                 node_id.lower(),
                 str(node.get("label", "")).lower(),
-                str(node.get("metadata", {}).get("path", "")).lower(),
+                str(node.get("name", "")).lower(),
+                str(node.get("source_file", "")).lower(),
+                str(metadata.get("path", "")).lower(),
+                str(metadata.get("source_file", "")).lower(),
+                str(metadata.get("source_file_abs", "")).lower(),
+                " ".join(str(item).lower() for item in metadata.get("source_datasets", []) or []),
+                " ".join(str(item).lower() for item in metadata.get("target_datasets", []) or []),
             ]
         )
-        if any(token and token in haystack for token in all_tokens):
-            seeds.append(node_id)
+        if not focused_haystack.strip():
+            continue
+
+        field_hits = sum(1 for token in field_tokens if token in focused_haystack)
+        context_hits = sum(1 for token in contextual_tokens if token in focused_haystack)
+        if field_hits == 0 and context_hits == 0:
+            continue
+
+        score = field_hits * 5 + context_hits * 2
+        if str(node.get("node_type", "")).lower() == "transformation":
+            score += 1
+        scored.append((score, node_id))
+
+    scored.sort(key=lambda item: (-item[0], item[1]))
+    seeds = [node_id for _, node_id in scored[:8]]
 
     if not seeds:
         notes.append(
@@ -314,7 +324,7 @@ def traverse_lineage(lineage: dict[str, Any], seeds: list[str]) -> dict[str, Any
                     {
                         "node_id": next_node,
                         "distance": distance + 1,
-                        "relationship": edge.get("relationship") or edge.get("type") or "RELATED",
+                        "relationship": edge.get("relationship") or edge.get("edge_type") or edge.get("type") or "RELATED",
                         "metadata": edge.get("metadata", {}),
                     }
                 )
@@ -681,14 +691,102 @@ def build_registry_blast_radius(
     }
 
 
-def build_lineage_enrichment(lineage_walk: dict[str, Any], lineage: dict[str, Any]) -> dict[str, Any]:
+def subscriber_snapshot_patterns(subscriber_id: str) -> dict[str, list[str]]:
+    lowered = subscriber_id.lower()
+    file_patterns: list[str] = []
+    repo_patterns: list[str] = []
+
+    if "contract-generator" in lowered:
+        repo_patterns.extend(["data-contract-enforcer", "week7"])
+        file_patterns.append("contracts/generator.py")
+    elif "validation-runner" in lowered:
+        repo_patterns.extend(["data-contract-enforcer", "week7"])
+        file_patterns.append("contracts/runner.py")
+    elif "brownfield-cartographer" in lowered:
+        repo_patterns.extend(["brownfield-cartographer", "week4"])
+        file_patterns.extend(
+            [
+                "src/agents/hydrologist.py",
+                "src/exporters/week7_lineage.py",
+                "src/cli.py",
+            ]
+        )
+
+    return {"repo_patterns": repo_patterns, "file_patterns": file_patterns}
+
+
+def find_registry_aligned_consumer_nodes(
+    snapshots: list[dict[str, Any]],
+    subscribers: list[dict[str, Any]],
+) -> list[dict[str, Any]]:
+    matches: list[dict[str, Any]] = []
+    for subscriber in subscribers:
+        subscriber_id = str(subscriber.get("subscriber_id") or "")
+        patterns = subscriber_snapshot_patterns(subscriber_id)
+        if not patterns["repo_patterns"] and not patterns["file_patterns"]:
+            continue
+
+        for snapshot in snapshots:
+            codebase_root = str(snapshot.get("codebase_root") or "")
+            root_text = codebase_root.lower()
+            if patterns["repo_patterns"] and not any(
+                pattern in root_text for pattern in patterns["repo_patterns"]
+            ):
+                continue
+
+            node_hits: list[str] = []
+            for node in snapshot.get("nodes", []) or []:
+                metadata = node.get("metadata", {}) or {}
+                haystack = " ".join(
+                    [
+                        str(node.get("id") or ""),
+                        str(node.get("name") or ""),
+                        str(node.get("source_file") or ""),
+                        str(metadata.get("source_file") or ""),
+                        str(metadata.get("source_file_abs") or ""),
+                    ]
+                ).lower()
+                if patterns["file_patterns"] and not any(
+                    pattern in haystack for pattern in patterns["file_patterns"]
+                ):
+                    continue
+                node_hits.append(str(node.get("id") or node.get("name") or "unknown-node"))
+
+            if node_hits:
+                matches.append(
+                    {
+                        "subscriber_id": subscriber_id,
+                        "snapshot_root": codebase_root,
+                        "matched_nodes": node_hits[:5],
+                        "fields_consumed": subscriber.get("fields_consumed", []),
+                    }
+                )
+
+    deduped: list[dict[str, Any]] = []
+    seen: set[tuple[str, str]] = set()
+    for item in matches:
+        key = (str(item.get("subscriber_id")), str(item.get("snapshot_root")))
+        if key in seen:
+            continue
+        seen.add(key)
+        deduped.append(item)
+    return deduped
+
+
+def build_lineage_enrichment(
+    lineage_walk: dict[str, Any],
+    lineage: dict[str, Any],
+    registry_subscribers: list[dict[str, Any]],
+    all_snapshots: list[dict[str, Any]],
+) -> dict[str, Any]:
     downstream_nodes = [node["node_id"] for node in lineage_walk.get("downstream_nodes", [])]
     upstream_nodes = [node["node_id"] for node in lineage_walk.get("upstream_candidates", [])]
     notes = list(lineage_walk.get("notes", []))
+    consumer_matches = find_registry_aligned_consumer_nodes(all_snapshots, registry_subscribers)
 
-    if downstream_nodes:
+    if downstream_nodes or consumer_matches:
         summary = "Lineage traversal found downstream enrichment nodes that may reflect transitive propagation."
-        confidence = "medium"
+        confidence = "high" if consumer_matches else "medium"
     else:
         shape = lineage.get("shape")
         if shape == "dbt-whole-file":
@@ -704,6 +802,7 @@ def build_lineage_enrichment(lineage_walk: dict[str, Any], lineage: dict[str, An
         "matched_nodes": lineage_walk.get("matched_nodes", []),
         "upstream_candidates": upstream_nodes,
         "downstream_nodes": downstream_nodes,
+        "registry_aligned_consumers": consumer_matches,
         "summary": summary,
         "confidence": confidence,
         "notes": notes,
@@ -762,6 +861,14 @@ def build_output(
             "lineage_role": "enrichment_only",
             "enforcement_boundary": "consumer",
         },
+        "confidence_scoring_method": {
+            "summary": "Confidence blends file-path relevance, line-level git blame hits, and recent commit context.",
+            "components": [
+                "path relevance to the failing field",
+                "git blame hits on relevant line ranges",
+                "recent commit support within the selected window",
+            ],
+        },
         "source_report": str(report_path),
         "contract_path": str(contract_path),
         "registry_path": str(registry_path),
@@ -791,16 +898,16 @@ def main() -> int:
     contract = load_contract(contract_path)
     registry_payload = load_registry(registry_path)
     violation_log_rows = load_violation_log(violation_log_path)
-    lineage_snapshot, lineage_mode = load_lineage_snapshot(lineage_path)
+    repo_roots = infer_repo_roots_from_contract(contract, workspace_root)
+    if not repo_roots:
+        raise SystemExit("Could not infer any upstream git repository roots from the contract dataset.")
+    all_lineage_snapshots, _ = load_lineage_snapshots(lineage_path)
+    lineage_snapshot, lineage_mode = load_lineage_snapshot(lineage_path, repo_roots)
     lineage = normalize_lineage(lineage_snapshot, lineage_mode)
 
     normalized_failures = normalize_failures(report, contract)
     if not normalized_failures:
         raise SystemExit("No FAIL results were found in the supplied validation report.")
-
-    repo_roots = infer_repo_roots_from_contract(contract, workspace_root)
-    if not repo_roots:
-        raise SystemExit("Could not infer any upstream git repository roots from the contract dataset.")
 
     seeds, seed_notes = seed_lineage_nodes(
         lineage=lineage,
@@ -829,7 +936,12 @@ def main() -> int:
         contract_id=contract.get("id", contract_path.stem),
         failing_field=normalized_failures[0]["field"],
     )
-    lineage_enrichment = build_lineage_enrichment(lineage_walk, lineage)
+    lineage_enrichment = build_lineage_enrichment(
+        lineage_walk,
+        lineage,
+        registry_blast_radius.get("subscribers", []),
+        all_lineage_snapshots,
+    )
     payload = build_output(
         report_path=report_path,
         contract_path=contract_path,

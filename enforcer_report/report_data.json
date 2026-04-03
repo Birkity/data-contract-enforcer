@@ -1,0 +1,392 @@
+{
+  "generated_at": "2026-04-02T21:01:16.345231+00:00",
+  "system_name": "TRP Week 7 Data Contract Enforcer",
+  "architecture": {
+    "enforcement_boundary": "consumer",
+    "blast_radius_primary_source": "contract_registry",
+    "lineage_role": "enrichment_only",
+    "schema_evolution_role": "producer_side_ci_gate"
+  },
+  "data_health_score": 100,
+  "score_breakdown": {
+    "baseline_validation": 35.0,
+    "ai_contract_extensions": 20.0,
+    "attribution_and_blast_radius": 15.0,
+    "schema_evolution_gate": 15.0,
+    "governance_and_snapshots": 15.0
+  },
+  "validation_summary": {
+    "baseline": {
+      "mode": "AUDIT",
+      "decision": "ALLOW_WITH_AUDIT_TRAIL",
+      "total_checks": 38,
+      "passed": 38,
+      "failed": 0,
+      "warned": 0
+    },
+    "injected_violation": {
+      "audit": {
+        "decision": "ALLOW_WITH_AUDIT_TRAIL",
+        "failed": 2,
+        "blocking": false
+      },
+      "warn": {
+        "decision": "BLOCK",
+        "failed": 2,
+        "blocking": true
+      },
+      "enforce": {
+        "decision": "BLOCK",
+        "failed": 2,
+        "blocking": true
+      },
+      "key_failures": [
+        {
+          "check_id": "week3-extractions.fact_confidence.range",
+          "severity": "CRITICAL",
+          "failing_percent": 78.61,
+          "message": "fact_confidence is outside the configured range. Breaking change detected."
+        },
+        {
+          "check_id": "week3-extractions.fact_confidence.drift",
+          "severity": "HIGH",
+          "failing_percent": 78.61,
+          "message": "fact_confidence mean drifted 923.4 stddev from baseline."
+        }
+      ]
+    }
+  },
+  "violations_summary": {
+    "total_logged_entries": 6,
+    "real_ai_findings": 0,
+    "latest_real_ai_finding": null,
+    "injected_validation_failures": 2
+  },
+  "blast_radius": {
+    "affected_subscribers": [
+      {
+        "subscriber_id": "week4-brownfield-cartographer",
+        "fields_consumed": [
+          "doc_id",
+          "extracted_facts",
+          "extracted_facts[].confidence",
+          "entities"
+        ],
+        "breaking_fields": [
+          {
+            "field": "extracted_facts[].confidence",
+            "reason": "Confidence scale drives trust weighting and graph annotation quality in downstream cartography."
+          },
+          {
+            "field": "doc_id",
+            "reason": "Stable document identity is required to link extraction outputs to lineage or graph nodes."
+          }
+        ],
+        "validation_mode": "WARN",
+        "registered_at": "2026-04-02 16:20:00+00:00",
+        "contact": {
+          "owner": "Week 4 Brownfield Cartographer",
+          "role": "downstream consumer",
+          "email": "birkity.yishak.m@gmail.com"
+        },
+        "contact_summary": "Week 4 Brownfield Cartographer | downstream consumer | birkity.yishak.m@gmail.com",
+        "match_type": "field_match"
+      },
+      {
+        "subscriber_id": "week7-contract-generator",
+        "fields_consumed": [
+          "doc_id",
+          "extracted_facts",
+          "extracted_facts[].confidence",
+          "entities",
+          "extraction_model"
+        ],
+        "breaking_fields": [
+          {
+            "field": "extracted_facts",
+            "reason": "The generator depends on the nested fact structure to flatten the dataset and infer fact-level clauses."
+          },
+          {
+            "field": "extracted_facts[].confidence",
+            "reason": "Range and drift clauses are generated from the observed fact confidence distribution."
+          }
+        ],
+        "validation_mode": "AUDIT",
+        "registered_at": "2026-04-02 16:20:00+00:00",
+        "contact": {
+          "owner": "Week 7 Contract Generator",
+          "role": "contract consumer",
+          "email": "birkity.yishak.m@gmail.com"
+        },
+        "contact_summary": "Week 7 Contract Generator | contract consumer | birkity.yishak.m@gmail.com",
+        "match_type": "field_match"
+      },
+      {
+        "subscriber_id": "week7-validation-runner",
+        "fields_consumed": [
+          "doc_id",
+          "extracted_facts[].confidence",
+          "source_hash",
+          "extracted_at"
+        ],
+        "breaking_fields": [
+          {
+            "field": "extracted_facts[].confidence",
+            "reason": "Confidence is a critical semantic field and should block on range or high-severity drift in enforce mode."
+          },
+          {
+            "field": "source_hash",
+            "reason": "Hash integrity is used as part of the contract's structural guarantees."
+          }
+        ],
+        "validation_mode": "ENFORCE",
+        "registered_at": "2026-04-02 16:20:00+00:00",
+        "contact": {
+          "owner": "Week 7 Validation Runner",
+          "role": "enforcement consumer",
+          "email": "birkity.yishak.m@gmail.com"
+        },
+        "contact_summary": "Week 7 Validation Runner | enforcement consumer | birkity.yishak.m@gmail.com",
+        "match_type": "field_match"
+      }
+    ],
+    "subscriber_count": 3,
+    "lineage_enrichment_confidence": "high",
+    "top_candidate_file": "src/agents/fact_table.py",
+    "top_candidate_commit": "033135cc46c7b8889cb8bf4f6607f940469bed5b"
+  },
+  "schema_evolution_summary": {
+    "decision": "FAIL",
+    "breaking_changes": 1,
+    "impacted_systems": [
+      "week4-brownfield-cartographer",
+      "week7-contract-generator",
+      "week7-validation-runner"
+    ],
+    "recommendation": "Breaking change detected for fields that active registered consumers depend on. Deployment should be blocked.",
+    "producer_next_actions": [
+      "Block producer deployment until impacted consumers have a migration plan.",
+      "Update contract_registry/subscriptions.yaml with any new field names, aliases, or migration notes before release.",
+      "Publish a compatibility notice to affected subscribers and regenerate the contract snapshot after the schema fix or migration.",
+      "Prefer deprecating the old field with an alias period before removing or renaming it outright."
+    ],
+    "changes": [
+      {
+        "change_type": "field_renamed",
+        "field": "fact_confidence -> fact_confidence_score",
+        "classification": "breaking",
+        "rationale": "Field rename is breaking because existing consumers depend on the previous field path.",
+        "previous_value": "fact_confidence",
+        "current_value": "fact_confidence_score",
+        "affected_consumers": [
+          {
+            "subscriber_id": "week4-brownfield-cartographer",
+            "fields_consumed": [
+              "doc_id",
+              "extracted_facts",
+              "extracted_facts[].confidence",
+              "entities"
+            ],
+            "breaking_fields": [
+              {
+                "field": "extracted_facts[].confidence",
+                "reason": "Confidence scale drives trust weighting and graph annotation quality in downstream cartography."
+              },
+              {
+                "field": "doc_id",
+                "reason": "Stable document identity is required to link extraction outputs to lineage or graph nodes."
+              }
+            ],
+            "validation_mode": "WARN",
+            "contact": {
+              "owner": "Week 4 Brownfield Cartographer",
+              "role": "downstream consumer",
+              "email": "birkity.yishak.m@gmail.com"
+            },
+            "match_type": "field_match"
+          },
+          {
+            "subscriber_id": "week7-contract-generator",
+            "fields_consumed": [
+              "doc_id",
+              "extracted_facts",
+              "extracted_facts[].confidence",
+              "entities",
+              "extraction_model"
+            ],
+            "breaking_fields": [
+              {
+                "field": "extracted_facts",
+                "reason": "The generator depends on the nested fact structure to flatten the dataset and infer fact-level clauses."
+              },
+              {
+                "field": "extracted_facts[].confidence",
+                "reason": "Range and drift clauses are generated from the observed fact confidence distribution."
+              }
+            ],
+            "validation_mode": "AUDIT",
+            "contact": {
+              "owner": "Week 7 Contract Generator",
+              "role": "contract consumer",
+              "email": "birkity.yishak.m@gmail.com"
+            },
+            "match_type": "field_match"
+          },
+          {
+            "subscriber_id": "week7-validation-runner",
+            "fields_consumed": [
+              "doc_id",
+              "extracted_facts[].confidence",
+              "source_hash",
+              "extracted_at"
+            ],
+            "breaking_fields": [
+              {
+                "field": "extracted_facts[].confidence",
+                "reason": "Confidence is a critical semantic field and should block on range or high-severity drift in enforce mode."
+              },
+              {
+                "field": "source_hash",
+                "reason": "Hash integrity is used as part of the contract's structural guarantees."
+              }
+            ],
+            "validation_mode": "ENFORCE",
+            "contact": {
+              "owner": "Week 7 Validation Runner",
+              "role": "enforcement consumer",
+              "email": "birkity.yishak.m@gmail.com"
+            },
+            "match_type": "field_match"
+          }
+        ],
+        "impact_level": "HIGH",
+        "requires_registry_update": true,
+        "matched_field_subscriptions": true,
+        "rename_confidence": 0.837
+      }
+    ]
+  },
+  "ai_risk_summary": {
+    "overall_status": "PASS",
+    "embedding_drift_score": 0.0,
+    "prompt_input_schema_violation_rate": 0.0,
+    "llm_output_schema_violation_rate": 0.0,
+    "trace_contract_violation_rate": 0.0,
+    "details": {
+      "embedding_drift": {
+        "status": "PASS",
+        "severity": "LOW",
+        "metric": "embedding_drift_score",
+        "value": 0.0,
+        "baseline_size": 136,
+        "current_size": 136,
+        "metric_source": "ollama_embeddings",
+        "provider": "http://localhost:11434",
+        "model": "nomic-embed-text:latest",
+        "fallback_reason": null,
+        "baseline_action": "created",
+        "baseline_generated_at": "2026-04-02T20:23:36.022464+00:00",
+        "baseline_path": "schema_snapshots/ai/embedding_baseline.json",
+        "thresholds": {
+          "warn_above": 0.18,
+          "fail_above": 0.35
+        },
+        "summary": "Semantic drift between the current Week 3 fact text slice and the persisted embedding baseline.",
+        "top_shifted_tokens": [],
+        "notes": [
+          "This metric used a real local embedding provider, so the drift score reflects semantic similarity rather than token hashing alone.",
+          "Embedding baseline was created from the current Week 3 extraction slice before evaluating drift."
+        ]
+      },
+      "prompt_input_schema_validation": {
+        "status": "PASS",
+        "severity": "LOW",
+        "metric": "prompt_input_schema_violation_rate",
+        "value": 0.0,
+        "checked_runs": 15,
+        "failing_runs": 0,
+        "thresholds": {
+          "warn_above": 0.02,
+          "fail_above": 0.08
+        },
+        "prompt_families": {
+          "document_page_text": 2,
+          "section_prompt": 1,
+          "task_prompt": 12
+        },
+        "sample_failures": [],
+        "summary": "Trace prompt inputs were validated against the observed structured prompt families in the LangSmith export."
+      },
+      "llm_output_schema_validation": {
+        "status": "PASS",
+        "severity": "LOW",
+        "metric": "llm_output_schema_violation_rate",
+        "value": 0.0,
+        "checked_rows": 5,
+        "failing_rows": 0,
+        "thresholds": {
+          "warn_above": 0.02,
+          "fail_above": 0.08
+        },
+        "verdict_mix": {
+          "FAIL": 2,
+          "PASS": 3
+        },
+        "sample_failures": [],
+        "summary": "Week 2 verdict records were checked for stable structured LLM output envelopes."
+      },
+      "trace_contract_risk": {
+        "status": "PASS",
+        "severity": "LOW",
+        "metric": "trace_contract_violation_rate",
+        "value": 0.0,
+        "raw_checked_rows": 153,
+        "checked_rows": 153,
+        "invalid_run_type_rows": 0,
+        "thresholds": {
+          "warn_above": 0.05,
+          "fail_above": 0.12
+        },
+        "allowed_run_types": [
+          "chain",
+          "embedding",
+          "llm",
+          "retriever",
+          "tool"
+        ],
+        "observed_invalid_run_types": {},
+        "normalization": {
+          "raw_row_count": 153,
+          "canonical_row_count": 153,
+          "normalized_helper_rows": 0,
+          "normalized_helper_run_types": {},
+          "normalized_samples": [],
+          "summary": "Internal helper spans were normalized to documented contract run types while preserving the original raw run_type in metadata."
+        },
+        "duration_failures": 1,
+        "token_failures": 0,
+        "subscriber_count": 1,
+        "summary": "LangSmith trace telemetry was normalized at the consumer boundary and then checked against the documented Week 7 trace contract expectations."
+      }
+    }
+  },
+  "artifact_state": {
+    "snapshot_versions": {
+      "week3-extractions": 10,
+      "week5-events": 9
+    },
+    "submission_ready": true,
+    "known_limitations": [
+      "Week 4 lineage is canonical and useful now, but the consumer-side enrichment is still dominated by dynamic file-I/O observations rather than a clean explicit Week 3 contract edge."
+    ]
+  },
+  "recommended_actions": [
+    "Keep consumer-side validation in AUDIT first for any new subscriber, then move to WARN or ENFORCE after a clean baseline is established.",
+    "Keep SchemaEvolutionAnalyzer in the producer CI path so breaking schema changes are blocked before consumers see them.",
+    "AI-specific contract metrics are stable on the current artifacts; keep tracing and schema snapshots in place as the next safety layer.",
+    "Block producer deployment until impacted consumers have a migration plan.",
+    "Update contract_registry/subscriptions.yaml with any new field names, aliases, or migration notes before release.",
+    "Publish a compatibility notice to affected subscribers and regenerate the contract snapshot after the schema fix or migration.",
+    "Prefer deprecating the old field with an alias period before removing or renaming it outright."
+  ]
+}

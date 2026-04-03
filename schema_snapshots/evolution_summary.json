@@ -1,0 +1,21 @@
+{
+  "generated_at": "2026-04-02T20:06:37.797409+00:00",
+  "contract_id": "week3-extractions",
+  "total_changes": 1,
+  "breaking_changes": 1,
+  "backward_compatible_changes": 0,
+  "impacted_systems": [
+    "week4-brownfield-cartographer",
+    "week7-contract-generator",
+    "week7-validation-runner"
+  ],
+  "decision": "FAIL",
+  "ci_gate_blocking": true,
+  "recommendation": "Breaking change detected for fields that active registered consumers depend on. Deployment should be blocked.",
+  "producer_next_actions": [
+    "Block producer deployment until impacted consumers have a migration plan.",
+    "Update contract_registry/subscriptions.yaml with any new field names, aliases, or migration notes before release.",
+    "Publish a compatibility notice to affected subscribers and regenerate the contract snapshot after the schema fix or migration.",
+    "Prefer deprecating the old field with an alias period before removing or renaming it outright."
+  ]
+}

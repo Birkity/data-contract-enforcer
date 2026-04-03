@@ -1,0 +1,3233 @@
+kind: DataContract
+apiVersion: v3.0.0
+id: week5-events
+info:
+  title: Week 5 Events Contract
+  version: 1.1.0
+  owner: week7-contract-generator
+  description: Generated from the live week5/events JSONL output using profiling-based inference. The
+    contract reflects the current serialized artifact present in the repository.
+servers:
+  local:
+    type: local
+    path: outputs/week5/events.jsonl
+    format: jsonl
+terms:
+  usage: Internal inter-system data contract generated from the observed output snapshot at outputs/week5/events.jsonl.
+  limitations: Registry subscribers are authoritative for blast radius; lineage remains enrichment-only
+    and may be incomplete.
+implementation_model:
+  enforcement_boundary: consumer
+  blast_radius_primary_source: contract_registry
+  lineage_role: enrichment_only
+  trust_boundary_tier: tier_1_registry_plus_lineage
+observations:
+  generated_at: '2026-04-02T13:29:10.796169+00:00'
+  record_count: 1198
+  profiled_row_count: 1198
+  flatten_mode: record_level_fallback
+  repeated_field: null
+  observed_keys:
+  - event_id
+  - event_type
+  - aggregate_id
+  - aggregate_type
+  - sequence_number
+  - payload
+  - metadata
+  - schema_version
+  - occurred_at
+  - recorded_at
+  warnings: []
+schema:
+  event_id:
+    type: string
+    description: Primary identifier for the event record.
+    required: true
+    format: uuid
+    profile:
+      dtype: string
+      null_fraction: 0.0
+      cardinality_estimate: 1198
+      sample_values:
+      - a2ecf00f-b35e-4239-932a-008692e139d1
+      - 2b955656-7931-4a14-9872-8e7a9a4586c5
+      - f963c7ad-3baf-472b-99fb-c2f6f08b2e13
+      - 9a905a83-8bf2-4831-bf61-c6211671f0bc
+      - dae92d17-dd01-482c-855b-d46150351c4c
+  event_type:
+    type: string
+    description: Business event type emitted by the event-sourcing platform.
+    required: true
+    profile:
+      dtype: string
+      null_fraction: 0.0
+      cardinality_estimate: 34
+      sample_values:
+      - ApplicationSubmitted
+      - DocumentUploadRequested
+      - PackageCreated
+      - DocumentUploaded
+      - DocumentAdded
+  aggregate_id:
+    type: string
+    description: Identifier for the aggregate instance the event belongs to.
+    required: true
+    format: uuid
+    profile:
+      dtype: string
+      null_fraction: 0.0
+      cardinality_estimate: 151
+      sample_values:
+      - a9c5f6f8-0765-4c74-b614-980beb4162db
+      - a8863e13-0435-4a43-905d-c2d9cf1def92
+      - 85091fc4-b000-4280-8502-60a2f8344140
+      - 4d4dadea-e575-4d5f-ba2b-e397811ceb3b
+      - 6e5f1908-04ff-4188-8bfc-f5556c11220b
+  aggregate_type:
+    type: string
+    description: Aggregate class or domain entity name for the event stream.
+    required: true
+    enum:
+    - AgentSession
+    - ComplianceCheck
+    - CreditAnalysis
+    - DocumentPackage
+    - FraudScreening
+    - Loan
+    profile:
+      dtype: string
+      null_fraction: 0.0
+      cardinality_estimate: 6
+      sample_values:
+      - Loan
+      - DocumentPackage
+      - AgentSession
+      - CreditAnalysis
+      - FraudScreening
+  sequence_number:
+    type: integer
+    description: Monotonic sequence number within the aggregate stream.
+    required: true
+    profile:
+      dtype: integer
+      null_fraction: 0.0
+      cardinality_estimate: 13
+      sample_values:
+      - '1'
+      - '2'
+      - '3'
+      - '4'
+      - '5'
+      observed_min: 1.0
+      observed_max: 13.0
+      observed_mean: 5.335559
+      observed_stddev: 3.243798
+      observed_p50: 5.0
+      observed_p95: 11.0
+  schema_version:
+    type: string
+    description: Version of the payload schema used to serialize the event.
+    required: true
+    enum:
+    - '1.0'
+    - '2.0'
+    profile:
+      dtype: string
+      null_fraction: 0.0
+      cardinality_estimate: 2
+      sample_values:
+      - '1.0'
+      - '2.0'
+  occurred_at:
+    type: string
+    description: Business timestamp when the event occurred.
+    required: true
+    format: date-time
+    profile:
+      dtype: string
+      null_fraction: 0.0
+      cardinality_estimate: 828
+      sample_values:
+      - '2026-02-27T13:48:17.375826Z'
+      - '2026-02-27T13:48:37.375826Z'
+      - '2026-03-05T13:49:17.383073Z'
+      - '2026-03-05T13:49:37.383073Z'
+      - '2026-03-12T13:47:17.384213Z'
+  recorded_at:
+    type: string
+    description: Persistence timestamp when the event was stored.
+    required: true
+    format: date-time
+    profile:
+      dtype: string
+      null_fraction: 0.0
+      cardinality_estimate: 828
+      sample_values:
+      - '2026-02-27T13:48:17.375826Z'
+      - '2026-02-27T13:48:37.375826Z'
+      - '2026-03-05T13:49:17.383073Z'
+      - '2026-03-05T13:49:37.383073Z'
+      - '2026-03-12T13:47:17.384213Z'
+  metadata_causation_id:
+    type: string
+    description: Identifier of the event or command that triggered this event.
+    format: uuid
+    profile:
+      dtype: string
+      null_fraction: 0.973289
+      cardinality_estimate: 32
+      sample_values:
+      - cbc3a8f1-f561-499c-acc6-82849d4ee613
+      - b3be6fbd-1b56-451d-856a-92af9d9818ed
+      - e9e5259d-2015-41a8-85c8-abe7ad4f2942
+      - 8707e1a2-cab4-407c-8b78-56c78f3faecb
+      - 3c7ddb3a-8751-4369-b203-6d0fd78461f9
+  metadata_correlation_id:
+    type: string
+    description: Correlation identifier used to tie related events together.
+    required: true
+    format: uuid
+    profile:
+      dtype: string
+      null_fraction: 0.0
+      cardinality_estimate: 111
+      sample_values:
+      - 4b884a98-b081-463b-bfbb-8b5fb9e900ad
+      - 40fbc01c-80cd-4e8f-9dd4-ccad6b5f51aa
+      - 00679b60-5ca9-4687-aab6-0e86ca0facd1
+      - 81e84cc2-c6a6-4a3e-9d11-07f9aa116f54
+      - cb94c37b-554d-48e8-b17f-54972bfc32da
+  metadata_user_id:
+    type: string
+    description: User or system principal associated with the event.
+    required: true
+    profile:
+      dtype: string
+      null_fraction: 0.0
+      cardinality_estimate: 54
+      sample_values:
+      - qhughes@example.net
+      - system
+      - molly71@example.net
+      - charlesharrington@example.com
+      - melissa86@example.com
+  metadata_source_service:
+    type: string
+    description: Service or subsystem that emitted the event.
+    required: true
+    enum:
+    - agentic-governance-ledger
+    profile:
+      dtype: string
+      null_fraction: 0.0
+      cardinality_estimate: 1
+      sample_values:
+      - agentic-governance-ledger
+  payload_application_id:
+    type: string
+    description: Observed field for payload application id in the source dataset.
+    profile:
+      dtype: string
+      null_fraction: 0.464942
+      cardinality_estimate: 29
+      sample_values:
+      - APEX-0001
+      - APEX-0002
+      - APEX-0003
+      - APEX-0004
+      - APEX-0005
+  payload_applicant_id:
+    type: string
+    description: Observed field for payload applicant id in the source dataset.
+    profile:
+      dtype: string
+      null_fraction: 0.964107
+      cardinality_estimate: 26
+      sample_values:
+      - COMP-074
+      - COMP-041
+      - COMP-031
+      - COMP-015
+      - COMP-057
+  payload_requested_amount_usd:
+    type: string
+    description: Observed field for payload requested amount usd in the source dataset.
+    profile:
+      dtype: string
+      null_fraction: 0.975793
+      cardinality_estimate: 29
+      sample_values:
+      - '2679000.0'
+      - '2388000.0'
+      - '1017000.0'
+      - '877000.0'
+      - '1479000.0'
+  payload_loan_purpose:
+    type: string
+    description: Observed field for payload loan purpose in the source dataset.
+    enum:
+    - acquisition
+    - equipment_financing
+    - expansion
+    - real_estate
+    - refinancing
+    - working_capital
+    profile:
+      dtype: string
+      null_fraction: 0.975793
+      cardinality_estimate: 6
+      sample_values:
+      - working_capital
+      - acquisition
+      - real_estate
+      - expansion
+      - refinancing
+  payload_loan_term_months:
+    type: number
+    description: Observed field for payload loan term months in the source dataset.
+    profile:
+      dtype: number
+      null_fraction: 0.975793
+      cardinality_estimate: 4
+      sample_values:
+      - '24.0'
+      - '48.0'
+      - '36.0'
+      - '60.0'
+      observed_min: 24.0
+      observed_max: 60.0
+      observed_mean: 41.793103
+      observed_stddev: 13.075002
+      observed_p50: 48.0
+      observed_p95: 60.0
+  payload_submission_channel:
+    type: string
+    description: Observed field for payload submission channel in the source dataset.
+    enum:
+    - agent
+    - branch
+    - mobile
+    - web
+    profile:
+      dtype: string
+      null_fraction: 0.975793
+      cardinality_estimate: 4
+      sample_values:
+      - branch
+      - web
+      - mobile
+      - agent
+  payload_contact_email:
+    type: string
+    description: Observed field for payload contact email in the source dataset.
+    profile:
+      dtype: string
+      null_fraction: 0.975793
+      cardinality_estimate: 29
+      sample_values:
+      - qhughes@example.net
+      - molly71@example.net
+      - charlesharrington@example.com
+      - melissa86@example.com
+      - williamsonjimmy@example.net
+  payload_contact_name:
+    type: string
+    description: Observed field for payload contact name in the source dataset.
+    profile:
+      dtype: string
+      null_fraction: 0.975793
+      cardinality_estimate: 29
+      sample_values:
+      - Mrs. Amanda Shaw
+      - Alexis Thomas
+      - Michael Santos
+      - Stacy Freeman
+      - Yolanda Francis
+  payload_submitted_at:
+    type: string
+    description: Observed field for payload submitted at in the source dataset.
+    format: date-time
+    profile:
+      dtype: string
+      null_fraction: 0.975793
+      cardinality_estimate: 29
+      sample_values:
+      - '2026-02-27T13:48:17.375826'
+      - '2026-03-05T13:49:17.383073'
+      - '2026-03-12T13:47:17.384213'
+      - '2026-02-22T13:46:17.385823'
+      - '2026-02-18T13:47:17.387021'
+  payload_application_reference:
+    type: string
+    description: Observed field for payload application reference in the source dataset.
+    profile:
+      dtype: string
+      null_fraction: 0.975793
+      cardinality_estimate: 29
+      sample_values:
+      - APEX-0001
+      - APEX-0002
+      - APEX-0003
+      - APEX-0004
+      - APEX-0005
+  payload_required_document_types_count:
+    type: number
+    description: Observed field for payload required document types count in the source dataset.
+    profile:
+      dtype: number
+      null_fraction: 0.975793
+      cardinality_estimate: 1
+      sample_values:
+      - '3.0'
+      observed_min: 3.0
+      observed_max: 3.0
+      observed_mean: 3.0
+      observed_stddev: 0.0
+      observed_p50: 3.0
+      observed_p95: 3.0
+  payload_required_document_types:
+    type: string
+    description: Observed field for payload required document types in the source dataset.
+    enum:
+    - application_proposal|income_statement|balance_sheet
+    profile:
+      dtype: string
+      null_fraction: 0.975793
+      cardinality_estimate: 1
+      sample_values:
+      - application_proposal|income_statement|balance_sheet
+  payload_deadline:
+    type: string
+    description: Observed field for payload deadline in the source dataset.
+    profile:
+      dtype: string
+      null_fraction: 0.975793
+      cardinality_estimate: 29
+      sample_values:
+      - '2026-03-06T13:48:17.375826'
+      - '2026-03-12T13:49:17.383073'
+      - '2026-03-19T13:47:17.384213'
+      - '2026-03-01T13:46:17.385823'
+      - '2026-02-25T13:47:17.387021'
+  payload_requested_by:
+    type: string
+    description: Observed field for payload requested by in the source dataset.
+    profile:
+      dtype: string
+      null_fraction: 0.960768
+      cardinality_estimate: 19
+      sample_values:
+      - system
+      - system:session-sess-doc-36f971dd
+      - system:session-sess-doc-6dd6826a
+      - system:session-sess-doc-64aa103d
+      - system:session-sess-doc-d7ec2f72
+  payload_package_id:
+    type: string
+    description: Observed field for payload package id in the source dataset.
+    profile:
+      dtype: string
+      null_fraction: 0.778798
+      cardinality_estimate: 29
+      sample_values:
+      - APEX-0001
+      - APEX-0002
+      - APEX-0003
+      - APEX-0004
+      - APEX-0005
+  payload_required_documents_count:
+    type: number
+    description: Observed field for payload required documents count in the source dataset.
+    profile:
+      dtype: number
+      null_fraction: 0.975793
+      cardinality_estimate: 1
+      sample_values:
+      - '3.0'
+      observed_min: 3.0
+      observed_max: 3.0
+      observed_mean: 3.0
+      observed_stddev: 0.0
+      observed_p50: 3.0
+      observed_p95: 3.0
+  payload_required_documents:
+    type: string
+    description: Observed field for payload required documents in the source dataset.
+    enum:
+    - application_proposal|income_statement|balance_sheet
+    profile:
+      dtype: string
+      null_fraction: 0.975793
+      cardinality_estimate: 1
+      sample_values:
+      - application_proposal|income_statement|balance_sheet
+  payload_created_at:
+    type: string
+    description: Observed field for payload created at in the source dataset.
+    format: date-time
+    profile:
+      dtype: string
+      null_fraction: 0.975793
+      cardinality_estimate: 29
+      sample_values:
+      - '2026-02-27T13:48:37.375826'
+      - '2026-03-05T13:49:37.383073'
+      - '2026-03-12T13:47:37.384213'
+      - '2026-02-22T13:46:37.385823'
+      - '2026-02-18T13:47:37.387021'
+  payload_document_id:
+    type: string
+    description: Observed field for payload document id in the source dataset.
+    profile:
+      dtype: string
+      null_fraction: 0.741235
+      cardinality_estimate: 146
+      sample_values:
+      - doc-31b21e51
+      - doc-1cf60394
+      - doc-aeea98d4
+      - doc-fc766c45
+      - doc-9f73f33f
+  payload_document_type:
+    type: string
+    description: Observed field for payload document type in the source dataset.
+    enum:
+    - application_proposal
+    - balance_sheet
+    - income_statement
+    profile:
+      dtype: string
+      null_fraction: 0.75626
+      cardinality_estimate: 3
+      sample_values:
+      - application_proposal
+      - income_statement
+      - balance_sheet
+  payload_document_format:
+    type: string
+    description: Observed field for payload document format in the source dataset.
+    enum:
+    - pdf
+    - xlsx
+    profile:
+      dtype: string
+      null_fraction: 0.846411
+      cardinality_estimate: 2
+      sample_values:
+      - pdf
+      - xlsx
+  payload_filename:
+    type: string
+    description: Observed field for payload filename in the source dataset.
+    profile:
+      dtype: string
+      null_fraction: 0.923205
+      cardinality_estimate: 92
+      sample_values:
+      - APEX-0007_proposal.pdf
+      - APEX-0007_income_stmt_2024.pdf
+      - APEX-0007_balance_sheet_2024.pdf
+      - APEX-0007_financials.xlsx
+      - APEX-0008_proposal.pdf
+  payload_file_path:
+    type: string
+    description: Observed field for payload file path in the source dataset.
+    profile:
+      dtype: string
+      null_fraction: 0.923205
+      cardinality_estimate: 92
+      sample_values:
+      - documents/COMP-019/APEX-0007_proposal.pdf
+      - documents/COMP-019/APEX-0007_income_stmt_2024.pdf
+      - documents/COMP-019/APEX-0007_balance_sheet_2024.pdf
+      - documents/COMP-019/APEX-0007_financials.xlsx
+      - documents/COMP-078/APEX-0008_proposal.pdf
+  payload_file_size_bytes:
+    type: number
+    description: Observed field for payload file size bytes in the source dataset.
+    profile:
+      dtype: number
+      null_fraction: 0.923205
+      cardinality_estimate: 92
+      sample_values:
+      - '64164.0'
+      - '248207.0'
+      - '105731.0'
+      - '208043.0'
+      - '208829.0'
+      observed_min: 48329.0
+      observed_max: 379941.0
+      observed_mean: 212401.880435
+      observed_stddev: 100717.816408
+      observed_p50: 217168.0
+      observed_p95: 363561.65
+  payload_file_hash:
+    type: string
+    description: Observed field for payload file hash in the source dataset.
+    enum:
+    - 3a3a2439911766f6
+    - 8eb66e9cbdaaa5ba
+    - a86210f5fdceb84f
+    - d794b166001141a2
+    profile:
+      dtype: string
+      null_fraction: 0.846411
+      cardinality_estimate: 4
+      sample_values:
+      - 8eb66e9cbdaaa5ba
+      - d794b166001141a2
+      - a86210f5fdceb84f
+      - 3a3a2439911766f6
+  payload_fiscal_year:
+    type: number
+    description: Observed field for payload fiscal year in the source dataset.
+    profile:
+      dtype: number
+      null_fraction: 0.942404
+      cardinality_estimate: 1
+      sample_values:
+      - '2024.0'
+      observed_min: 2024.0
+      observed_max: 2024.0
+      observed_mean: 2024.0
+      observed_stddev: 0.0
+      observed_p50: 2024.0
+      observed_p95: 2024.0
+  payload_uploaded_at:
+    type: string
+    description: Observed field for payload uploaded at in the source dataset.
+    format: date-time
+    profile:
+      dtype: string
+      null_fraction: 0.923205
+      cardinality_estimate: 92
+      sample_values:
+      - '2026-02-22T13:55:37.389080'
+      - '2026-02-22T14:04:37.389080'
+      - '2026-02-22T14:05:37.389080'
+      - '2026-02-22T14:06:37.389080'
+      - '2026-03-06T00:47:37.390674'
+  payload_uploaded_by:
+    type: string
+    description: Observed field for payload uploaded by in the source dataset.
+    enum:
+    - applicant
+    profile:
+      dtype: string
+      null_fraction: 0.923205
+      cardinality_estimate: 1
+      sample_values:
+      - applicant
+  payload_added_at:
+    type: string
+    description: Observed field for payload added at in the source dataset.
+    format: date-time
+    profile:
+      dtype: string
+      null_fraction: 0.923205
+      cardinality_estimate: 92
+      sample_values:
+      - '2026-02-22T13:55:37.389080'
+      - '2026-02-22T14:04:37.389080'
+      - '2026-02-22T14:05:37.389080'
+      - '2026-02-22T14:06:37.389080'
+      - '2026-03-06T00:47:37.390674'
+  payload_session_id:
+    type: string
+    description: Observed field for payload session id in the source dataset.
+    profile:
+      dtype: string
+      null_fraction: 0.412354
+      cardinality_estimate: 59
+      sample_values:
+      - sess-doc-36f971dd
+      - sess-doc-6dd6826a
+      - sess-doc-64aa103d
+      - sess-doc-d7ec2f72
+      - sess-doc-5569e3ec
+  payload_agent_type:
+    type: string
+    description: Observed field for payload agent type in the source dataset.
+    enum:
+    - compliance
+    - credit_analysis
+    - decision_orchestrator
+    - document_processing
+    - fraud_detection
+    profile:
+      dtype: string
+      null_fraction: 0.520033
+      cardinality_estimate: 5
+      sample_values:
+      - document_processing
+      - credit_analysis
+      - fraud_detection
+      - compliance
+      - decision_orchestrator
+  payload_agent_id:
+    type: string
+    description: Observed field for payload agent id in the source dataset.
+    enum:
+    - compliance-agent-1
+    - credit-agent-1
+    - doc-agent-1
+    - fraud-agent-1
+    - orchestrator-1
+    profile:
+      dtype: string
+      null_fraction: 0.950751
+      cardinality_estimate: 5
+      sample_values:
+      - doc-agent-1
+      - credit-agent-1
+      - fraud-agent-1
+      - compliance-agent-1
+      - orchestrator-1
+  payload_model_version:
+    type: string
+    description: Observed field for payload model version in the source dataset.
+    enum:
+    - claude-sonnet-4-20250514
+    profile:
+      dtype: string
+      null_fraction: 0.939065
+      cardinality_estimate: 1
+      sample_values:
+      - claude-sonnet-4-20250514
+  payload_langgraph_graph_version:
+    type: string
+    description: Observed field for payload langgraph graph version in the source dataset.
+    enum:
+    - 1.0.0-sim
+    profile:
+      dtype: string
+      null_fraction: 0.950751
+      cardinality_estimate: 1
+      sample_values:
+      - 1.0.0-sim
+  payload_context_source:
+    type: string
+    description: Observed field for payload context source in the source dataset.
+    enum:
+    - fresh
+    profile:
+      dtype: string
+      null_fraction: 0.950751
+      cardinality_estimate: 1
+      sample_values:
+      - fresh
+  payload_context_token_count:
+    type: number
+    description: Observed field for payload context token count in the source dataset.
+    profile:
+      dtype: number
+      null_fraction: 0.950751
+      cardinality_estimate: 59
+      sample_values:
+      - '1459.0'
+      - '1606.0'
+      - '1426.0'
+      - '1715.0'
+      - '1347.0'
+      observed_min: 680.0
+      observed_max: 3510.0
+      observed_mean: 1569.033898
+      observed_stddev: 576.893344
+      observed_p50: 1454.0
+      observed_p95: 2720.7
+  payload_started_at:
+    type: string
+    description: Observed field for payload started at in the source dataset.
+    format: date-time
+    profile:
+      dtype: string
+      null_fraction: 0.920701
+      cardinality_estimate: 95
+      sample_values:
+      - '2026-03-08T21:35:40.403542'
+      - '2026-03-08T21:35:49.403542'
+      - '2026-03-08T21:37:22.403542'
+      - '2026-02-28T02:43:40.409528'
+      - '2026-02-28T02:43:49.409528'
+  payload_inputs_validated_count:
+    type: number
+    description: Observed field for payload inputs validated count in the source dataset.
+    profile:
+      dtype: number
+      null_fraction: 0.950751
+      cardinality_estimate: 2
+      sample_values:
+      - '3.0'
+      - '4.0'
+      observed_min: 3.0
+      observed_max: 4.0
+      observed_mean: 3.118644
+      observed_stddev: 0.326145
+      observed_p50: 3.0
+      observed_p95: 4.0
+  payload_inputs_validated:
+    type: string
+    description: Observed field for payload inputs validated in the source dataset.
+    enum:
+    - application_id|company_profile|regulation_set_version
+    - application_id|credit_stream|fraud_stream|compliance_stream
+    - application_id|document_ids|applicant_registry_access
+    - application_id|document_package_id|applicant_id
+    - application_id|extracted_facts_events|registry_access
+    profile:
+      dtype: string
+      null_fraction: 0.950751
+      cardinality_estimate: 5
+      sample_values:
+      - application_id|document_ids|applicant_registry_access
+      - application_id|document_package_id|applicant_id
+      - application_id|extracted_facts_events|registry_access
+      - application_id|company_profile|regulation_set_version
+      - application_id|credit_stream|fraud_stream|compliance_stream
+  payload_validation_duration_ms:
+    type: number
+    description: Observed field for payload validation duration ms in the source dataset.
+    profile:
+      dtype: number
+      null_fraction: 0.950751
+      cardinality_estimate: 52
+      sample_values:
+      - '169.0'
+      - '137.0'
+      - '180.0'
+      - '158.0'
+      - '52.0'
+      observed_min: 41.0
+      observed_max: 275.0
+      observed_mean: 134.237288
+      observed_stddev: 57.036993
+      observed_p50: 123.0
+      observed_p95: 250.1
+  payload_validated_at:
+    type: string
+    description: Observed field for payload validated at in the source dataset.
+    format: date-time
+    profile:
+      dtype: string
+      null_fraction: 0.920701
+      cardinality_estimate: 95
+      sample_values:
+      - '2026-03-08T21:35:42.403542'
+      - '2026-03-08T21:35:49.403542'
+      - '2026-03-08T21:37:22.403542'
+      - '2026-02-28T02:43:42.409528'
+      - '2026-02-28T02:43:49.409528'
+  payload_node_name:
+    type: string
+    description: Observed field for payload node name in the source dataset.
+    profile:
+      dtype: string
+      null_fraction: 0.758765
+      cardinality_estimate: 21
+      sample_values:
+      - validate_inputs
+      - run_extraction
+      - assess_quality
+      - open_credit_record
+      - load_applicant_registry
+  payload_node_sequence:
+    type: number
+    description: Observed field for payload node sequence in the source dataset.
+    profile:
+      dtype: number
+      null_fraction: 0.758765
+      cardinality_estimate: 7
+      sample_values:
+      - '1.0'
+      - '2.0'
+      - '3.0'
+      - '4.0'
+      - '5.0'
+      observed_min: 1.0
+      observed_max: 7.0
+      observed_mean: 3.204152
+      observed_stddev: 1.758862
+      observed_p50: 3.0
+      observed_p95: 6.0
+  payload_input_keys_count:
+    type: number
+    description: Observed field for payload input keys count in the source dataset.
+    profile:
+      dtype: number
+      null_fraction: 0.758765
+      cardinality_estimate: 3
+      sample_values:
+      - '2.0'
+      - '1.0'
+      - '3.0'
+      observed_min: 1.0
+      observed_max: 3.0
+      observed_mean: 1.269896
+      observed_stddev: 0.543101
+      observed_p50: 1.0
+      observed_p95: 2.0
+  payload_input_keys:
+    type: string
+    description: Observed field for payload input keys in the source dataset.
+    profile:
+      dtype: string
+      null_fraction: 0.758765
+      cardinality_estimate: 11
+      sample_values:
+      - application_id|documents
+      - document_paths
+      - raw_facts|company_profile
+      - application_id
+      - applicant_id
+  payload_output_keys_count:
+    type: number
+    description: Observed field for payload output keys count in the source dataset.
+    profile:
+      dtype: number
+      null_fraction: 0.758765
+      cardinality_estimate: 3
+      sample_values:
+      - '2.0'
+      - '1.0'
+      - '3.0'
+      observed_min: 1.0
+      observed_max: 3.0
+      observed_mean: 1.318339
+      observed_stddev: 0.561226
+      observed_p50: 1.0
+      observed_p95: 2.0
+  payload_output_keys:
+    type: string
+    description: Observed field for payload output keys in the source dataset.
+    profile:
+      dtype: string
+      null_fraction: 0.758765
+      cardinality_estimate: 19
+      sample_values:
+      - validated_inputs|document_paths
+      - raw_facts|page_refs
+      - quality_assessment
+      - validated
+      - credit_stream_opened
+  payload_llm_called:
+    type: string
+    description: Observed field for payload llm called in the source dataset.
+    enum:
+    - 'False'
+    - 'True'
+    profile:
+      dtype: string
+      null_fraction: 0.758765
+      cardinality_estimate: 2
+      sample_values:
+      - 'False'
+      - 'True'
+  payload_llm_tokens_input:
+    type: number
+    description: Observed field for payload llm tokens input in the source dataset.
+    profile:
+      dtype: number
+      null_fraction: 0.958264
+      cardinality_estimate: 50
+      sample_values:
+      - '2880.0'
+      - '1051.0'
+      - '1510.0'
+      - '2779.0'
+      - '1995.0'
+      observed_min: 919.0
+      observed_max: 3478.0
+      observed_mean: 2034.56
+      observed_stddev: 718.030616
+      observed_p50: 1992.5
+      observed_p95: 3100.15
+  payload_llm_tokens_output:
+    type: number
+    description: Observed field for payload llm tokens output in the source dataset.
+    profile:
+      dtype: number
+      null_fraction: 0.958264
+      cardinality_estimate: 48
+      sample_values:
+      - '305.0'
+      - '292.0'
+      - '686.0'
+      - '577.0'
+      - '839.0'
+      observed_min: 204.0
+      observed_max: 888.0
+      observed_mean: 539.4
+      observed_stddev: 219.759888
+      observed_p50: 530.0
+      observed_p95: 881.0
+  payload_llm_cost_usd:
+    type: number
+    description: Observed field for payload llm cost usd in the source dataset.
+    profile:
+      dtype: number
+      null_fraction: 0.958264
+      cardinality_estimate: 50
+      sample_values:
+      - '0.013215'
+      - '0.007533'
+      - '0.01482'
+      - '0.016992'
+      - '0.01857'
+      observed_min: 0.006753
+      observed_max: 0.023649
+      observed_mean: 0.014195
+      observed_stddev: 0.003982
+      observed_p50: 0.014322
+      observed_p95: 0.020121
+  payload_duration_ms:
+    type: number
+    description: Observed field for payload duration ms in the source dataset.
+    profile:
+      dtype: number
+      null_fraction: 0.758765
+      cardinality_estimate: 228
+      sample_values:
+      - '320.0'
+      - '145.0'
+      - '9646.0'
+      - '358.0'
+      - '410.0'
+      observed_min: 87.0
+      observed_max: 11948.0
+      observed_mean: 1509.124567
+      observed_stddev: 2890.506909
+      observed_p50: 333.0
+      observed_p95: 8955.6
+  payload_executed_at:
+    type: string
+    description: Observed field for payload executed at in the source dataset.
+    format: date-time
+    profile:
+      dtype: string
+      null_fraction: 0.758765
+      cardinality_estimate: 289
+      sample_values:
+      - '2026-03-08T21:35:44.403542'
+      - '2026-03-08T21:38:47.403542'
+      - '2026-03-08T21:39:01.403542'
+      - '2026-02-28T02:43:44.409528'
+      - '2026-02-28T02:45:53.409528'
+  payload_page_count:
+    type: number
+    description: Observed field for payload page count in the source dataset.
+    profile:
+      dtype: number
+      null_fraction: 0.96995
+      cardinality_estimate: 4
+      sample_values:
+      - '3.0'
+      - '5.0'
+      - '2.0'
+      - '4.0'
+      observed_min: 2.0
+      observed_max: 5.0
+      observed_mean: 3.333333
+      observed_stddev: 1.095445
+      observed_p50: 3.0
+      observed_p95: 5.0
+  payload_detected_format:
+    type: string
+    description: Observed field for payload detected format in the source dataset.
+    enum:
+    - pdf
+    profile:
+      dtype: string
+      null_fraction: 0.96995
+      cardinality_estimate: 1
+      sample_values:
+      - pdf
+  payload_pipeline_version:
+    type: string
+    description: Observed field for payload pipeline version in the source dataset.
+    enum:
+    - week3-v1.0
+    profile:
+      dtype: string
+      null_fraction: 0.96995
+      cardinality_estimate: 1
+      sample_values:
+      - week3-v1.0
+  payload_extraction_model:
+    type: string
+    description: Observed field for payload extraction model in the source dataset.
+    enum:
+    - mineru-1.0
+    profile:
+      dtype: string
+      null_fraction: 0.96995
+      cardinality_estimate: 1
+      sample_values:
+      - mineru-1.0
+  payload_tool_name:
+    type: string
+    description: Observed field for payload tool name in the source dataset.
+    enum:
+    - query_applicant_registry
+    - week3_extraction_pipeline
+    profile:
+      dtype: string
+      null_fraction: 0.958264
+      cardinality_estimate: 2
+      sample_values:
+      - week3_extraction_pipeline
+      - query_applicant_registry
+  payload_tool_input_summary:
+    type: string
+    description: Observed field for payload tool input summary in the source dataset.
+    profile:
+      dtype: string
+      null_fraction: 0.958264
+      cardinality_estimate: 15
+      sample_values:
+      - 'PDF extraction: income_statement'
+      - 'PDF extraction: balance_sheet'
+      - company_id=COMP-060, years=[2022,2023,2024]
+      - company_id=COMP-063, years=[2022,2023,2024]
+      - company_id=COMP-002, years=[2022,2023,2024]
+  payload_tool_output_summary:
+    type: string
+    description: Observed field for payload tool output summary in the source dataset.
+    profile:
+      dtype: string
+      null_fraction: 0.958264
+      cardinality_estimate: 9
+      sample_values:
+      - Extracted 9 financial line items
+      - Extracted 8 financial line items
+      - Extracted 14 financial line items
+      - Extracted 11 financial line items
+      - Extracted 12 financial line items
+  payload_tool_duration_ms:
+    type: number
+    description: Observed field for payload tool duration ms in the source dataset.
+    profile:
+      dtype: number
+      null_fraction: 0.958264
+      cardinality_estimate: 50
+      sample_values:
+      - '3177.0'
+      - '2535.0'
+      - '7428.0'
+      - '5647.0'
+      - '4409.0'
+      observed_min: 58.0
+      observed_max: 7987.0
+      observed_mean: 3966.78
+      observed_stddev: 2850.945373
+      observed_p50: 4413.0
+      observed_p95: 7863.8
+  payload_called_at:
+    type: string
+    description: Observed field for payload called at in the source dataset.
+    format: date-time
+    profile:
+      dtype: string
+      null_fraction: 0.958264
+      cardinality_estimate: 50
+      sample_values:
+      - '2026-03-08T21:36:48.403542'
+      - '2026-03-08T21:38:12.403542'
+      - '2026-02-28T02:44:13.409528'
+      - '2026-02-28T02:45:21.409528'
+      - '2026-03-07T05:19:12.416064'
+  payload_facts_total_revenue:
+    type: string
+    description: Observed field for payload facts total revenue in the source dataset.
+    profile:
+      dtype: string
+      null_fraction: 0.96995
+      cardinality_estimate: 16
+      sample_values:
+      - '4642102.67'
+      - '4188840.12'
+      - '5061959.74'
+      - '4927564.49'
+      - '2983945.03'
+  payload_facts_gross_profit:
+    type: string
+    description: Observed field for payload facts gross profit in the source dataset.
+    profile:
+      dtype: string
+      null_fraction: 0.96995
+      cardinality_estimate: 16
+      sample_values:
+      - '1502655.89'
+      - '1772369.85'
+      - '1981880.45'
+      - '3392127.94'
+      - '2088507.92'
+  payload_facts_operating_expenses:
+    type: number
+    description: Observed field for payload facts operating expenses in the source dataset.
+    profile:
+      dtype: number
+      null_fraction: 1.0
+      cardinality_estimate: 0
+      sample_values: []
+  payload_facts_operating_income:
+    type: string
+    description: Observed field for payload facts operating income in the source dataset.
+    profile:
+      dtype: string
+      null_fraction: 0.96995
+      cardinality_estimate: 16
+      sample_values:
+      - '496011.59'
+      - '516306.62'
+      - '423417.57'
+      - '401075.97'
+      - '679932.37'
+  payload_facts_ebitda:
+    type: string
+    description: Observed field for payload facts ebitda in the source dataset.
+    profile:
+      dtype: string
+      null_fraction: 0.984975
+      cardinality_estimate: 16
+      sample_values:
+      - '588877.28'
+      - '640405.41'
+      - '604241.18'
+      - '619962.26'
+      - '815826.1'
+  payload_facts_depreciation_amortization:
+    type: string
+    description: Observed field for payload facts depreciation amortization in the source dataset.
+    profile:
+      dtype: string
+      null_fraction: 0.96995
+      cardinality_estimate: 16
+      sample_values:
+      - '92865.69'
+      - '124098.78'
+      - '180823.61'
+      - '218886.29'
+      - '135893.73'
+  payload_facts_interest_expense:
+    type: string
+    description: Observed field for payload facts interest expense in the source dataset.
+    profile:
+      dtype: string
+      null_fraction: 0.96995
+      cardinality_estimate: 16
+      sample_values:
+      - '115806.82'
+      - '183849.34'
+      - '177742.59'
+      - '142354.01'
+      - '180266.79'
+  payload_facts_income_before_tax:
+    type: number
+    description: Observed field for payload facts income before tax in the source dataset.
+    profile:
+      dtype: number
+      null_fraction: 1.0
+      cardinality_estimate: 0
+      sample_values: []
+  payload_facts_tax_expense:
+    type: number
+    description: Observed field for payload facts tax expense in the source dataset.
+    profile:
+      dtype: number
+      null_fraction: 1.0
+      cardinality_estimate: 0
+      sample_values: []
+  payload_facts_net_income:
+    type: string
+    description: Observed field for payload facts net income in the source dataset.
+    profile:
+      dtype: string
+      null_fraction: 0.96995
+      cardinality_estimate: 16
+      sample_values:
+      - '283885.74'
+      - '260563.37'
+      - '178297.25'
+      - '190997.74'
+      - '378602.33'
+  payload_facts_total_assets:
+    type: string
+    description: Observed field for payload facts total assets in the source dataset.
+    profile:
+      dtype: string
+      null_fraction: 0.96995
+      cardinality_estimate: 16
+      sample_values:
+      - '6701703.19'
+      - '6506832.3'
+      - '7447112.61'
+      - '6991745.36'
+      - '3669651.91'
+  payload_facts_current_assets:
+    type: string
+    description: Observed field for payload facts current assets in the source dataset.
+    profile:
+      dtype: string
+      null_fraction: 0.96995
+      cardinality_estimate: 16
+      sample_values:
+      - '2862193.12'
+      - '3437938.21'
+      - '3676015.4'
+      - '3395213.81'
+      - '1367544.1'
+  payload_facts_cash_and_equivalents:
+    type: string
+    description: Observed field for payload facts cash and equivalents in the source dataset.
+    profile:
+      dtype: string
+      null_fraction: 0.96995
+      cardinality_estimate: 16
+      sample_values:
+      - '547738.61'
+      - '795656.04'
+      - '1050530.01'
+      - '890408.78'
+      - '223555.92'
+  payload_facts_accounts_receivable:
+    type: string
+    description: Observed field for payload facts accounts receivable in the source dataset.
+    profile:
+      dtype: string
+      null_fraction: 0.96995
+      cardinality_estimate: 16
+      sample_values:
+      - '1099926.15'
+      - '1192593.49'
+      - '957503.14'
+      - '1010140.94'
+      - '368745.25'
+  payload_facts_inventory:
+    type: string
+    description: Observed field for payload facts inventory in the source dataset.
+    profile:
+      dtype: string
+      null_fraction: 0.96995
+      cardinality_estimate: 16
+      sample_values:
+      - '1184380.81'
+      - '1099227.47'
+      - '1360144.93'
+      - '1333469.93'
+      - '668875.44'
+  payload_facts_total_liabilities:
+    type: string
+    description: Observed field for payload facts total liabilities in the source dataset.
+    profile:
+      dtype: string
+      null_fraction: 0.96995
+      cardinality_estimate: 16
+      sample_values:
+      - '2101445.05'
+      - '2043480.15'
+      - '4214605.14'
+      - '1760346.39'
+      - '952469.78'
+  payload_facts_current_liabilities:
+    type: string
+    description: Observed field for payload facts current liabilities in the source dataset.
+    profile:
+      dtype: string
+      null_fraction: 0.96995
+      cardinality_estimate: 16
+      sample_values:
+      - '1551312.65'
+      - '1847494.38'
+      - '2039993.56'
+      - '1359046.3'
+      - '673406.44'
+  payload_facts_long_term_debt:
+    type: string
+    description: Observed field for payload facts long term debt in the source dataset.
+    profile:
+      dtype: string
+      null_fraction: 0.96995
+      cardinality_estimate: 16
+      sample_values:
+      - '1561409.38'
+      - '2477781.72'
+      - '2753312.09'
+      - '1680260.08'
+      - '2008039.68'
+  payload_facts_total_equity:
+    type: string
+    description: Observed field for payload facts total equity in the source dataset.
+    profile:
+      dtype: string
+      null_fraction: 0.96995
+      cardinality_estimate: 16
+      sample_values:
+      - '4600258.14'
+      - '4463352.15'
+      - '3232507.47'
+      - '5231398.96'
+      - '2717182.13'
+  payload_facts_operating_cash_flow:
+    type: string
+    description: Observed field for payload facts operating cash flow in the source dataset.
+    profile:
+      dtype: string
+      null_fraction: 0.96995
+      cardinality_estimate: 16
+      sample_values:
+      - '248127.17'
+      - '506762.82'
+      - '388461.6'
+      - '490939.3'
+      - '403557.5'
+  payload_facts_investing_cash_flow:
+    type: number
+    description: Observed field for payload facts investing cash flow in the source dataset.
+    profile:
+      dtype: number
+      null_fraction: 1.0
+      cardinality_estimate: 0
+      sample_values: []
+  payload_facts_financing_cash_flow:
+    type: number
+    description: Observed field for payload facts financing cash flow in the source dataset.
+    profile:
+      dtype: number
+      null_fraction: 1.0
+      cardinality_estimate: 0
+      sample_values: []
+  payload_facts_free_cash_flow:
+    type: number
+    description: Observed field for payload facts free cash flow in the source dataset.
+    profile:
+      dtype: number
+      null_fraction: 1.0
+      cardinality_estimate: 0
+      sample_values: []
+  payload_facts_debt_to_equity:
+    type: number
+    description: Observed field for payload facts debt to equity in the source dataset.
+    profile:
+      dtype: number
+      null_fraction: 0.96995
+      cardinality_estimate: 15
+      sample_values:
+      - '0.46'
+      - '1.3'
+      - '0.34'
+      - '0.35'
+      - '1.55'
+      observed_min: 0.34
+      observed_max: 2.05
+      observed_mean: 0.868333
+      observed_stddev: 0.546315
+      observed_p50: 0.7
+      observed_p95: 2.02
+  payload_facts_current_ratio:
+    type: number
+    description: Observed field for payload facts current ratio in the source dataset.
+    profile:
+      dtype: number
+      null_fraction: 0.96995
+      cardinality_estimate: 16
+      sample_values:
+      - '1.85'
+      - '1.86'
+      - '1.8'
+      - '2.5'
+      - '2.03'
+      observed_min: 1.48
+      observed_max: 2.67
+      observed_mean: 2.086667
+      observed_stddev: 0.371391
+      observed_p50: 2.04
+      observed_p95: 2.67
+  payload_facts_debt_to_ebitda:
+    type: number
+    description: Observed field for payload facts debt to ebitda in the source dataset.
+    profile:
+      dtype: number
+      null_fraction: 0.96995
+      cardinality_estimate: 16
+      sample_values:
+      - '3.57'
+      - '3.19'
+      - '6.98'
+      - '2.84'
+      - '1.17'
+      observed_min: 1.17
+      observed_max: 19.89
+      observed_mean: 7.236111
+      observed_stddev: 5.382502
+      observed_p50: 5.86
+      observed_p95: 15.5775
+  payload_facts_interest_coverage:
+    type: number
+    description: Observed field for payload facts interest coverage in the source dataset.
+    profile:
+      dtype: number
+      null_fraction: 0.96995
+      cardinality_estimate: 16
+      sample_values:
+      - '4.28'
+      - '2.81'
+      - '2.38'
+      - '2.82'
+      - '3.77'
+      observed_min: 0.8
+      observed_max: 5.34
+      observed_mean: 2.796667
+      observed_stddev: 1.31035
+      observed_p50: 2.815
+      observed_p95: 4.725
+  payload_facts_gross_margin:
+    type: number
+    description: Observed field for payload facts gross margin in the source dataset.
+    profile:
+      dtype: number
+      null_fraction: 0.96995
+      cardinality_estimate: 14
+      sample_values:
+      - '0.32'
+      - '0.42'
+      - '0.39'
+      - '0.69'
+      - '0.7'
+      observed_min: 0.21
+      observed_max: 0.76
+      observed_mean: 0.433333
+      observed_stddev: 0.162621
+      observed_p50: 0.395
+      observed_p95: 0.715
+  payload_facts_net_margin:
+    type: number
+    description: Observed field for payload facts net margin in the source dataset.
+    profile:
+      dtype: number
+      null_fraction: 0.96995
+      cardinality_estimate: 10
+      sample_values:
+      - '0.06'
+      - '0.04'
+      - '0.13'
+      - '0.02'
+      - '0.15'
+      observed_min: -0.01
+      observed_max: 0.15
+      observed_mean: 0.049444
+      observed_stddev: 0.043618
+      observed_p50: 0.04
+      observed_p95: 0.135
+  payload_facts_fiscal_year_end:
+    type: string
+    description: Observed field for payload facts fiscal year end in the source dataset.
+    enum:
+    - '2024-12-31'
+    profile:
+      dtype: string
+      null_fraction: 0.96995
+      cardinality_estimate: 1
+      sample_values:
+      - '2024-12-31'
+  payload_facts_currency:
+    type: string
+    description: Observed field for payload facts currency in the source dataset.
+    enum:
+    - USD
+    profile:
+      dtype: string
+      null_fraction: 0.96995
+      cardinality_estimate: 1
+      sample_values:
+      - USD
+  payload_facts_gaap_compliant:
+    type: string
+    description: Observed field for payload facts gaap compliant in the source dataset.
+    enum:
+    - 'True'
+    profile:
+      dtype: string
+      null_fraction: 0.96995
+      cardinality_estimate: 1
+      sample_values:
+      - 'True'
+  payload_facts_field_confidence_total_revenue:
+    type: number
+    description: Confidence value for the extracted fact. This must remain in the 0.0-1.0 range.
+    minimum: 0.0
+    maximum: 1.0
+    profile:
+      dtype: number
+      null_fraction: 0.96995
+      cardinality_estimate: 36
+      sample_values:
+      - '0.9058052765673857'
+      - '0.8912887057300216'
+      - '0.9539367044947022'
+      - '0.9108035723536339'
+      - '0.9169222893573907'
+      observed_min: 0.881437
+      observed_max: 0.972482
+      observed_mean: 0.926792
+      observed_stddev: 0.0263
+      observed_p50: 0.924326
+      observed_p95: 0.970858
+  payload_facts_field_confidence_net_income:
+    type: number
+    description: Confidence value for the extracted fact. This must remain in the 0.0-1.0 range.
+    minimum: 0.0
+    maximum: 1.0
+    profile:
+      dtype: number
+      null_fraction: 0.96995
+      cardinality_estimate: 36
+      sample_values:
+      - '0.8672484149111062'
+      - '0.8822247711566196'
+      - '0.9125481468040084'
+      - '0.87275318063087'
+      - '0.8913550677584628'
+      observed_min: 0.82043
+      observed_max: 0.949436
+      observed_mean: 0.870039
+      observed_stddev: 0.032972
+      observed_p50: 0.870001
+      observed_p95: 0.925137
+  payload_facts_field_confidence_total_assets:
+    type: number
+    description: Confidence value for the extracted fact. This must remain in the 0.0-1.0 range.
+    minimum: 0.0
+    maximum: 1.0
+    profile:
+      dtype: number
+      null_fraction: 0.96995
+      cardinality_estimate: 36
+      sample_values:
+      - '0.8965017764491239'
+      - '0.9561189636243294'
+      - '0.9553073374464864'
+      - '0.9338433263434992'
+      - '0.8847814580058746'
+      observed_min: 0.881259
+      observed_max: 0.966452
+      observed_mean: 0.926376
+      observed_stddev: 0.02899
+      observed_p50: 0.92272
+      observed_p95: 0.96578
+  payload_facts_page_references_total_revenue:
+    type: string
+    description: Observed field for payload facts page references total revenue in the source dataset.
+    enum:
+    - page 1, table 1, row 1
+    profile:
+      dtype: string
+      null_fraction: 0.96995
+      cardinality_estimate: 1
+      sample_values:
+      - page 1, table 1, row 1
+  payload_facts_page_references_net_income:
+    type: string
+    description: Observed field for payload facts page references net income in the source dataset.
+    enum:
+    - page 1, table 1, row 9
+    profile:
+      dtype: string
+      null_fraction: 0.96995
+      cardinality_estimate: 1
+      sample_values:
+      - page 1, table 1, row 9
+  payload_facts_extraction_notes_count:
+    type: number
+    description: Observed field for payload facts extraction notes count in the source dataset.
+    profile:
+      dtype: number
+      null_fraction: 0.96995
+      cardinality_estimate: 1
+      sample_values:
+      - '0.0'
+      observed_min: 0.0
+      observed_max: 0.0
+      observed_mean: 0.0
+      observed_stddev: 0.0
+      observed_p50: 0.0
+      observed_p95: 0.0
+  payload_facts_balance_sheet_balances:
+    type: string
+    description: Observed field for payload facts balance sheet balances in the source dataset.
+    enum:
+    - 'True'
+    profile:
+      dtype: string
+      null_fraction: 0.96995
+      cardinality_estimate: 1
+      sample_values:
+      - 'True'
+  payload_facts_balance_discrepancy_usd:
+    type: number
+    description: Observed field for payload facts balance discrepancy usd in the source dataset.
+    profile:
+      dtype: number
+      null_fraction: 1.0
+      cardinality_estimate: 0
+      sample_values: []
+  payload_raw_text_length:
+    type: number
+    description: Observed field for payload raw text length in the source dataset.
+    profile:
+      dtype: number
+      null_fraction: 0.96995
+      cardinality_estimate: 36
+      sample_values:
+      - '5757.0'
+      - '3156.0'
+      - '2468.0'
+      - '4807.0'
+      - '4880.0'
+      observed_min: 2048.0
+      observed_max: 5849.0
+      observed_mean: 4054.388889
+      observed_stddev: 1179.606454
+      observed_p50: 4137.5
+      observed_p95: 5721.0
+  payload_tables_extracted:
+    type: number
+    description: Observed field for payload tables extracted in the source dataset.
+    profile:
+      dtype: number
+      null_fraction: 0.96995
+      cardinality_estimate: 4
+      sample_values:
+      - '4.0'
+      - '5.0'
+      - '3.0'
+      - '2.0'
+      observed_min: 2.0
+      observed_max: 5.0
+      observed_mean: 3.805556
+      observed_stddev: 1.090726
+      observed_p50: 4.0
+      observed_p95: 5.0
+  payload_processing_ms:
+    type: number
+    description: Observed field for payload processing ms in the source dataset.
+    profile:
+      dtype: number
+      null_fraction: 0.96995
+      cardinality_estimate: 36
+      sample_values:
+      - '4660.0'
+      - '6951.0'
+      - '4665.0'
+      - '4682.0'
+      - '2898.0'
+      observed_min: 2274.0
+      observed_max: 7968.0
+      observed_mean: 5126.694444
+      observed_stddev: 1643.832209
+      observed_p50: 5141.5
+      observed_p95: 7482.75
+  payload_completed_at:
+    type: string
+    description: Observed field for payload completed at in the source dataset.
+    format: date-time
+    profile:
+      dtype: string
+      null_fraction: 0.892321
+      cardinality_estimate: 109
+      sample_values:
+      - '2026-03-08T21:37:17.403542'
+      - '2026-03-08T21:38:45.403542'
+      - '2026-03-08T21:39:24.403542'
+      - '2026-02-28T02:44:45.409528'
+      - '2026-02-28T02:45:51.409528'
+  payload_overall_confidence:
+    type: number
+    description: Confidence value for the extracted fact. This must remain in the 0.0-1.0 range.
+    minimum: 0.0
+    maximum: 1.0
+    profile:
+      dtype: number
+      null_fraction: 0.984975
+      cardinality_estimate: 18
+      sample_values:
+      - '0.8521391565276979'
+      - '0.9419618458518599'
+      - '0.8888674526030959'
+      - '0.9538780399447646'
+      - '0.8775616301089646'
+      observed_min: 0.808831
+      observed_max: 0.957722
+      observed_mean: 0.881774
+      observed_stddev: 0.047417
+      observed_p50: 0.878552
+      observed_p95: 0.954455
+  payload_is_coherent:
+    type: string
+    description: Observed field for payload is coherent in the source dataset.
+    enum:
+    - 'True'
+    profile:
+      dtype: string
+      null_fraction: 0.984975
+      cardinality_estimate: 1
+      sample_values:
+      - 'True'
+  payload_anomalies_count:
+    type: number
+    description: Observed field for payload anomalies count in the source dataset.
+    profile:
+      dtype: number
+      null_fraction: 0.984975
+      cardinality_estimate: 1
+      sample_values:
+      - '0.0'
+      observed_min: 0.0
+      observed_max: 0.0
+      observed_mean: 0.0
+      observed_stddev: 0.0
+      observed_p50: 0.0
+      observed_p95: 0.0
+  payload_critical_missing_fields_count:
+    type: number
+    description: Observed field for payload critical missing fields count in the source dataset.
+    profile:
+      dtype: number
+      null_fraction: 0.984975
+      cardinality_estimate: 1
+      sample_values:
+      - '0.0'
+      observed_min: 0.0
+      observed_max: 0.0
+      observed_mean: 0.0
+      observed_stddev: 0.0
+      observed_p50: 0.0
+      observed_p95: 0.0
+  payload_reextraction_recommended:
+    type: string
+    description: Observed field for payload reextraction recommended in the source dataset.
+    enum:
+    - 'False'
+    profile:
+      dtype: string
+      null_fraction: 0.984975
+      cardinality_estimate: 1
+      sample_values:
+      - 'False'
+  payload_auditor_notes:
+    type: string
+    description: Observed field for payload auditor notes in the source dataset.
+    enum:
+    - Financial statements appear internally consistent. Balance sheet balances. Revenue consistent with
+      prior year trajectory.
+    profile:
+      dtype: string
+      null_fraction: 0.984975
+      cardinality_estimate: 1
+      sample_values:
+      - Financial statements appear internally consistent. Balance sheet balances. Revenue consistent
+        with prior year trajectory.
+  payload_assessed_at:
+    type: string
+    description: Observed field for payload assessed at in the source dataset.
+    format: date-time
+    profile:
+      dtype: string
+      null_fraction: 0.984975
+      cardinality_estimate: 18
+      sample_values:
+      - '2026-03-08T21:39:16.403542'
+      - '2026-02-28T02:46:24.409528'
+      - '2026-03-07T05:21:36.416064'
+      - '2026-03-14T20:27:42.422378'
+      - '2026-02-19T22:22:48.431340'
+  payload_documents_processed:
+    type: number
+    description: Observed field for payload documents processed in the source dataset.
+    profile:
+      dtype: number
+      null_fraction: 0.984975
+      cardinality_estimate: 1
+      sample_values:
+      - '3.0'
+      observed_min: 3.0
+      observed_max: 3.0
+      observed_mean: 3.0
+      observed_stddev: 0.0
+      observed_p50: 3.0
+      observed_p95: 3.0
+  payload_has_quality_flags:
+    type: string
+    description: Observed field for payload has quality flags in the source dataset.
+    enum:
+    - 'False'
+    profile:
+      dtype: string
+      null_fraction: 0.984975
+      cardinality_estimate: 1
+      sample_values:
+      - 'False'
+  payload_quality_flag_count:
+    type: number
+    description: Observed field for payload quality flag count in the source dataset.
+    profile:
+      dtype: number
+      null_fraction: 0.984975
+      cardinality_estimate: 1
+      sample_values:
+      - '0.0'
+      observed_min: 0.0
+      observed_max: 0.0
+      observed_mean: 0.0
+      observed_stddev: 0.0
+      observed_p50: 0.0
+      observed_p95: 0.0
+  payload_ready_at:
+    type: string
+    description: Observed field for payload ready at in the source dataset.
+    format: date-time
+    profile:
+      dtype: string
+      null_fraction: 0.984975
+      cardinality_estimate: 18
+      sample_values:
+      - '2026-03-08T21:39:16.403542'
+      - '2026-02-28T02:46:24.409528'
+      - '2026-03-07T05:21:36.416064'
+      - '2026-03-14T20:27:42.422378'
+      - '2026-02-19T22:22:48.431340'
+  payload_events_written_count:
+    type: number
+    description: Observed field for payload events written count in the source dataset.
+    profile:
+      dtype: number
+      null_fraction: 0.950751
+      cardinality_estimate: 1
+      sample_values:
+      - '1.0'
+      observed_min: 1.0
+      observed_max: 1.0
+      observed_mean: 1.0
+      observed_stddev: 0.0
+      observed_p50: 1.0
+      observed_p95: 1.0
+  payload_output_summary:
+    type: string
+    description: Observed field for payload output summary in the source dataset.
+    profile:
+      dtype: string
+      null_fraction: 0.950751
+      cardinality_estimate: 32
+      sample_values:
+      - 3 documents processed, high confidence. Package ready for credit analysis.
+      - 'Credit complete. Risk: MEDIUM. Limit: $957,000. Confidence: 81%.'
+      - 'Credit complete. Risk: LOW. Limit: $342,000. Confidence: 84%.'
+      - 'Credit complete. Risk: HIGH. Limit: $502,000. Confidence: 71%.'
+      - 'Credit complete. Risk: MEDIUM. Limit: $1,608,000. Confidence: 77%.'
+  payload_written_at:
+    type: string
+    description: Observed field for payload written at in the source dataset.
+    format: date-time
+    profile:
+      dtype: string
+      null_fraction: 0.950751
+      cardinality_estimate: 59
+      sample_values:
+      - '2026-03-08T21:39:16.403542'
+      - '2026-02-28T02:46:24.409528'
+      - '2026-03-07T05:21:36.416064'
+      - '2026-03-14T20:27:42.422378'
+      - '2026-02-19T22:22:48.431340'
+  payload_total_nodes_executed:
+    type: number
+    description: Observed field for payload total nodes executed in the source dataset.
+    profile:
+      dtype: number
+      null_fraction: 0.950751
+      cardinality_estimate: 4
+      sample_values:
+      - '3.0'
+      - '7.0'
+      - '5.0'
+      - '6.0'
+      observed_min: 3.0
+      observed_max: 7.0
+      observed_mean: 5.016949
+      observed_stddev: 1.536807
+      observed_p50: 5.0
+      observed_p95: 7.0
+  payload_total_llm_calls:
+    type: number
+    description: Observed field for payload total llm calls in the source dataset.
+    profile:
+      dtype: number
+      null_fraction: 0.950751
+      cardinality_estimate: 2
+      sample_values:
+      - '1.0'
+      - '0.0'
+      observed_min: 0.0
+      observed_max: 1.0
+      observed_mean: 0.847458
+      observed_stddev: 0.362632
+      observed_p50: 1.0
+      observed_p95: 1.0
+  payload_total_tokens_used:
+    type: number
+    description: Observed field for payload total tokens used in the source dataset.
+    profile:
+      dtype: number
+      null_fraction: 0.950751
+      cardinality_estimate: 59
+      sample_values:
+      - '1618.0'
+      - '1000.0'
+      - '1737.0'
+      - '2078.0'
+      - '1157.0'
+      observed_min: 833.0
+      observed_max: 6997.0
+      observed_mean: 2378.694915
+      observed_stddev: 1358.909239
+      observed_p50: 2092.0
+      observed_p95: 4667.3
+  payload_total_cost_usd:
+    type: number
+    description: Observed field for payload total cost usd in the source dataset.
+    profile:
+      dtype: number
+      null_fraction: 0.950751
+      cardinality_estimate: 50
+      sample_values:
+      - '0.01904'
+      - '0.02336'
+      - '0.02234'
+      - '0.00936'
+      - '0.01016'
+      observed_min: 0.0
+      observed_max: 0.06297
+      observed_mean: 0.021081
+      observed_stddev: 0.013756
+      observed_p50: 0.02106
+      observed_p95: 0.042003
+  payload_total_duration_ms:
+    type: number
+    description: Observed field for payload total duration ms in the source dataset.
+    profile:
+      dtype: number
+      null_fraction: 0.950751
+      cardinality_estimate: 59
+      sample_values:
+      - '23105.0'
+      - '12807.0'
+      - '21671.0'
+      - '17156.0'
+      - '17104.0'
+      observed_min: 2456.0
+      observed_max: 54283.0
+      observed_mean: 24517.050847
+      observed_stddev: 14587.769763
+      observed_p50: 20693.0
+      observed_p95: 50298.4
+  payload_next_agent_triggered:
+    type: string
+    description: Observed field for payload next agent triggered in the source dataset.
+    enum:
+    - compliance
+    - credit_analysis
+    - decision_orchestrator
+    - fraud_detection
+    profile:
+      dtype: string
+      null_fraction: 0.958264
+      cardinality_estimate: 4
+      sample_values:
+      - credit_analysis
+      - fraud_detection
+      - compliance
+      - decision_orchestrator
+  payload_requested_at:
+    type: string
+    description: Observed field for payload requested at in the source dataset.
+    format: date-time
+    profile:
+      dtype: string
+      null_fraction: 0.958264
+      cardinality_estimate: 50
+      sample_values:
+      - '2026-03-08T21:39:29.403542'
+      - '2026-02-28T02:46:37.409528'
+      - '2026-03-07T05:21:49.416064'
+      - '2026-03-14T20:27:55.422378'
+      - '2026-02-19T22:23:01.431340'
+  payload_priority:
+    type: string
+    description: Observed field for payload priority in the source dataset.
+    enum:
+    - NORMAL
+    profile:
+      dtype: string
+      null_fraction: 0.984975
+      cardinality_estimate: 1
+      sample_values:
+      - NORMAL
+  payload_opened_at:
+    type: string
+    description: Observed field for payload opened at in the source dataset.
+    format: date-time
+    profile:
+      dtype: string
+      null_fraction: 0.988314
+      cardinality_estimate: 14
+      sample_values:
+      - '2026-02-19T22:29:06.431340'
+      - '2026-02-19T22:00:00.441841'
+      - '2026-03-05T22:35:57.447561'
+      - '2026-02-24T18:36:08.453323'
+      - '2026-02-23T02:34:54.460936'
+  payload_fiscal_years_loaded_count:
+    type: number
+    description: Observed field for payload fiscal years loaded count in the source dataset.
+    profile:
+      dtype: number
+      null_fraction: 0.988314
+      cardinality_estimate: 1
+      sample_values:
+      - '3.0'
+      observed_min: 3.0
+      observed_max: 3.0
+      observed_mean: 3.0
+      observed_stddev: 0.0
+      observed_p50: 3.0
+      observed_p95: 3.0
+  payload_fiscal_years_loaded:
+    type: string
+    description: Observed field for payload fiscal years loaded in the source dataset.
+    enum:
+    - 2022|2023|2024
+    profile:
+      dtype: string
+      null_fraction: 0.988314
+      cardinality_estimate: 1
+      sample_values:
+      - 2022|2023|2024
+  payload_has_prior_loans:
+    type: string
+    description: Observed field for payload has prior loans in the source dataset.
+    enum:
+    - 'True'
+    profile:
+      dtype: string
+      null_fraction: 0.988314
+      cardinality_estimate: 1
+      sample_values:
+      - 'True'
+  payload_has_defaults:
+    type: string
+    description: Observed field for payload has defaults in the source dataset.
+    enum:
+    - 'False'
+    profile:
+      dtype: string
+      null_fraction: 0.988314
+      cardinality_estimate: 1
+      sample_values:
+      - 'False'
+  payload_revenue_trajectory:
+    type: string
+    description: Observed field for payload revenue trajectory in the source dataset.
+    enum:
+    - DECLINING
+    - GROWTH
+    - RECOVERING
+    - STABLE
+    - VOLATILE
+    profile:
+      dtype: string
+      null_fraction: 0.988314
+      cardinality_estimate: 5
+      sample_values:
+      - STABLE
+      - VOLATILE
+      - RECOVERING
+      - GROWTH
+      - DECLINING
+  payload_data_hash:
+    type: string
+    description: Observed field for payload data hash in the source dataset.
+    profile:
+      dtype: string
+      null_fraction: 0.988314
+      cardinality_estimate: 13
+      sample_values:
+      - d978dab543e199b6
+      - 15884d95d460f174
+      - e9c106cd4cafa81d
+      - bfe126836d9b6cdd
+      - ee95a3ce6c489588
+  payload_consumed_at:
+    type: string
+    description: Observed field for payload consumed at in the source dataset.
+    format: date-time
+    profile:
+      dtype: string
+      null_fraction: 0.976628
+      cardinality_estimate: 28
+      sample_values:
+      - '2026-02-19T22:29:11.431340'
+      - '2026-02-19T22:29:13.431340'
+      - '2026-02-19T22:00:05.441841'
+      - '2026-02-19T22:00:07.441841'
+      - '2026-03-05T22:36:02.447561'
+  payload_document_ids_consumed_count:
+    type: number
+    description: Observed field for payload document ids consumed count in the source dataset.
+    profile:
+      dtype: number
+      null_fraction: 0.988314
+      cardinality_estimate: 1
+      sample_values:
+      - '2.0'
+      observed_min: 2.0
+      observed_max: 2.0
+      observed_mean: 2.0
+      observed_stddev: 0.0
+      observed_p50: 2.0
+      observed_p95: 2.0
+  payload_document_ids_consumed:
+    type: string
+    description: Observed field for payload document ids consumed in the source dataset.
+    profile:
+      dtype: string
+      null_fraction: 0.988314
+      cardinality_estimate: 14
+      sample_values:
+      - doc-ae7288da|doc-{uuid4().hex[:8]}
+      - doc-5d9955e5|doc-{uuid4().hex[:8]}
+      - doc-78cb1644|doc-{uuid4().hex[:8]}
+      - doc-aaf03075|doc-{uuid4().hex[:8]}
+      - doc-9bcbac22|doc-{uuid4().hex[:8]}
+  payload_facts_summary:
+    type: string
+    description: Observed field for payload facts summary in the source dataset.
+    profile:
+      dtype: string
+      null_fraction: 0.988314
+      cardinality_estimate: 13
+      sample_values:
+      - Revenue $4,927,564, EBITDA $619,962, Net Income $190,998
+      - Revenue $2,983,945, EBITDA $815,826, Net Income $378,602
+      - Revenue $1,791,981, EBITDA $187,952, Net Income $38,476
+      - Revenue $6,070,930, EBITDA $919,708, Net Income $392,610
+      - Revenue $5,309,810, EBITDA $1,453,866, Net Income $784,713
+  payload_quality_flags_present:
+    type: string
+    description: Observed field for payload quality flags present in the source dataset.
+    enum:
+    - 'False'
+    profile:
+      dtype: string
+      null_fraction: 0.988314
+      cardinality_estimate: 1
+      sample_values:
+      - 'False'
+  payload_decision_risk_tier:
+    type: string
+    description: Observed field for payload decision risk tier in the source dataset.
+    enum:
+    - HIGH
+    - LOW
+    - MEDIUM
+    profile:
+      dtype: string
+      null_fraction: 0.988314
+      cardinality_estimate: 3
+      sample_values:
+      - MEDIUM
+      - LOW
+      - HIGH
+  payload_decision_recommended_limit_usd:
+    type: string
+    description: Observed field for payload decision recommended limit usd in the source dataset.
+    profile:
+      dtype: string
+      null_fraction: 0.988314
+      cardinality_estimate: 14
+      sample_values:
+      - '957000.0'
+      - '342000.0'
+      - '502000.0'
+      - '1608000.0'
+      - '1012000.0'
+  payload_decision_confidence:
+    type: number
+    description: Confidence value for the extracted fact. This must remain in the 0.0-1.0 range.
+    minimum: 0.0
+    maximum: 1.0
+    profile:
+      dtype: number
+      null_fraction: 0.988314
+      cardinality_estimate: 12
+      sample_values:
+      - '0.81'
+      - '0.84'
+      - '0.71'
+      - '0.77'
+      - '0.83'
+      observed_min: 0.67
+      observed_max: 0.84
+      observed_mean: 0.755714
+      observed_stddev: 0.053019
+      observed_p50: 0.75
+      observed_p95: 0.8335
+  payload_decision_rationale:
+    type: string
+    description: Observed field for payload decision rationale in the source dataset.
+    profile:
+      dtype: string
+      null_fraction: 0.988314
+      cardinality_estimate: 13
+      sample_values:
+      - Based on stable revenue trajectory and Debt/EBITDA of 2.8x, the company demonstrates adequate
+        debt service capacity.
+      - Based on volatile revenue trajectory and Debt/EBITDA of 1.2x, the company demonstrates strong
+        debt service capacity.
+      - Based on recovering revenue trajectory and Debt/EBITDA of 9.2x, the company demonstrates stressed
+        debt service capacity.
+      - Based on growth revenue trajectory and Debt/EBITDA of 4.1x, the company demonstrates adequate
+        debt service capacity.
+      - Based on stable revenue trajectory and Debt/EBITDA of 1.6x, the company demonstrates strong debt
+        service capacity.
+  payload_decision_key_concerns_count:
+    type: number
+    description: Observed field for payload decision key concerns count in the source dataset.
+    profile:
+      dtype: number
+      null_fraction: 0.988314
+      cardinality_estimate: 2
+      sample_values:
+      - '1.0'
+      - '0.0'
+      observed_min: 0.0
+      observed_max: 1.0
+      observed_mean: 0.857143
+      observed_stddev: 0.363137
+      observed_p50: 1.0
+      observed_p95: 1.0
+  payload_decision_key_concerns:
+    type: string
+    description: Observed field for payload decision key concerns in the source dataset.
+    profile:
+      dtype: string
+      null_fraction: 0.989983
+      cardinality_estimate: 11
+      sample_values:
+      - Debt/EBITDA 2.8x above optimal
+      - Debt/EBITDA 9.2x above optimal
+      - Debt/EBITDA 4.1x above optimal
+      - Debt/EBITDA 1.7x above optimal
+      - Debt/EBITDA 6.5x above optimal
+  payload_decision_data_quality_caveats_count:
+    type: number
+    description: Observed field for payload decision data quality caveats count in the source dataset.
+    profile:
+      dtype: number
+      null_fraction: 0.988314
+      cardinality_estimate: 1
+      sample_values:
+      - '0.0'
+      observed_min: 0.0
+      observed_max: 0.0
+      observed_mean: 0.0
+      observed_stddev: 0.0
+      observed_p50: 0.0
+      observed_p95: 0.0
+  payload_decision_policy_overrides_applied_count:
+    type: number
+    description: Observed field for payload decision policy overrides applied count in the source dataset.
+    profile:
+      dtype: number
+      null_fraction: 0.988314
+      cardinality_estimate: 1
+      sample_values:
+      - '0.0'
+      observed_min: 0.0
+      observed_max: 0.0
+      observed_mean: 0.0
+      observed_stddev: 0.0
+      observed_p50: 0.0
+      observed_p95: 0.0
+  payload_model_deployment_id:
+    type: string
+    description: Observed field for payload model deployment id in the source dataset.
+    profile:
+      dtype: string
+      null_fraction: 0.988314
+      cardinality_estimate: 14
+      sample_values:
+      - dep-c38818f8
+      - dep-3eca993e
+      - dep-71322a4b
+      - dep-d14b9019
+      - dep-ef663aa4
+  payload_input_data_hash:
+    type: string
+    description: Observed field for payload input data hash in the source dataset.
+    profile:
+      dtype: string
+      null_fraction: 0.979132
+      cardinality_estimate: 24
+      sample_values:
+      - fd44aaf0255f47c8
+      - b93be9c32149934d
+      - 1b6c64d13975188f
+      - c0476574f226da31
+      - b61e6fa8e58acc74
+  payload_analysis_duration_ms:
+    type: number
+    description: Observed field for payload analysis duration ms in the source dataset.
+    profile:
+      dtype: number
+      null_fraction: 0.988314
+      cardinality_estimate: 14
+      sample_values:
+      - '20747.0'
+      - '20895.0'
+      - '40189.0'
+      - '24793.0'
+      - '34434.0'
+      observed_min: 16179.0
+      observed_max: 44154.0
+      observed_mean: 28991.285714
+      observed_stddev: 8342.148039
+      observed_p50: 27256.5
+      observed_p95: 41576.75
+  payload_regulatory_basis_count:
+    type: number
+    description: Observed field for payload regulatory basis count in the source dataset.
+    profile:
+      dtype: number
+      null_fraction: 0.988314
+      cardinality_estimate: 1
+      sample_values:
+      - '0.0'
+      observed_min: 0.0
+      observed_max: 0.0
+      observed_mean: 0.0
+      observed_stddev: 0.0
+      observed_p50: 0.0
+      observed_p95: 0.0
+  payload_triggered_by_event_id:
+    type: string
+    description: Observed field for payload triggered by event id in the source dataset.
+    profile:
+      dtype: string
+      null_fraction: 0.973289
+      cardinality_estimate: 32
+      sample_values:
+      - 8f1e92664a9b7234
+      - bbf3b36456686b69
+      - ec230261309c8145
+      - 2c45cc5c919dcbdd
+      - e424fb8d9e421c21
+  payload_screening_model_version:
+    type: string
+    description: Observed field for payload screening model version in the source dataset.
+    enum:
+    - claude-sonnet-4-20250514
+    profile:
+      dtype: string
+      null_fraction: 0.981636
+      cardinality_estimate: 1
+      sample_values:
+      - claude-sonnet-4-20250514
+  payload_initiated_at:
+    type: string
+    description: Observed field for payload initiated at in the source dataset.
+    format: date-time
+    profile:
+      dtype: string
+      null_fraction: 0.983306
+      cardinality_estimate: 20
+      sample_values:
+      - '2026-02-24T18:39:17.453323'
+      - '2026-02-23T02:37:52.460936'
+      - '2026-02-27T17:23:50.472985'
+      - '2026-02-27T17:30:24.472985'
+      - '2026-03-13T04:47:26.488846'
+  payload_fraud_score:
+    type: number
+    description: Observed field for payload fraud score in the source dataset.
+    profile:
+      dtype: number
+      null_fraction: 0.990818
+      cardinality_estimate: 7
+      sample_values:
+      - '0.14'
+      - '0.07'
+      - '0.19'
+      - '0.2'
+      - '0.08'
+      observed_min: 0.07
+      observed_max: 0.2
+      observed_mean: 0.136364
+      observed_stddev: 0.054456
+      observed_p50: 0.15
+      observed_p95: 0.2
+  payload_risk_level:
+    type: string
+    description: Observed field for payload risk level in the source dataset.
+    enum:
+    - LOW
+    - MEDIUM
+    profile:
+      dtype: string
+      null_fraction: 0.990818
+      cardinality_estimate: 2
+      sample_values:
+      - LOW
+      - MEDIUM
+  payload_anomalies_found:
+    type: number
+    description: Observed field for payload anomalies found in the source dataset.
+    profile:
+      dtype: number
+      null_fraction: 0.990818
+      cardinality_estimate: 1
+      sample_values:
+      - '0.0'
+      observed_min: 0.0
+      observed_max: 0.0
+      observed_mean: 0.0
+      observed_stddev: 0.0
+      observed_p50: 0.0
+      observed_p95: 0.0
+  payload_recommendation:
+    type: string
+    description: Observed field for payload recommendation in the source dataset.
+    enum:
+    - APPROVE
+    - DECLINE
+    - PROCEED
+    - REFER
+    profile:
+      dtype: string
+      null_fraction: 0.984975
+      cardinality_estimate: 4
+      sample_values:
+      - PROCEED
+      - APPROVE
+      - DECLINE
+      - REFER
+  payload_regulation_set_version:
+    type: string
+    description: Observed field for payload regulation set version in the source dataset.
+    enum:
+    - 2026-Q1
+    profile:
+      dtype: string
+      null_fraction: 0.983306
+      cardinality_estimate: 1
+      sample_values:
+      - 2026-Q1
+  payload_rules_to_evaluate_count:
+    type: number
+    description: Observed field for payload rules to evaluate count in the source dataset.
+    profile:
+      dtype: number
+      null_fraction: 0.983306
+      cardinality_estimate: 1
+      sample_values:
+      - '6.0'
+      observed_min: 6.0
+      observed_max: 6.0
+      observed_mean: 6.0
+      observed_stddev: 0.0
+      observed_p50: 6.0
+      observed_p95: 6.0
+  payload_rules_to_evaluate:
+    type: string
+    description: Observed field for payload rules to evaluate in the source dataset.
+    enum:
+    - REG-001|REG-002|REG-003|REG-004|REG-005|REG-006
+    profile:
+      dtype: string
+      null_fraction: 0.983306
+      cardinality_estimate: 1
+      sample_values:
+      - REG-001|REG-002|REG-003|REG-004|REG-005|REG-006
+  payload_rule_id:
+    type: string
+    description: Observed field for payload rule id in the source dataset.
+    enum:
+    - REG-001
+    - REG-002
+    - REG-003
+    - REG-004
+    - REG-005
+    - REG-006
+    profile:
+      dtype: string
+      null_fraction: 0.960768
+      cardinality_estimate: 6
+      sample_values:
+      - REG-001
+      - REG-002
+      - REG-003
+      - REG-004
+      - REG-005
+  payload_rule_name:
+    type: string
+    description: Observed field for payload rule name in the source dataset.
+    enum:
+    - Bank Secrecy Act (BSA)
+    - CRA Consideration
+    - Jurisdiction Eligibility
+    - Legal Entity Eligibility
+    - OFAC Sanctions
+    - Operating History
+    profile:
+      dtype: string
+      null_fraction: 0.960768
+      cardinality_estimate: 6
+      sample_values:
+      - Bank Secrecy Act (BSA)
+      - OFAC Sanctions
+      - Jurisdiction Eligibility
+      - Legal Entity Eligibility
+      - Operating History
+  payload_rule_version:
+    type: string
+    description: Observed field for payload rule version in the source dataset.
+    enum:
+    - 2026-Q1-v1
+    profile:
+      dtype: string
+      null_fraction: 0.966611
+      cardinality_estimate: 1
+      sample_values:
+      - 2026-Q1-v1
+  payload_evidence_hash:
+    type: string
+    description: Observed field for payload evidence hash in the source dataset.
+    profile:
+      dtype: string
+      null_fraction: 0.966611
+      cardinality_estimate: 35
+      sample_values:
+      - a9591b3a3703a13c
+      - 5700534e6025048a
+      - 331e42a1ab4214e0
+      - 0727bc05fec5f5f4
+      - a8fc1b76bf077d6f
+  payload_evaluation_notes:
+    type: string
+    description: Observed field for payload evaluation notes in the source dataset.
+    enum:
+    - 'Bank Secrecy Act (BSA): Clear.'
+    - 'Jurisdiction Eligibility: Clear.'
+    - 'Legal Entity Eligibility: Clear.'
+    - 'OFAC Sanctions: Clear.'
+    - 'Operating History: Clear.'
+    profile:
+      dtype: string
+      null_fraction: 0.969115
+      cardinality_estimate: 5
+      sample_values:
+      - 'Bank Secrecy Act (BSA): Clear.'
+      - 'OFAC Sanctions: Clear.'
+      - 'Jurisdiction Eligibility: Clear.'
+      - 'Legal Entity Eligibility: Clear.'
+      - 'Operating History: Clear.'
+  payload_evaluated_at:
+    type: string
+    description: Observed field for payload evaluated at in the source dataset.
+    format: date-time
+    profile:
+      dtype: string
+      null_fraction: 0.960768
+      cardinality_estimate: 47
+      sample_values:
+      - '2026-02-27T17:30:26.472985'
+      - '2026-02-27T17:30:28.472985'
+      - '2026-02-27T17:30:30.472985'
+      - '2026-02-27T17:30:32.472985'
+      - '2026-02-27T17:30:34.472985'
+  payload_note_type:
+    type: string
+    description: Observed field for payload note type in the source dataset.
+    enum:
+    - CRA_CONSIDERATION
+    profile:
+      dtype: string
+      null_fraction: 0.994157
+      cardinality_estimate: 1
+      sample_values:
+      - CRA_CONSIDERATION
+  payload_note_text:
+    type: string
+    description: Observed field for payload note text in the source dataset.
+    enum:
+    - Applicant jurisdiction qualifies for CRA consideration.
+    profile:
+      dtype: string
+      null_fraction: 0.994157
+      cardinality_estimate: 1
+      sample_values:
+      - Applicant jurisdiction qualifies for CRA consideration.
+  payload_rules_evaluated:
+    type: number
+    description: Observed field for payload rules evaluated in the source dataset.
+    profile:
+      dtype: number
+      null_fraction: 0.992487
+      cardinality_estimate: 3
+      sample_values:
+      - '6.0'
+      - '2.0'
+      - '3.0'
+      observed_min: 2.0
+      observed_max: 6.0
+      observed_mean: 5.222222
+      observed_stddev: 1.563472
+      observed_p50: 6.0
+      observed_p95: 6.0
+  payload_rules_passed:
+    type: number
+    description: Observed field for payload rules passed in the source dataset.
+    profile:
+      dtype: number
+      null_fraction: 0.992487
+      cardinality_estimate: 4
+      sample_values:
+      - '5.0'
+      - '1.0'
+      - '4.0'
+      - '2.0'
+      observed_min: 1.0
+      observed_max: 5.0
+      observed_mean: 4.111111
+      observed_stddev: 1.536591
+      observed_p50: 5.0
+      observed_p95: 5.0
+  payload_rules_failed:
+    type: number
+    description: Observed field for payload rules failed in the source dataset.
+    profile:
+      dtype: number
+      null_fraction: 0.992487
+      cardinality_estimate: 2
+      sample_values:
+      - '0.0'
+      - '1.0'
+      observed_min: 0.0
+      observed_max: 1.0
+      observed_mean: 0.333333
+      observed_stddev: 0.5
+      observed_p50: 0.0
+      observed_p95: 1.0
+  payload_rules_noted:
+    type: number
+    description: Observed field for payload rules noted in the source dataset.
+    profile:
+      dtype: number
+      null_fraction: 0.992487
+      cardinality_estimate: 2
+      sample_values:
+      - '1.0'
+      - '0.0'
+      observed_min: 0.0
+      observed_max: 1.0
+      observed_mean: 0.777778
+      observed_stddev: 0.440959
+      observed_p50: 1.0
+      observed_p95: 1.0
+  payload_has_hard_block:
+    type: string
+    description: Observed field for payload has hard block in the source dataset.
+    enum:
+    - 'False'
+    - 'True'
+    profile:
+      dtype: string
+      null_fraction: 0.992487
+      cardinality_estimate: 2
+      sample_values:
+      - 'False'
+      - 'True'
+  payload_overall_verdict:
+    type: string
+    description: Observed field for payload overall verdict in the source dataset.
+    enum:
+    - BLOCKED
+    - CLEAR
+    - CONDITIONAL
+    profile:
+      dtype: string
+      null_fraction: 0.992487
+      cardinality_estimate: 3
+      sample_values:
+      - CLEAR
+      - BLOCKED
+      - CONDITIONAL
+  payload_all_analyses_complete:
+    type: string
+    description: Observed field for payload all analyses complete in the source dataset.
+    enum:
+    - 'True'
+    profile:
+      dtype: string
+      null_fraction: 0.994157
+      cardinality_estimate: 1
+      sample_values:
+      - 'True'
+  payload_orchestrator_session_id:
+    type: string
+    description: Observed field for payload orchestrator session id in the source dataset.
+    enum:
+    - sess-dec-19e0d79e
+    - sess-dec-21c739cd
+    - sess-dec-ca7fdd98
+    - sess-dec-cb6f3ee5
+    - sess-dec-d320af39
+    - sess-dec-eca00f34
+    - sess-dec-ed8b5b06
+    profile:
+      dtype: string
+      null_fraction: 0.994157
+      cardinality_estimate: 7
+      sample_values:
+      - sess-dec-21c739cd
+      - sess-dec-eca00f34
+      - sess-dec-19e0d79e
+      - sess-dec-cb6f3ee5
+      - sess-dec-ca7fdd98
+  payload_confidence:
+    type: number
+    description: Confidence value for the extracted fact. This must remain in the 0.0-1.0 range.
+    minimum: 0.0
+    maximum: 1.0
+    profile:
+      dtype: number
+      null_fraction: 0.994157
+      cardinality_estimate: 6
+      sample_values:
+      - '0.77'
+      - '0.84'
+      - '0.82'
+      - '0.72'
+      - '0.7'
+      observed_min: 0.54
+      observed_max: 0.84
+      observed_mean: 0.737143
+      observed_stddev: 0.100119
+      observed_p50: 0.77
+      observed_p95: 0.834
+  payload_approved_amount_usd:
+    type: string
+    description: Observed field for payload approved amount usd in the source dataset.
+    enum:
+    - '1286000.0'
+    - '202000.0'
+    - '2410000.0'
+    - '913000.0'
+    profile:
+      dtype: string
+      null_fraction: 0.993322
+      cardinality_estimate: 4
+      sample_values:
+      - '202000.0'
+      - '913000.0'
+      - '2410000.0'
+      - '1286000.0'
+  payload_conditions_count:
+    type: number
+    description: Observed field for payload conditions count in the source dataset.
+    profile:
+      dtype: number
+      null_fraction: 0.990818
+      cardinality_estimate: 3
+      sample_values:
+      - '2.0'
+      - '1.0'
+      - '0.0'
+      observed_min: 0.0
+      observed_max: 2.0
+      observed_mean: 1.090909
+      observed_stddev: 0.831209
+      observed_p50: 1.0
+      observed_p95: 2.0
+  payload_conditions:
+    type: string
+    description: Observed field for payload conditions in the source dataset.
+    enum:
+    - Monthly financial reporting required
+    - Monthly financial reporting required|Personal guarantee from principal
+    profile:
+      dtype: string
+      null_fraction: 0.993322
+      cardinality_estimate: 2
+      sample_values:
+      - Monthly financial reporting required|Personal guarantee from principal
+      - Monthly financial reporting required
+  payload_executive_summary:
+    type: string
+    description: Observed field for payload executive summary in the source dataset.
+    enum:
+    - Approval recommended. DECLINING trajectory. Compliance clear. Fraud screening low risk.
+    - Approval recommended. GROWTH trajectory. Compliance clear. Fraud screening low risk.
+    - Approval recommended. RECOVERING trajectory. Compliance clear. Fraud screening low risk.
+    - Decline recommended. DECLINING trajectory. Compliance clear. Fraud screening low risk.
+    - Decline recommended. RECOVERING trajectory. Compliance clear. Fraud screening low risk.
+    - Human review recommended. GROWTH trajectory. Compliance clear. Fraud screening low risk.
+    profile:
+      dtype: string
+      null_fraction: 0.994157
+      cardinality_estimate: 6
+      sample_values:
+      - Approval recommended. DECLINING trajectory. Compliance clear. Fraud screening low risk.
+      - Approval recommended. RECOVERING trajectory. Compliance clear. Fraud screening low risk.
+      - Approval recommended. GROWTH trajectory. Compliance clear. Fraud screening low risk.
+      - Decline recommended. DECLINING trajectory. Compliance clear. Fraud screening low risk.
+      - Decline recommended. RECOVERING trajectory. Compliance clear. Fraud screening low risk.
+  payload_key_risks_count:
+    type: number
+    description: Observed field for payload key risks count in the source dataset.
+    profile:
+      dtype: number
+      null_fraction: 0.994157
+      cardinality_estimate: 2
+      sample_values:
+      - '0.0'
+      - '1.0'
+      observed_min: 0.0
+      observed_max: 1.0
+      observed_mean: 0.428571
+      observed_stddev: 0.534522
+      observed_p50: 0.0
+      observed_p95: 1.0
+  payload_contributing_sessions_count:
+    type: number
+    description: Observed field for payload contributing sessions count in the source dataset.
+    profile:
+      dtype: number
+      null_fraction: 0.994157
+      cardinality_estimate: 1
+      sample_values:
+      - '0.0'
+      observed_min: 0.0
+      observed_max: 0.0
+      observed_mean: 0.0
+      observed_stddev: 0.0
+      observed_p50: 0.0
+      observed_p95: 0.0
+  payload_model_versions_orchestrator:
+    type: string
+    description: Observed field for payload model versions orchestrator in the source dataset.
+    enum:
+    - claude-sonnet-4-20250514
+    profile:
+      dtype: string
+      null_fraction: 0.994157
+      cardinality_estimate: 1
+      sample_values:
+      - claude-sonnet-4-20250514
+  payload_generated_at:
+    type: string
+    description: Observed field for payload generated at in the source dataset.
+    format: date-time
+    enum:
+    - '2026-02-25T11:38:31.510018'
+    - '2026-02-27T17:34:36.472985'
+    - '2026-02-28T18:01:41.522812'
+    - '2026-03-07T12:51:23.570977'
+    - '2026-03-12T08:55:12.532957'
+    - '2026-03-13T05:01:11.488846'
+    - '2026-03-14T10:37:37.546836'
+    profile:
+      dtype: string
+      null_fraction: 0.994157
+      cardinality_estimate: 7
+      sample_values:
+      - '2026-02-27T17:34:36.472985'
+      - '2026-03-13T05:01:11.488846'
+      - '2026-02-25T11:38:31.510018'
+      - '2026-02-28T18:01:41.522812'
+      - '2026-03-12T08:55:12.532957'
+  payload_interest_rate_pct:
+    type: number
+    description: Observed field for payload interest rate pct in the source dataset.
+    profile:
+      dtype: number
+      null_fraction: 0.996661
+      cardinality_estimate: 4
+      sample_values:
+      - '6.08'
+      - '6.58'
+      - '8.21'
+      - '7.83'
+      observed_min: 6.08
+      observed_max: 8.21
+      observed_mean: 7.175
+      observed_stddev: 1.008844
+      observed_p50: 7.205
+      observed_p95: 8.153
+  payload_term_months:
+    type: number
+    description: Observed field for payload term months in the source dataset.
+    profile:
+      dtype: number
+      null_fraction: 0.996661
+      cardinality_estimate: 3
+      sample_values:
+      - '60.0'
+      - '36.0'
+      - '24.0'
+      observed_min: 24.0
+      observed_max: 60.0
+      observed_mean: 39.0
+      observed_stddev: 15.099669
+      observed_p50: 36.0
+      observed_p95: 56.4
+  payload_approved_by:
+    type: string
+    description: Observed field for payload approved by in the source dataset.
+    enum:
+    - auto
+    profile:
+      dtype: string
+      null_fraction: 0.996661
+      cardinality_estimate: 1
+      sample_values:
+      - auto
+  payload_effective_date:
+    type: string
+    description: Observed field for payload effective date in the source dataset.
+    enum:
+    - '2026-03-23'
+    profile:
+      dtype: string
+      null_fraction: 0.996661
+      cardinality_estimate: 1
+      sample_values:
+      - '2026-03-23'
+  payload_approved_at:
+    type: string
+    description: Observed field for payload approved at in the source dataset.
+    format: date-time
+    enum:
+    - '2026-02-25T11:38:41.510018'
+    - '2026-02-27T17:34:46.472985'
+    - '2026-02-28T18:01:51.522812'
+    - '2026-03-13T05:01:21.488846'
+    profile:
+      dtype: string
+      null_fraction: 0.996661
+      cardinality_estimate: 4
+      sample_values:
+      - '2026-02-27T17:34:46.472985'
+      - '2026-03-13T05:01:21.488846'
+      - '2026-02-25T11:38:41.510018'
+      - '2026-02-28T18:01:51.522812'
+  payload_failure_reason:
+    type: string
+    description: Observed field for payload failure reason in the source dataset.
+    enum:
+    - Bank Secrecy Act (BSA) check failed.
+    - Jurisdiction Eligibility check failed.
+    - OFAC Sanctions check failed.
+    profile:
+      dtype: string
+      null_fraction: 0.997496
+      cardinality_estimate: 3
+      sample_values:
+      - OFAC Sanctions check failed.
+      - Bank Secrecy Act (BSA) check failed.
+      - Jurisdiction Eligibility check failed.
+  payload_is_hard_block:
+    type: string
+    description: Observed field for payload is hard block in the source dataset.
+    enum:
+    - 'False'
+    - 'True'
+    profile:
+      dtype: string
+      null_fraction: 0.997496
+      cardinality_estimate: 2
+      sample_values:
+      - 'True'
+      - 'False'
+  payload_remediation_available:
+    type: string
+    description: Observed field for payload remediation available in the source dataset.
+    enum:
+    - 'False'
+    - 'True'
+    profile:
+      dtype: string
+      null_fraction: 0.997496
+      cardinality_estimate: 2
+      sample_values:
+      - 'False'
+      - 'True'
+  payload_remediation_description:
+    type: number
+    description: Observed field for payload remediation description in the source dataset.
+    profile:
+      dtype: number
+      null_fraction: 1.0
+      cardinality_estimate: 0
+      sample_values: []
+  payload_decline_reasons_count:
+    type: number
+    description: Observed field for payload decline reasons count in the source dataset.
+    profile:
+      dtype: number
+      null_fraction: 0.996661
+      cardinality_estimate: 2
+      sample_values:
+      - '1.0'
+      - '2.0'
+      observed_min: 1.0
+      observed_max: 2.0
+      observed_mean: 1.5
+      observed_stddev: 0.57735
+      observed_p50: 1.5
+      observed_p95: 2.0
+  payload_decline_reasons:
+    type: string
+    description: Observed field for payload decline reasons in the source dataset.
+    enum:
+    - 'Compliance hard block: REG-002'
+    - 'Compliance hard block: REG-003'
+    - Insufficient debt service coverage|High leverage
+    profile:
+      dtype: string
+      null_fraction: 0.996661
+      cardinality_estimate: 3
+      sample_values:
+      - 'Compliance hard block: REG-002'
+      - Insufficient debt service coverage|High leverage
+      - 'Compliance hard block: REG-003'
+  payload_declined_by:
+    type: string
+    description: Observed field for payload declined by in the source dataset.
+    enum:
+    - auto
+    - compliance-system
+    profile:
+      dtype: string
+      null_fraction: 0.996661
+      cardinality_estimate: 2
+      sample_values:
+      - compliance-system
+      - auto
+  payload_adverse_action_notice_required:
+    type: string
+    description: Observed field for payload adverse action notice required in the source dataset.
+    enum:
+    - 'True'
+    profile:
+      dtype: string
+      null_fraction: 0.996661
+      cardinality_estimate: 1
+      sample_values:
+      - 'True'
+  payload_adverse_action_codes_count:
+    type: number
+    description: Observed field for payload adverse action codes count in the source dataset.
+    profile:
+      dtype: number
+      null_fraction: 0.996661
+      cardinality_estimate: 1
+      sample_values:
+      - '1.0'
+      observed_min: 1.0
+      observed_max: 1.0
+      observed_mean: 1.0
+      observed_stddev: 0.0
+      observed_p50: 1.0
+      observed_p95: 1.0
+  payload_adverse_action_codes:
+    type: string
+    description: Observed field for payload adverse action codes in the source dataset.
+    enum:
+    - COMPLIANCE_BLOCK
+    - HIGH_DEBT_BURDEN
+    profile:
+      dtype: string
+      null_fraction: 0.996661
+      cardinality_estimate: 2
+      sample_values:
+      - COMPLIANCE_BLOCK
+      - HIGH_DEBT_BURDEN
+  payload_declined_at:
+    type: string
+    description: Observed field for payload declined at in the source dataset.
+    format: date-time
+    enum:
+    - '2026-02-25T14:06:12.558475'
+    - '2026-03-03T00:00:17.500460'
+    - '2026-03-12T08:55:22.532957'
+    - '2026-03-14T10:37:47.546836'
+    profile:
+      dtype: string
+      null_fraction: 0.996661
+      cardinality_estimate: 4
+      sample_values:
+      - '2026-03-03T00:00:17.500460'
+      - '2026-03-12T08:55:22.532957'
+      - '2026-03-14T10:37:47.546836'
+      - '2026-02-25T14:06:12.558475'
+  payload_key_risks:
+    type: string
+    description: Observed field for payload key risks in the source dataset.
+    enum:
+    - Revenue trend requires monitoring
+    profile:
+      dtype: string
+      null_fraction: 0.997496
+      cardinality_estimate: 1
+      sample_values:
+      - Revenue trend requires monitoring
+registry:
+  role: primary_blast_radius_source
+  path: contract_registry/subscriptions.yaml
+  subscriber_count: 1
+  subscriptions:
+  - subscriber_id: week7-event-contract-consumer
+    fields_consumed:
+    - event_id
+    - aggregate_id
+    - aggregate_type
+    - sequence_number
+    - payload
+    - occurred_at
+    breaking_fields:
+    - field: sequence_number
+      reason: Sequence ordering is required for event-stream correctness and replay semantics.
+    - field: aggregate_id
+      reason: Aggregate identity is needed to group event streams and reason about monotonicity.
+    validation_mode: WARN
+    registered_at: 2026-04-02 16:20:00+00:00
+    contact:
+      owner: Week 7 Event Contract Consumer
+      role: downstream consumer
+      email: birkity.yishak.m@gmail.com
+    contact_summary: Week 7 Event Contract Consumer | downstream consumer | birkity.yishak.m@gmail.com
+  notes:
+  - Registry subscriptions are the primary source of blast-radius reasoning for this contract.
+  - Registry subscriptions are the primary source of blast-radius reasoning in the updated Week 7 architecture.
+  - Lineage remains useful, but only as enrichment for internal propagation once a subscribed consumer
+    has already been identified.
+  - Some subscriber links below are Week 7 equivalents of the Week 6-style consumer boundary described
+    in the updated docs.
+lineage:
+  role: enrichment_only
+  source_snapshot:
+    path: outputs/week4/lineage_snapshots.jsonl
+    load_mode: jsonl-last-line
+  downstream_enrichment: []
+  notes:
+  - Canonical lineage snapshot loaded, but no explicit downstream consumers were found for the current
+    source dataset.

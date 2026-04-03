@@ -4,15 +4,14 @@ models:
   description: dbt-compatible counterpart for generated contract week5-events built from outputs/week5/events.jsonl.
   meta:
     generated_from_contract: week5-events
-    generated_at: '2026-04-02T10:43:55.802916+00:00'
+    generated_at: '2026-04-02T20:58:30.799644+00:00'
     source_path: outputs/week5/events.jsonl
     blast_radius_primary_source: contract_registry
     registry_subscribers:
     - week7-event-contract-consumer
     lineage_notes:
-    - Week 4 lineage is currently a dbt-style whole-file graph, not the canonical Week 7 node/edge snapshot.
-    - No explicit consumer for the current source dataset was found in the current lineage file, so lineage
-      enrichment is partial.
+    - Canonical lineage snapshot loaded, but no explicit downstream consumers were found for the current
+      source dataset.
   columns:
   - name: event_id
     description: Primary identifier for the event record.
@@ -837,15 +836,6 @@ models:
   - name: payload_generated_at
     description: Observed field for payload generated at in the source dataset.
     tests:
-    - accepted_values:
-        values:
-        - '2026-02-25T11:38:31.510018'
-        - '2026-02-27T17:34:36.472985'
-        - '2026-02-28T18:01:41.522812'
-        - '2026-03-07T12:51:23.570977'
-        - '2026-03-12T08:55:12.532957'
-        - '2026-03-13T05:01:11.488846'
-        - '2026-03-14T10:37:37.546836'
     - dbt_expectations.expect_column_values_to_match_regex:
         regex: ^[0-9]{4}-[0-9]{2}-[0-9]{2}T
   - name: payload_interest_rate_pct
@@ -867,12 +857,6 @@ models:
   - name: payload_approved_at
     description: Observed field for payload approved at in the source dataset.
     tests:
-    - accepted_values:
-        values:
-        - '2026-02-25T11:38:41.510018'
-        - '2026-02-27T17:34:46.472985'
-        - '2026-02-28T18:01:51.522812'
-        - '2026-03-13T05:01:21.488846'
     - dbt_expectations.expect_column_values_to_match_regex:
         regex: ^[0-9]{4}-[0-9]{2}-[0-9]{2}T
   - name: payload_failure_reason
@@ -934,12 +918,6 @@ models:
   - name: payload_declined_at
     description: Observed field for payload declined at in the source dataset.
     tests:
-    - accepted_values:
-        values:
-        - '2026-02-25T14:06:12.558475'
-        - '2026-03-03T00:00:17.500460'
-        - '2026-03-12T08:55:22.532957'
-        - '2026-03-14T10:37:47.546836'
     - dbt_expectations.expect_column_values_to_match_regex:
         regex: ^[0-9]{4}-[0-9]{2}-[0-9]{2}T
   - name: payload_key_risks

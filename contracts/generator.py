@@ -10,6 +10,11 @@ from typing import Any
 import pandas as pd
 import yaml
 
+from lineage_selector import (
+    infer_repo_roots_from_records,
+    load_lineage_snapshots,
+    load_preferred_lineage_snapshot,
+)
 from registry_tools import contact_summary, get_contract_subscriptions, infer_trust_tier, load_registry
 
 
@@ -27,7 +32,11 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--source", required=True)
     parser.add_argument("--lineage", default="outputs/week4/lineage_snapshots.jsonl")
     parser.add_argument("--registry", default="contract_registry/subscriptions.yaml")
-    parser.add_argument("--output", default="generated_contracts")
+    parser.add_argument(
+        "--output",
+        default="generated_contracts",
+        help="Directory for generated contracts, or an explicit .yaml output path.",
+    )
     parser.add_argument("--snapshot-dir", default="schema_snapshots/contracts")
     parser.add_argument("--contract-id", default=None)
     return parser.parse_args()
@@ -43,7 +52,7 @@ def timestamp_slug() -> str:
 
 def load_jsonl(path: Path) -> list[dict[str, Any]]:
     records: list[dict[str, Any]] = []
-    with path.open(encoding="utf-8") as handle:
+    with path.open(encoding="utf-8-sig") as handle:
         for raw_line in handle:
             line = raw_line.strip()
             if not line:
@@ -61,27 +70,11 @@ def load_source_records(path: Path) -> list[dict[str, Any]]:
     return records
 
 
-def load_latest_lineage_snapshot(path: Path) -> tuple[dict[str, Any], str]:
-    if not path.exists():
-        raise FileNotFoundError(f"Lineage file not found: {path}")
-
-    text = path.read_text(encoding="utf-8")
-    non_empty_lines = [line for line in text.splitlines() if line.strip()]
-
-    if non_empty_lines:
-        try:
-            last_record = json.loads(non_empty_lines[-1])
-            if isinstance(last_record, dict):
-                return last_record, "jsonl-last-line"
-        except json.JSONDecodeError:
-            pass
-
-    payload = json.loads(text)
-    if isinstance(payload, dict):
-        return payload, "whole-file-json"
-    if isinstance(payload, list) and payload and isinstance(payload[-1], dict):
-        return payload[-1], "json-array-last-item"
-    raise ValueError(f"Unsupported lineage file shape in {path}")
+def load_latest_lineage_snapshot(
+    path: Path,
+    preferred_roots: list[Path] | None = None,
+) -> tuple[dict[str, Any], str]:
+    return load_preferred_lineage_snapshot(path, preferred_roots)
 
 
 def make_contract_slug(source_path: Path, explicit_slug: str | None) -> str:
@@ -378,7 +371,12 @@ def build_schema_clause(column_name: str, series: pd.Series) -> dict[str, Any]:
 
     if profile["dtype"] == "string":
         enum_values = unique_string_values(series)
-        if enum_values and column_name not in {"source_path", "source_hash", "fact_text", "fact_source_excerpt", "fact_entity_refs"}:
+        if (
+            enum_values
+            and clause.get("format") != "date-time"
+            and column_name
+            not in {"source_path", "source_hash", "fact_text", "fact_source_excerpt", "fact_entity_refs"}
+        ):
             clause["enum"] = enum_values
 
     ordered_profile: dict[str, Any] = {
@@ -411,7 +409,12 @@ def find_downstream_consumers(
     notes: list[str] = []
 
     if "nodes" in snapshot and "edges" in snapshot:
-        node_map = {node.get("node_id"): node for node in snapshot.get("nodes", []) if node.get("node_id")}
+        node_map = {}
+        for node in snapshot.get("nodes", []):
+            node_id = node.get("node_id") or node.get("id")
+            if not node_id:
+                continue
+            node_map[str(node_id)] = node
         for edge in snapshot.get("edges", []):
             source = str(edge.get("source", ""))
             target = str(edge.get("target", ""))
@@ -421,8 +424,8 @@ def find_downstream_consumers(
                 downstream.append(
                     {
                         "id": target,
-                        "label": node.get("label", target),
-                        "relationship": edge.get("relationship", "CONSUMES"),
+                        "label": node.get("label") or node.get("name") or target,
+                        "relationship": edge.get("relationship") or edge.get("edge_type") or "CONSUMES",
                         "fields_consumed": source_fields,
                     }
                 )
@@ -540,6 +543,91 @@ def build_registry_context(
     }
 
 
+def subscriber_snapshot_patterns(subscriber_id: str) -> dict[str, list[str]]:
+    lowered = subscriber_id.lower()
+    file_patterns: list[str] = []
+    repo_patterns: list[str] = []
+
+    if "contract-generator" in lowered:
+        repo_patterns.extend(["data-contract-enforcer", "week7"])
+        file_patterns.append("contracts/generator.py")
+    elif "validation-runner" in lowered:
+        repo_patterns.extend(["data-contract-enforcer", "week7"])
+        file_patterns.append("contracts/runner.py")
+    elif "brownfield-cartographer" in lowered:
+        repo_patterns.extend(["brownfield-cartographer", "week4"])
+        file_patterns.extend(
+            [
+                "src/agents/hydrologist.py",
+                "src/exporters/week7_lineage.py",
+                "src/cli.py",
+            ]
+        )
+
+    return {"repo_patterns": repo_patterns, "file_patterns": file_patterns}
+
+
+def find_registry_aligned_lineage_consumers(
+    snapshots: list[dict[str, Any]],
+    registry_context: dict[str, Any],
+) -> list[dict[str, Any]]:
+    matches: list[dict[str, Any]] = []
+
+    for subscription in registry_context.get("subscriptions", []):
+        subscriber_id = str(subscription.get("subscriber_id") or "")
+        patterns = subscriber_snapshot_patterns(subscriber_id)
+        if not patterns["repo_patterns"] and not patterns["file_patterns"]:
+            continue
+
+        for snapshot in snapshots:
+            codebase_root = str(snapshot.get("codebase_root") or "")
+            root_text = codebase_root.lower()
+            if patterns["repo_patterns"] and not any(
+                pattern in root_text for pattern in patterns["repo_patterns"]
+            ):
+                continue
+
+            node_hits: list[str] = []
+            for node in snapshot.get("nodes", []) or []:
+                metadata = node.get("metadata", {}) or {}
+                haystack = " ".join(
+                    [
+                        str(node.get("id") or ""),
+                        str(node.get("name") or ""),
+                        str(node.get("source_file") or ""),
+                        str(metadata.get("source_file") or ""),
+                        str(metadata.get("source_file_abs") or ""),
+                    ]
+                ).lower()
+                if patterns["file_patterns"] and not any(
+                    pattern in haystack for pattern in patterns["file_patterns"]
+                ):
+                    continue
+                node_hits.append(str(node.get("id") or node.get("name") or "unknown-node"))
+
+            if node_hits:
+                matches.append(
+                    {
+                        "id": subscriber_id,
+                        "label": subscriber_id,
+                        "relationship": "REGISTRY_ALIGNED_LINEAGE_CONSUMER",
+                        "fields_consumed": subscription.get("fields_consumed", []),
+                        "snapshot_root": codebase_root,
+                        "matched_nodes": node_hits[:5],
+                    }
+                )
+
+    deduped: list[dict[str, Any]] = []
+    seen: set[tuple[str, str]] = set()
+    for item in matches:
+        key = (str(item.get("id")), str(item.get("snapshot_root")))
+        if key in seen:
+            continue
+        seen.add(key)
+        deduped.append(item)
+    return deduped
+
+
 def build_contract(
     contract_id: str,
     source_path: Path,
@@ -550,6 +638,7 @@ def build_contract(
     flatten_metadata: dict[str, Any],
     lineage_snapshot: dict[str, Any],
     lineage_mode: str,
+    lineage_snapshots: list[dict[str, Any]],
     registry_payload: dict[str, Any],
 ) -> dict[str, Any]:
     schema_order = ordered_columns_for_dataset(source_path)
@@ -570,6 +659,15 @@ def build_contract(
         source_terms=make_source_terms(source_path),
     )
     registry_context = build_registry_context(contract_id, registry_path, registry_payload)
+    registry_aligned_consumers = find_registry_aligned_lineage_consumers(
+        lineage_snapshots,
+        registry_context,
+    )
+    if registry_aligned_consumers:
+        downstream.extend(registry_aligned_consumers)
+        lineage_notes.append(
+            "Consumer-side lineage enrichment was expanded using registry-aligned snapshots in addition to the primary producer snapshot."
+        )
     trust_tier = infer_trust_tier(
         has_registry=registry_context["subscriber_count"] > 0,
         has_lineage=bool(downstream or lineage_notes),
@@ -641,6 +739,18 @@ def write_yaml(path: Path, payload: dict[str, Any]) -> Path:
 def write_contract(output_dir: Path, filename: str, contract: dict[str, Any]) -> Path:
     ensure_output_dir(output_dir)
     return write_yaml(output_dir / filename, contract)
+
+
+def resolve_output_paths(output_arg: Path, source_path: Path) -> tuple[Path, Path]:
+    if output_arg.suffix.lower() in {".yaml", ".yml"}:
+        contract_path = output_arg
+        dbt_name = make_dbt_output_filename(source_path)
+        dbt_path = output_arg.with_name(dbt_name)
+        return contract_path, dbt_path
+
+    contract_path = output_arg / make_output_filename(source_path)
+    dbt_path = output_arg / make_dbt_output_filename(source_path)
+    return contract_path, dbt_path
 
 
 def write_contract_snapshot(snapshot_dir: Path, contract_id: str, contract: dict[str, Any]) -> dict[str, str]:
@@ -819,14 +929,16 @@ def main() -> int:
     source_path = Path(args.source)
     lineage_path = Path(args.lineage)
     registry_path = Path(args.registry)
-    output_dir = Path(args.output)
+    output_arg = Path(args.output)
     snapshot_dir = Path(args.snapshot_dir)
 
     records = load_source_records(source_path)
     inspection = inspect_records(records, source_path)
     df, flatten_metadata = flatten_for_profile(records)
+    preferred_roots = infer_repo_roots_from_records(records)
 
-    lineage_snapshot, lineage_mode = load_latest_lineage_snapshot(lineage_path)
+    lineage_snapshots, _ = load_lineage_snapshots(lineage_path)
+    lineage_snapshot, lineage_mode = load_latest_lineage_snapshot(lineage_path, preferred_roots)
     registry_payload = load_registry(registry_path)
     contract_id = make_contract_slug(source_path, args.contract_id)
     contract = build_contract(
@@ -839,17 +951,15 @@ def main() -> int:
         flatten_metadata=flatten_metadata,
         lineage_snapshot=lineage_snapshot,
         lineage_mode=lineage_mode,
+        lineage_snapshots=lineage_snapshots,
         registry_payload=registry_payload,
     )
     snapshot_paths = write_contract_snapshot(snapshot_dir, contract_id, contract)
     contract["observations"]["snapshot_paths"] = snapshot_paths
-    output_path = write_contract(output_dir, make_output_filename(source_path), contract)
+    output_path, dbt_output_path = resolve_output_paths(output_arg, source_path)
+    output_path = write_yaml(output_path, contract)
     quality_check(contract, output_path)
-    dbt_output_path = write_dbt_counterpart(
-        output_dir,
-        make_dbt_output_filename(source_path),
-        build_dbt_counterpart(contract, source_path),
-    )
+    write_yaml(dbt_output_path, build_dbt_counterpart(contract, source_path))
     quality_check_dbt(dbt_output_path)
 
     print(f"Contract written to {output_path}")
