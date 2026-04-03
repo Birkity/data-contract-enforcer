@@ -2,5 +2,6 @@ TRP1 Practitioner Manual_ Data Contract Enforcer.md
 TRP1 Challenge Week 7_ Data Contract Enforcer.md
 .env
 .venv
-reports/
 .tmp/
+node_modules/
+.next/
