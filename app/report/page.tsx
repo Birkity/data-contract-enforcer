@@ -28,16 +28,17 @@ export default async function ReportPage() {
   return (
     <div className="space-y-8">
       <PageHeader
-        eyebrow="Client walkthrough report"
-        title="Explain the system in plain English"
+        eyebrow="Operational report"
+        title="Client-facing system summary"
         description={
           <p>
-            This page renders the generated enforcer report in business language. It is still grounded in the
-            machine-readable artifact, but it prioritizes stakeholder clarity over raw file structure.
+            This page renders the generated enforcer report in a format suitable for technical stakeholders,
+            client reviewers, and decision makers. It keeps the underlying artifact intact while surfacing
+            the operational implications first.
           </p>
         }
         aside={
-          <SurfaceCard className="bg-[linear-gradient(145deg,rgba(255,255,255,0.92),rgba(240,229,214,0.92))]">
+          <SurfaceCard className="bg-[linear-gradient(145deg,rgba(255,255,255,0.92),rgba(225,236,251,0.9))]">
             <Badge tone="success">Data health score</Badge>
             <p className="mt-4 font-display text-6xl leading-none text-[var(--ink)]">
               {formatNumber((reportData.data_health_score as number | undefined) ?? null)}
@@ -93,7 +94,7 @@ export default async function ReportPage() {
         <SurfaceCard>
           <SectionLabel
             title="What broke?"
-            subtitle="The most important failed checks surfaced by the final report artifact."
+            subtitle="The highest-impact failed checks surfaced by the generated report artifact."
           />
           <div className="mt-5 space-y-4">
             {(
@@ -125,7 +126,7 @@ export default async function ReportPage() {
         <SurfaceCard>
           <SectionLabel
             title="Why it matters"
-            subtitle="Business-level risk framing pulled from the generated report."
+            subtitle="Operational impact distilled from the generated report."
           />
           <div className="mt-5 space-y-4 text-sm leading-7 text-[var(--muted)]">
             <p>
@@ -172,7 +173,7 @@ export default async function ReportPage() {
         <SurfaceCard>
           <SectionLabel
             title="Who is affected?"
-            subtitle="Direct audience from the contract registry, which is the primary blast-radius source."
+            subtitle="Direct subscribers from the contract registry. This is the authoritative impact list."
           />
           <div className="mt-5 space-y-4">
             {(((blastRadius.affected_subscribers as Array<Record<string, unknown>> | undefined) ?? [])).map(
@@ -219,7 +220,7 @@ export default async function ReportPage() {
       <SurfaceCard>
         <SectionLabel
           title="Real artifact anchors"
-          subtitle="Useful file paths to show during a reviewer or client walkthrough."
+          subtitle="Primary files behind the current conclusions."
         />
         <div className="mt-5 grid gap-3 md:grid-cols-2">
           {[
@@ -247,51 +248,6 @@ export default async function ReportPage() {
         ) : null}
       </SurfaceCard>
 
-      <div className="grid gap-6 xl:grid-cols-[1fr_1fr]">
-        <SurfaceCard>
-          <SectionLabel
-            title="Plain-English summary"
-            subtitle="A short narrative you can use live without reading raw JSON."
-          />
-          <div className="mt-5 space-y-4 text-sm leading-7 text-[var(--muted)]">
-            <p>
-              The system is healthy overall, but it is designed to catch high-impact contract breaks before
-              they quietly spread into downstream consumers.
-            </p>
-            <p>
-              In the main test case, a confidence field stayed numeric but changed meaning. The validator
-              caught that, the registry identified who would feel it, and attribution narrowed the likely
-              cause down to a producer-side file and commit.
-            </p>
-            <p>
-              That is the main value of the platform: it turns inter-system data exchange from an implicit
-              assumption into an explicit promise with evidence, impact analysis, and next actions.
-            </p>
-          </div>
-        </SurfaceCard>
-
-        <SurfaceCard>
-          <SectionLabel
-            title="How to present this page"
-            subtitle="A simple walkthrough order for a reviewer, client, or non-technical stakeholder."
-          />
-          <ol className="mt-5 space-y-3 text-sm leading-7 text-[var(--muted)]">
-            <li>
-              Start with the health score and baseline status so the audience sees the system is grounded in
-              a stable clean run.
-            </li>
-            <li>
-              Show the top failure cards so the audience understands what broke and why type checks alone were
-              not enough.
-            </li>
-            <li>Move to affected subscribers to explain who needs attention first.</li>
-            <li>
-              Finish on recommended actions so the conversation ends with a decision path, not just an
-              incident description.
-            </li>
-          </ol>
-        </SurfaceCard>
-      </div>
     </div>
   );
 }

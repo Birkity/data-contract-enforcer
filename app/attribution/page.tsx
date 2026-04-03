@@ -20,12 +20,11 @@ export default async function AttributionPage() {
     <div className="space-y-8">
       <PageHeader
         eyebrow="Blast radius and blame chain"
-        title="Registry first, lineage second"
+        title="Impact analysis and blame chain"
         description={
           <p>
-            This page makes the updated architecture explicit. Registered consumers are the primary
-            blast-radius source. Lineage is still useful, but only as enrichment after the subscribed
-            audience is known.
+            This page reflects the updated Week 7 attribution model. Registered consumers are the primary
+            blast-radius source. Lineage adds downstream context after the subscribed audience is known.
           </p>
         }
         aside={
@@ -109,7 +108,7 @@ export default async function AttributionPage() {
                   <SurfaceCard className="bg-[var(--paper)]/80">
                     <SectionLabel
                       title="Secondary lineage enrichment"
-                      subtitle="Helpful propagation clues from Week 4, but not the primary impact source."
+                      subtitle="Propagation clues from Week 4, but not the primary impact source."
                     />
                     <div className="mt-5 space-y-4 text-sm leading-7 text-[var(--muted)]">
                       <p>
@@ -203,7 +202,7 @@ export default async function AttributionPage() {
                       The strongest current explanation is that <strong>{topCandidate.file_path}</strong>{" "}
                       introduced or persisted the field behavior that triggered this contract break. The
                       direct impact audience is <strong>{formatNumber(registrySubscribers.length)}</strong>{" "}
-                      registered consumers.
+                      registered consumers identified through the registry.
                     </p>
                   </div>
                 ) : null}

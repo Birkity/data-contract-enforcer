@@ -17,6 +17,7 @@ export function formatDate(value?: string | null) {
     return new Intl.DateTimeFormat("en-US", {
       dateStyle: "medium",
       timeStyle: "short",
+      timeZone: "UTC",
     }).format(new Date(value));
   } catch {
     return value;
@@ -25,7 +26,7 @@ export function formatDate(value?: string | null) {
 
 export function formatNumber(value?: number | null) {
   if (value === null || value === undefined || Number.isNaN(value)) {
-    return "—";
+    return "--";
   }
 
   return new Intl.NumberFormat("en-US").format(value);
@@ -33,7 +34,7 @@ export function formatNumber(value?: number | null) {
 
 export function formatPercent(value?: number | null, digits = 1) {
   if (value === null || value === undefined || Number.isNaN(value)) {
-    return "—";
+    return "--";
   }
 
   return `${value.toFixed(digits)}%`;
@@ -41,7 +42,7 @@ export function formatPercent(value?: number | null, digits = 1) {
 
 export function shortHash(value?: string | null, size = 8) {
   if (!value) {
-    return "—";
+    return "--";
   }
 
   return value.length <= size ? value : value.slice(0, size);

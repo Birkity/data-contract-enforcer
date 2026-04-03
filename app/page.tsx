@@ -23,17 +23,16 @@ export default async function DashboardPage() {
   return (
     <div className="space-y-8">
       <PageHeader
-        eyebrow="Executive overview"
-        title="See what changed, what matters, and what to do next"
+        eyebrow="System overview"
+        title="Operational status at a glance"
         description={
           <p>
-            This dashboard is a reviewer-friendly view over the real Week 7 artifacts. It is designed to
-            answer four questions quickly: what contracts exist, what broke, who is affected, and what the
-            next action should be.
+            This dashboard is a technical summary of the real Week 7 artifacts. It helps a reviewer or
+            client quickly assess contract coverage, validation posture, impact, and next actions.
           </p>
         }
         aside={
-          <SurfaceCard className="bg-[linear-gradient(145deg,rgba(255,255,255,0.94),rgba(244,229,214,0.88))]">
+          <SurfaceCard className="bg-[linear-gradient(145deg,rgba(255,255,255,0.94),rgba(225,236,251,0.88))]">
             <div className="space-y-4">
               <div className="flex items-center justify-between gap-3">
                 <Badge tone="success">Data health score</Badge>
@@ -55,8 +54,8 @@ export default async function DashboardPage() {
                 </div>
               </div>
               <p className="text-sm leading-7 text-[var(--muted)]">
-                The score rolls up validation health, blast radius, schema safety, AI checks, and readiness
-                signals from the final report artifact.
+                The score consolidates validation health, schema safety, blast radius, AI checks, and
+                readiness signals from the generated report artifact.
               </p>
             </div>
           </SurfaceCard>
@@ -65,7 +64,7 @@ export default async function DashboardPage() {
 
       <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
         <MetricCard
-          detail="Generated contract artifacts with real registry context and dbt counterparts."
+          detail="Generated contract artifacts with registry context and dbt counterparts."
           href="/contracts"
           label="Contracts"
           tone="info"
@@ -79,14 +78,14 @@ export default async function DashboardPage() {
           value={formatNumber(validations.length)}
         />
         <MetricCard
-          detail="Logged findings in the machine-readable violation log."
+          detail="Logged findings from the machine-readable violation log."
           href="/violations"
           label="Violations"
           tone={violations.length > 0 ? "warning" : "success"}
           value={formatNumber(violations.length)}
         />
         <MetricCard
-          detail="Registered downstream consumers drive blast radius before lineage enrichment."
+          detail="Registered downstream consumers define blast radius before lineage enrichment."
           href="/attribution"
           label="Subscribers"
           tone="warning"
@@ -98,8 +97,8 @@ export default async function DashboardPage() {
         <SurfaceCard>
           <div className="space-y-5">
             <SectionLabel
-              title="Severity posture"
-              subtitle="These counts come from the current violation log. The dashboard does not invent or smooth them."
+              title="Risk posture"
+              subtitle="These counts come directly from the current violation log. Nothing here is estimated or synthetic."
             />
             <div className="grid gap-4 sm:grid-cols-3">
               {(["CRITICAL", "HIGH", "MEDIUM"] as const).map((severity) => (
@@ -118,7 +117,7 @@ export default async function DashboardPage() {
               <div className="flex flex-wrap items-center gap-2">
                 <Badge tone="info">Latest injected failures</Badge>
                 <p className="text-sm text-[var(--muted)]">
-                  These are the highest-signal failures surfaced by the final machine-generated report.
+                  These are the highest-signal failures surfaced by the generated report.
                 </p>
               </div>
               <div className="mt-4 space-y-3">
@@ -151,8 +150,8 @@ export default async function DashboardPage() {
         <div className="space-y-6">
           <SurfaceCard>
             <SectionLabel
-              title="Top actions"
-              subtitle="Pulled directly from the generated enforcer report so the UI stays grounded in the CLI outputs."
+              title="Recommended actions"
+              subtitle="Pulled directly from the generated enforcer report so the UI stays anchored to the CLI outputs."
             />
             <ol className="mt-5 space-y-3">
               {recommendedActions.map((action, index) => (
@@ -168,15 +167,15 @@ export default async function DashboardPage() {
 
           <SurfaceCard>
             <SectionLabel
-              title="Suggested walkthrough"
-              subtitle='These routes follow the reviewer conversation from "what happened?" to "what do we do next?"'
+              title="Review paths"
+              subtitle="These routes follow the standard review flow from interface definition to incident response."
             />
             <div className="mt-5 grid gap-3">
               {[
                 { href: "/contracts", label: "Contracts", detail: "Review contract coverage, risky fields, and subscribed consumers." },
-                { href: "/validations", label: "Validations", detail: "Compare clean and violated runs side by side." },
-                { href: "/attribution", label: "Attribution", detail: "Show registry-first blast radius and ranked blame evidence." },
-                { href: "/report", label: "Report", detail: "Use the business-facing summary during a client walkthrough." },
+                { href: "/validations", label: "Validations", detail: "Compare clean and violated runs, modes, and decisions." },
+                { href: "/attribution", label: "Attribution", detail: "Review registry-first blast radius and ranked blame evidence." },
+                { href: "/report", label: "Report", detail: "Use the client-facing summary during a walkthrough." },
               ].map((item) => (
                 <Link
                   className="rounded-2xl border border-[var(--line)] bg-white/70 px-4 py-4 transition-colors hover:border-[var(--accent)] hover:bg-white/90"
@@ -196,7 +195,7 @@ export default async function DashboardPage() {
         <SurfaceCard className="xl:col-span-2">
           <SectionLabel
             title="Architecture snapshot"
-            subtitle="The frontend mirrors the updated Week 7 design instead of introducing a second interpretation."
+            subtitle="The frontend reflects the updated Week 7 design rather than introducing a second interpretation."
           />
           <div className="mt-5 grid gap-4 md:grid-cols-3">
             {Object.entries((reportData?.architecture as Record<string, string> | undefined) ?? {}).map(
@@ -232,8 +231,8 @@ export default async function DashboardPage() {
                 </p>
               </div>
               <p className="text-sm leading-7 text-[var(--muted)]">
-                The direct impact audience still comes from the registry first. Lineage helps explain
-                possible propagation after that.
+                The direct impact audience comes from the registry first. Lineage is used afterward to add
+                propagation context.
               </p>
             </div>
           ) : (

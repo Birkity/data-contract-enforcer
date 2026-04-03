@@ -10,7 +10,7 @@ const toneClasses: Record<Tone, string> = {
   warning: "border-[var(--warning-soft)] bg-[var(--warning-bg)] text-[var(--warning)]",
   success: "border-[var(--success-soft)] bg-[var(--success-bg)] text-[var(--success)]",
   info: "border-[var(--info-soft)] bg-[var(--info-bg)] text-[var(--info)]",
-  neutral: "border-[var(--line)] bg-[var(--paper)] text-[var(--ink)]/80",
+  neutral: "border-[var(--line)] bg-[rgba(248,251,255,0.9)] text-[var(--ink)]/80",
 };
 
 export function Badge({
@@ -50,7 +50,7 @@ export function SurfaceCard({
         className,
       )}
     >
-      <div className="pointer-events-none absolute inset-x-0 top-0 h-px bg-[linear-gradient(90deg,transparent,rgba(180,93,52,0.55),transparent)]" />
+      <div className="pointer-events-none absolute inset-x-0 top-0 h-px bg-[linear-gradient(90deg,transparent,rgba(22,98,196,0.58),transparent)]" />
       {children}
     </section>
   );

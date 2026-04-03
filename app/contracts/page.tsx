@@ -24,15 +24,15 @@ export default async function ContractsPage() {
         title="Contract inventory"
         description={
           <p>
-            Each row comes from the real generated contract YAML files and is enriched with registry
-            subscriptions so reviewers can see both the clause surface and the downstream audience.
+            Each row comes from the generated contract YAML artifacts and is enriched with registry
+            subscriptions so reviewers can inspect both the clause surface and the downstream audience.
           </p>
         }
         aside={
           <SurfaceCard>
             <SectionLabel
               title={`${contracts.length} live contracts`}
-              subtitle="Bitol-style contracts with dbt-compatible counterparts and real subscriber context."
+              subtitle="Bitol-style contracts with dbt-compatible counterparts and subscriber context."
             />
             <div className="mt-4 flex flex-wrap gap-2">
               <Badge tone="info">Registry-aware</Badge>

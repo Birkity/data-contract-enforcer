@@ -29,17 +29,48 @@ export function AppShell({
   } | null;
   generatedAt?: string | null;
 }) {
+  const architectureLabels = [
+    {
+      tone: "info" as const,
+      label:
+        architecture?.enforcement_boundary === "consumer"
+          ? "Consumer boundary"
+          : architecture?.enforcement_boundary ?? "Consumer boundary",
+    },
+    {
+      tone: "warning" as const,
+      label:
+        architecture?.blast_radius_primary_source === "contract_registry"
+          ? "Registry-first blast radius"
+          : architecture?.blast_radius_primary_source ?? "Registry-first blast radius",
+    },
+    {
+      tone: "neutral" as const,
+      label:
+        architecture?.lineage_role === "enrichment_only"
+          ? "Lineage enrichment"
+          : architecture?.lineage_role ?? "Lineage enrichment",
+    },
+    {
+      tone: "success" as const,
+      label:
+        architecture?.schema_evolution_role === "producer_side_ci_gate"
+          ? "Producer-side CI gate"
+          : architecture?.schema_evolution_role ?? "Producer-side CI gate",
+    },
+  ];
+
   return (
     <div className="relative min-h-screen overflow-hidden">
-      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(210,107,48,0.2),transparent_26%),radial-gradient(circle_at_top_right,rgba(24,89,101,0.18),transparent_30%),linear-gradient(180deg,rgba(255,252,246,0.9),rgba(244,239,231,0.98))]" />
+      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(22,98,196,0.18),transparent_26%),radial-gradient(circle_at_top_right,rgba(15,109,132,0.14),transparent_30%),linear-gradient(180deg,rgba(250,252,255,0.9),rgba(237,243,249,0.98))]" />
       <div className="relative">
-        <header className="sticky top-0 z-20 border-b border-[var(--line)] bg-[rgba(252,247,239,0.88)] backdrop-blur-xl">
+        <header className="sticky top-0 z-20 border-b border-[var(--line)] bg-[rgba(248,251,255,0.88)] backdrop-blur-xl">
           <div className="mx-auto max-w-7xl px-6 py-5">
             <div className="flex flex-col gap-5">
               <div className="grid gap-5 xl:grid-cols-[1.5fr_1fr]">
-                <div className="rounded-[28px] border border-[var(--line)] bg-[rgba(255,252,246,0.8)] px-6 py-5 shadow-[0_18px_50px_var(--shadow)]">
+                <div className="rounded-[28px] border border-[var(--line)] bg-[rgba(255,255,255,0.8)] px-6 py-5 shadow-[0_18px_50px_var(--shadow)]">
                   <p className="text-xs font-semibold uppercase tracking-[0.32em] text-[var(--accent)]">
-                    Reviewer dashboard
+                    Operational review console
                   </p>
                   <Link
                     className="font-display text-3xl leading-tight text-[var(--ink)] transition-opacity hover:opacity-80 sm:text-4xl"
@@ -48,34 +79,35 @@ export function AppShell({
                     TRP Week 7 Data Contract Enforcer
                   </Link>
                   <p className="mt-3 max-w-3xl text-sm leading-7 text-[var(--muted)]">
-                    A read-only presentation layer over the real Week 7 artifacts. It helps a reviewer,
-                    client, or non-technical stakeholder understand what contracts exist, what broke, who
-                    is affected, and what should happen next without replacing the CLI workflow underneath.
+                    A read-only operational view over the real Week 7 artifact set. It helps technical
+                    reviewers and client stakeholders inspect contract coverage, validation outcomes,
+                    blast radius, and recommended actions without replacing the CLI workflow underneath.
                   </p>
                   <div className="mt-4 flex flex-wrap gap-2">
                     <Link
                       className="rounded-full bg-[var(--ink)] px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-[var(--accent-strong)]"
                       href="/report"
                     >
-                      Open executive report
+                      Open system report
                     </Link>
                     <Link
                       className="rounded-full border border-[var(--line-strong)] bg-white/85 px-4 py-2 text-sm font-semibold text-[var(--ink)] transition-colors hover:border-[var(--accent)] hover:text-[var(--accent)]"
                       href="/attribution"
                     >
-                      Review blast radius
+                      Inspect blast radius
                     </Link>
                   </div>
                 </div>
-                <div className="rounded-[28px] border border-[var(--line)] bg-[rgba(255,255,255,0.72)] px-6 py-5 shadow-[0_18px_50px_var(--shadow)]">
+                <div className="rounded-[28px] border border-[var(--line)] bg-[rgba(255,255,255,0.76)] px-6 py-5 shadow-[0_18px_50px_var(--shadow)]">
                   <div className="flex items-start justify-between gap-4">
                     <div>
                       <p className="text-xs font-semibold uppercase tracking-[0.28em] text-[var(--muted)]">
                         Architecture snapshot
                       </p>
                       <p className="mt-2 text-sm leading-7 text-[var(--muted)]">
-                        The frontend mirrors the updated Week 7 trust-boundary model rather than inventing
-                        a parallel story.
+                        The interface follows the updated Week 7 operating model: consumer-boundary
+                        enforcement, registry-first blast radius, lineage enrichment, and producer-side
+                        schema gating.
                       </p>
                     </div>
                     <p className="text-right text-xs uppercase tracking-[0.24em] text-[var(--muted)]">
@@ -83,25 +115,18 @@ export function AppShell({
                     </p>
                   </div>
                   <div className="mt-5 flex flex-wrap gap-2">
-                    <Badge tone="info">
-                      {architecture?.enforcement_boundary ?? "consumer"} enforcement
-                    </Badge>
-                    <Badge tone="warning">
-                      {architecture?.blast_radius_primary_source ?? "registry"} first blast radius
-                    </Badge>
-                    <Badge tone="neutral">
-                      {architecture?.lineage_role ?? "enrichment_only"} lineage
-                    </Badge>
-                    <Badge tone="success">
-                      {architecture?.schema_evolution_role ?? "producer_side_ci_gate"}
-                    </Badge>
+                    {architectureLabels.map((item) => (
+                      <Badge key={item.label} tone={item.tone}>
+                        {item.label}
+                      </Badge>
+                    ))}
                   </div>
                 </div>
               </div>
-              <nav className="flex flex-wrap gap-2 rounded-full border border-[var(--line)] bg-[rgba(255,255,255,0.64)] p-2 shadow-[0_10px_30px_var(--shadow)]">
+              <nav className="flex flex-wrap gap-2 rounded-full border border-[var(--line)] bg-[rgba(255,255,255,0.68)] p-2 shadow-[0_10px_30px_var(--shadow)]">
                 {navItems.map((item) => (
                   <Link
-                    className="rounded-full border border-transparent bg-white/70 px-4 py-2 text-sm font-medium text-[var(--ink)] transition-colors hover:border-[var(--accent-soft)] hover:bg-white hover:text-[var(--accent)]"
+                    className="rounded-full border border-transparent bg-white/76 px-4 py-2 text-sm font-medium text-[var(--ink)] transition-colors hover:border-[var(--accent-soft)] hover:bg-white hover:text-[var(--accent)]"
                     href={item.href}
                     key={item.href}
                   >
@@ -113,7 +138,7 @@ export function AppShell({
           </div>
         </header>
         <main className="mx-auto max-w-7xl px-6 py-10">{children}</main>
-        <footer className="border-t border-[var(--line)] bg-[rgba(255,255,255,0.72)]">
+        <footer className="border-t border-[var(--line)] bg-[rgba(255,255,255,0.76)]">
           <div className="mx-auto flex max-w-7xl flex-col gap-2 px-6 py-6 text-sm text-[var(--muted)] sm:flex-row sm:items-center sm:justify-between">
             <p>
               Frontend consumes local JSON, JSONL, and YAML artifacts only. It is a presentation layer,

@@ -24,11 +24,11 @@ export default async function ValidationsPage() {
     <div className="space-y-8">
       <PageHeader
         eyebrow="Validation runs"
-        title="Clean and violated runs side by side"
+        title="Operational validation evidence"
         description={
           <p>
-            These reports come straight from the ValidationRunner. They show how the same contract behaves
-            under clean data and injected breakage across AUDIT, WARN, and ENFORCE modes.
+            These reports come directly from the ValidationRunner. They show how the same contract behaves
+            under clean data and under injected breakage across AUDIT, WARN, and ENFORCE modes.
           </p>
         }
         aside={

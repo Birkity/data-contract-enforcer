@@ -22,7 +22,7 @@ export default async function RootLayout({
 
   return (
     <html lang="en">
-      <body>
+      <body suppressHydrationWarning>
         <AppShell
           architecture={(reportData?.architecture as Parameters<typeof AppShell>[0]["architecture"]) ?? null}
           generatedAt={typeof reportData?.generated_at === "string" ? reportData.generated_at : null}
