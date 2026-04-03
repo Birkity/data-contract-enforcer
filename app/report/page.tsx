@@ -90,7 +90,7 @@ export default async function ReportPage() {
         </SurfaceCard>
       </div>
 
-      <div className="grid gap-6 xl:grid-cols-[1.15fr_0.85fr]">
+      <div className="grid items-start gap-6 xl:grid-cols-[1.15fr_0.85fr]">
         <SurfaceCard>
           <SectionLabel
             title="What broke?"
@@ -103,7 +103,7 @@ export default async function ReportPage() {
                 | undefined) ?? [])
             ).map((failure) => (
               <div
-                className="rounded-3xl border border-[var(--line)] bg-white/75 p-5"
+                className="rounded-2xl border border-[var(--line)] bg-white/75 p-5"
                 key={String(failure.check_id)}
               >
                 <div className="flex flex-wrap items-center gap-2">
@@ -169,7 +169,7 @@ export default async function ReportPage() {
         </SurfaceCard>
       </div>
 
-      <div className="grid gap-6 xl:grid-cols-[0.95fr_1.05fr]">
+      <div className="grid items-start gap-6 xl:grid-cols-[0.95fr_1.05fr]">
         <SurfaceCard>
           <SectionLabel
             title="Who is affected?"
@@ -179,7 +179,7 @@ export default async function ReportPage() {
             {(((blastRadius.affected_subscribers as Array<Record<string, unknown>> | undefined) ?? [])).map(
               (subscriber) => (
                 <div
-                  className="rounded-3xl border border-[var(--line)] bg-white/75 p-5"
+                  className="rounded-2xl border border-[var(--line)] bg-white/75 p-5"
                   key={String(subscriber.subscriber_id)}
                 >
                   <div className="flex flex-wrap items-center gap-2">
@@ -231,13 +231,13 @@ export default async function ReportPage() {
             "enforcer_report/ai_metrics.json",
             "enforcer_report/report_data.json",
           ].map((filePath) => (
-            <div className="rounded-2xl border border-[var(--line)] bg-white/75 px-4 py-3" key={filePath}>
+            <div className="rounded-xl border border-[var(--line)] bg-white/75 px-4 py-3" key={filePath}>
               <InlinePath>{filePath}</InlinePath>
             </div>
           ))}
         </div>
         {knownLimitations.length ? (
-          <div className="mt-6 rounded-3xl border border-[var(--line)] bg-[var(--paper)]/85 p-5">
+          <div className="mt-6 rounded-2xl border border-[var(--line)] bg-[var(--paper)]/85 p-5">
             <p className="text-xs uppercase tracking-[0.2em] text-[var(--muted)]">Known limitations</p>
             <div className="mt-4 space-y-3 text-sm leading-7 text-[var(--muted)]">
               {knownLimitations.map((limitation) => (

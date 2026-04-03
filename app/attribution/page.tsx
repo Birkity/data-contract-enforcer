@@ -56,7 +56,7 @@ export default async function AttributionPage() {
                     <h2 className="font-display text-3xl text-[var(--ink)]">{entry.field}</h2>
                     <p className="max-w-3xl text-sm leading-7 text-[var(--muted)]">{entry.message}</p>
                   </div>
-                  <div className="rounded-3xl border border-[var(--line)] bg-white/75 p-5 text-sm text-[var(--muted)]">
+                  <div className="rounded-2xl border border-[var(--line)] bg-white/75 p-5 text-sm text-[var(--muted)]">
                     <p>
                       Producer system: <span className="font-semibold text-[var(--ink)]">{entry.producer_system}</span>
                     </p>
@@ -75,7 +75,7 @@ export default async function AttributionPage() {
                   </div>
                 </div>
 
-                <div className="grid gap-6 xl:grid-cols-[1fr_1fr]">
+                <div className="grid items-start gap-6 xl:grid-cols-[1fr_1fr]">
                   <SurfaceCard className="bg-[var(--paper)]/80">
                     <SectionLabel
                       title="Primary blast radius"
@@ -84,7 +84,7 @@ export default async function AttributionPage() {
                     <div className="mt-5 space-y-4">
                       {registrySubscribers.map((subscriber) => (
                         <div
-                          className="rounded-2xl border border-[var(--line)] bg-white/80 p-4"
+                          className="rounded-xl border border-[var(--line)] bg-white/80 p-4"
                           key={subscriber.subscriber_id}
                         >
                           <div className="flex flex-wrap items-center gap-2">
@@ -196,7 +196,7 @@ export default async function AttributionPage() {
                 </SurfaceCard>
 
                 {topCandidate ? (
-                  <div className="rounded-[28px] border border-[var(--line)] bg-[linear-gradient(135deg,rgba(255,255,255,0.9),rgba(236,228,218,0.95))] p-6">
+                  <div className="rounded-[18px] border border-[var(--line)] bg-[linear-gradient(135deg,rgba(255,255,255,0.94),rgba(231,240,252,0.96))] p-6">
                     <p className="text-xs uppercase tracking-[0.2em] text-[var(--muted)]">Headline takeaway</p>
                     <p className="mt-3 text-lg leading-8 text-[var(--ink)]">
                       The strongest current explanation is that <strong>{topCandidate.file_path}</strong>{" "}

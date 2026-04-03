@@ -74,11 +74,11 @@ export default async function SchemaEvolutionPage() {
         </SurfaceCard>
       </div>
 
-      <div className="grid gap-6 xl:grid-cols-[1.05fr_0.95fr]">
+      <div className="grid items-start gap-6 xl:grid-cols-[1.05fr_0.95fr]">
         <SurfaceCard>
           <SectionLabel title="Before vs after" subtitle="The analyzer compares snapshots, not live ingestion rows." />
           <div className="mt-5 grid gap-4 md:grid-cols-2">
-            <div className="rounded-3xl border border-[var(--line)] bg-white/75 p-5">
+            <div className="rounded-2xl border border-[var(--line)] bg-white/75 p-5">
               <p className="text-xs uppercase tracking-[0.2em] text-[var(--muted)]">Previous snapshot</p>
               <div className="mt-3">
                 <InlinePath>{schemaEvolution.previousSnapshotPath ?? "Unavailable"}</InlinePath>
@@ -87,7 +87,7 @@ export default async function SchemaEvolutionPage() {
                 Fields captured: <span className="font-semibold text-[var(--ink)]">{formatNumber(previousFields.length)}</span>
               </p>
             </div>
-            <div className="rounded-3xl border border-[var(--line)] bg-white/75 p-5">
+            <div className="rounded-2xl border border-[var(--line)] bg-white/75 p-5">
               <p className="text-xs uppercase tracking-[0.2em] text-[var(--muted)]">Current snapshot</p>
               <div className="mt-3">
                 <InlinePath>{schemaEvolution.currentSnapshotPath ?? "Unavailable"}</InlinePath>
@@ -118,7 +118,7 @@ export default async function SchemaEvolutionPage() {
         <SectionLabel title="Detected changes" subtitle="Each change is already classified as backward-compatible or breaking." />
         <div className="mt-5 space-y-4">
           {changes.map((change) => (
-            <div className="rounded-3xl border border-[var(--line)] bg-white/75 p-5" key={String(change.field)}>
+            <div className="rounded-2xl border border-[var(--line)] bg-white/75 p-5" key={String(change.field)}>
               <div className="flex flex-wrap items-center gap-2">
                 <Badge tone={severityTone(String(change.classification ?? ""))}>
                   {String(change.classification ?? "Unknown")}
@@ -148,7 +148,7 @@ export default async function SchemaEvolutionPage() {
         <SectionLabel title="Available snapshot history" subtitle="Snapshot inventory from schema_snapshots/contracts." />
         <div className="mt-5 grid gap-4 md:grid-cols-2">
           {schemaEvolution.snapshotInventory.map((inventory) => (
-            <div className="rounded-3xl border border-[var(--line)] bg-white/75 p-5" key={inventory.contractId}>
+            <div className="rounded-2xl border border-[var(--line)] bg-white/75 p-5" key={inventory.contractId}>
               <p className="font-semibold text-[var(--ink)]">{inventory.contractId}</p>
               <p className="mt-2 text-sm text-[var(--muted)]">
                 Versions: {formatNumber(inventory.versionCount)}

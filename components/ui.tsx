@@ -46,7 +46,7 @@ export function SurfaceCard({
   return (
     <section
       className={cn(
-        "relative overflow-hidden rounded-[30px] border border-[var(--line)] bg-[var(--card)] p-6 shadow-[0_24px_70px_var(--shadow)] backdrop-blur-xl",
+        "relative overflow-hidden rounded-[20px] border border-[var(--line)] bg-[var(--card)] p-6 shadow-[0_16px_40px_var(--shadow)] backdrop-blur-xl",
         className,
       )}
     >
@@ -70,7 +70,7 @@ export function MetricCard({
   href?: string;
 }) {
   const body = (
-    <SurfaceCard className="h-full p-5 transition-transform duration-200 hover:-translate-y-1 hover:shadow-[0_28px_80px_var(--shadow)]">
+    <SurfaceCard className="h-full p-5 transition-transform duration-200 hover:-translate-y-0.5 hover:shadow-[0_20px_46px_var(--shadow)]">
       <div className="mb-4 flex items-center justify-between gap-3">
         <p className="text-xs font-semibold uppercase tracking-[0.24em] text-[var(--muted)]">
           {label}
@@ -107,7 +107,7 @@ export function PageHeader({
   aside?: ReactNode;
 }) {
   return (
-    <div className="flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
+    <div className="flex flex-col gap-6 lg:flex-row lg:items-start lg:justify-between">
       <div className="max-w-3xl space-y-3">
         <p className="text-xs font-semibold uppercase tracking-[0.28em] text-[var(--accent)]">
           {eyebrow}

@@ -98,9 +98,9 @@ export default async function AiPage() {
         </SurfaceCard>
       </div>
 
-      <div className="grid gap-6 xl:grid-cols-2">
+      <div className="columns-1 gap-6 xl:columns-2 [column-gap:1.5rem]">
         {checks.map(([key, check]) => (
-          <SurfaceCard key={key}>
+          <SurfaceCard className="mb-6 break-inside-avoid" key={key}>
             <div className="flex flex-wrap items-center gap-2">
               <Badge tone={severityTone(String(check.status ?? ""))}>
                 {String(check.status ?? "Unknown")}
@@ -113,34 +113,59 @@ export default async function AiPage() {
             <p className="mt-3 text-sm leading-7 text-[var(--muted)]">
               {String(check.summary ?? "No summary recorded for this metric.")}
             </p>
-            <div className="mt-5 space-y-3 text-sm leading-7 text-[var(--muted)]">
-              {"metric_source" in check ? (
-                <p>
-                  Metric source:{" "}
-                  <span className="font-semibold text-[var(--ink)]">
-                    {String(check.metric_source ?? "Unknown")}
-                  </span>
-                </p>
-              ) : null}
-              {"provider" in check && check.provider ? (
-                <p>
-                  Provider: <InlinePath>{String(check.provider)}</InlinePath>
-                </p>
-              ) : null}
-              {"model" in check && check.model ? (
-                <p>
-                  Model: <span className="font-semibold text-[var(--ink)]">{String(check.model)}</span>
-                </p>
-              ) : null}
-              {"thresholds" in check ? <p>Thresholds: {JSON.stringify(check.thresholds)}</p> : null}
-              {"notes" in check && Array.isArray(check.notes) ? (
-                <ul className="space-y-2">
+
+            {"metric_source" in check ||
+            ("provider" in check && check.provider) ||
+            ("model" in check && check.model) ||
+            "thresholds" in check ? (
+              <div className="mt-5 grid gap-3 sm:grid-cols-2">
+                {"metric_source" in check ? (
+                  <div className="rounded-xl border border-[var(--line)] bg-white/72 px-4 py-3">
+                    <p className="text-[11px] uppercase tracking-[0.18em] text-[var(--muted)]">
+                      Metric source
+                    </p>
+                    <p className="mt-2 text-sm font-semibold text-[var(--ink)]">
+                      {String(check.metric_source ?? "Unknown")}
+                    </p>
+                  </div>
+                ) : null}
+                {"provider" in check && check.provider ? (
+                  <div className="rounded-xl border border-[var(--line)] bg-white/72 px-4 py-3">
+                    <p className="text-[11px] uppercase tracking-[0.18em] text-[var(--muted)]">Provider</p>
+                    <div className="mt-2">
+                      <InlinePath>{String(check.provider)}</InlinePath>
+                    </div>
+                  </div>
+                ) : null}
+                {"model" in check && check.model ? (
+                  <div className="rounded-xl border border-[var(--line)] bg-white/72 px-4 py-3">
+                    <p className="text-[11px] uppercase tracking-[0.18em] text-[var(--muted)]">Model</p>
+                    <p className="mt-2 text-sm font-semibold text-[var(--ink)]">{String(check.model)}</p>
+                  </div>
+                ) : null}
+                {"thresholds" in check ? (
+                  <div className="rounded-xl border border-[var(--line)] bg-white/72 px-4 py-3">
+                    <p className="text-[11px] uppercase tracking-[0.18em] text-[var(--muted)]">
+                      Thresholds
+                    </p>
+                    <p className="mt-2 text-sm leading-6 text-[var(--muted)]">
+                      {JSON.stringify(check.thresholds)}
+                    </p>
+                  </div>
+                ) : null}
+              </div>
+            ) : null}
+
+            {"notes" in check && Array.isArray(check.notes) && check.notes.length ? (
+              <div className="mt-5 rounded-xl border border-[var(--line)] bg-[var(--paper)]/82 px-4 py-4">
+                <p className="text-[11px] uppercase tracking-[0.18em] text-[var(--muted)]">Interpretation</p>
+                <ul className="mt-3 space-y-2 text-sm leading-7 text-[var(--muted)]">
                   {(check.notes as string[]).map((note) => (
                     <li key={note}>- {note}</li>
                   ))}
                 </ul>
-              ) : null}
-            </div>
+              </div>
+            ) : null}
           </SurfaceCard>
         ))}
       </div>

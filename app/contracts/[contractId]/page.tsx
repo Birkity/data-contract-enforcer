@@ -36,10 +36,13 @@ export default async function ContractDetailPage({
         }
       />
 
-      <div className="grid gap-6 xl:grid-cols-[1.15fr_0.85fr]">
+      <div className="grid items-start gap-6 xl:grid-cols-[1.15fr_0.85fr]">
         <SurfaceCard className="overflow-hidden p-0">
           <div className="border-b border-[var(--line)] px-6 py-5">
-            <SectionLabel title="Field clauses" subtitle="Required, type, format, range, enum, and sample evidence from the real generated contract." />
+            <SectionLabel
+              title="Field clauses"
+              subtitle="Required, type, format, range, enum, and sample evidence from the real generated contract."
+            />
           </div>
           <div className="overflow-x-auto">
             <table className="min-w-full divide-y divide-[var(--line)]">
@@ -67,14 +70,18 @@ export default async function ContractDetailPage({
                       <div className="space-y-2 text-sm text-[var(--ink)]">
                         <p>{field.type}</p>
                         {field.format ? <Badge tone="neutral">{field.format}</Badge> : null}
-                        {field.required ? <Badge tone="success">Required</Badge> : <Badge tone="neutral">Optional</Badge>}
+                        {field.required ? (
+                          <Badge tone="success">Required</Badge>
+                        ) : (
+                          <Badge tone="neutral">Optional</Badge>
+                        )}
                       </div>
                     </td>
                     <td className="px-6 py-5">
                       <div className="space-y-2 text-sm text-[var(--muted)]">
                         {field.minimum !== null || field.maximum !== null ? (
                           <p>
-                            Range: {field.minimum ?? "—"} to {field.maximum ?? "—"}
+                            Range: {field.minimum ?? "--"} to {field.maximum ?? "--"}
                           </p>
                         ) : null}
                         {field.enumValues.length ? (
@@ -88,10 +95,14 @@ export default async function ContractDetailPage({
                       <div className="space-y-2 text-sm text-[var(--muted)]">
                         {field.observedMin !== null || field.observedMax !== null ? (
                           <p>
-                            Observed: {field.observedMin ?? "—"} to {field.observedMax ?? "—"}
+                            Observed: {field.observedMin ?? "--"} to {field.observedMax ?? "--"}
                           </p>
                         ) : null}
-                        {field.sampleValues.length ? <p>Samples: {field.sampleValues.slice(0, 3).join(" • ")}</p> : <p>No sample values captured.</p>}
+                        {field.sampleValues.length ? (
+                          <p>Samples: {field.sampleValues.slice(0, 3).join(" | ")}</p>
+                        ) : (
+                          <p>No sample values captured.</p>
+                        )}
                       </div>
                     </td>
                   </tr>
@@ -103,16 +114,23 @@ export default async function ContractDetailPage({
 
         <div className="space-y-6">
           <SurfaceCard>
-            <SectionLabel title="Registry subscribers" subtitle="Primary blast-radius audience for this contract." />
+            <SectionLabel
+              title="Registry subscribers"
+              subtitle="Primary blast-radius audience for this contract."
+            />
             <div className="mt-5 space-y-4">
               {contract.registrySubscribers.map((subscriber) => (
-                <div className="rounded-2xl border border-[var(--line)] bg-white/75 p-4" key={subscriber.subscriber_id}>
+                <div
+                  className="rounded-2xl border border-[var(--line)] bg-white/75 p-4"
+                  key={subscriber.subscriber_id}
+                >
                   <div className="flex flex-wrap items-center gap-2">
                     <p className="font-semibold text-[var(--ink)]">{subscriber.subscriber_id}</p>
                     <Badge tone="info">{subscriber.validation_mode ?? "mode unavailable"}</Badge>
                   </div>
                   <p className="mt-2 text-sm leading-6 text-[var(--muted)]">
-                    {(subscriber.contact?.owner ?? "Unknown owner")} • {(subscriber.contact?.role ?? "Unknown role")}
+                    {(subscriber.contact?.owner ?? "Unknown owner")} |{" "}
+                    {(subscriber.contact?.role ?? "Unknown role")}
                   </p>
                   <p className="mt-3 text-sm text-[var(--muted)]">
                     Fields consumed: {(subscriber.fields_consumed ?? []).join(", ") || "Not documented"}
@@ -123,11 +141,15 @@ export default async function ContractDetailPage({
           </SurfaceCard>
 
           <SurfaceCard>
-            <SectionLabel title="Implementation notes" subtitle="What the generated contract says about enforcement and enrichment." />
+            <SectionLabel
+              title="Implementation notes"
+              subtitle="What the generated contract says about enforcement and enrichment."
+            />
             <div className="mt-5 space-y-3 text-sm leading-7 text-[var(--muted)]">
               {Object.entries(contract.implementationModel ?? {}).map(([key, value]) => (
                 <p key={key}>
-                  <span className="font-semibold text-[var(--ink)]">{humanizeSlug(key)}:</span> {humanizeSlug(String(value))}
+                  <span className="font-semibold text-[var(--ink)]">{humanizeSlug(key)}:</span>{" "}
+                  {humanizeSlug(String(value))}
                 </p>
               ))}
               {contract.lineageNotes.map((note) => (

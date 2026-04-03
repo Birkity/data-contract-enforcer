@@ -68,7 +68,7 @@ export function AppShell({
           <div className="mx-auto max-w-7xl px-6 py-5">
             <div className="flex flex-col gap-5">
               <div className="grid gap-5 xl:grid-cols-[1.5fr_1fr]">
-                <div className="rounded-[28px] border border-[var(--line)] bg-[rgba(255,255,255,0.8)] px-6 py-5 shadow-[0_18px_50px_var(--shadow)]">
+                <div className="rounded-[20px] border border-[var(--line)] bg-[rgba(255,255,255,0.8)] px-6 py-5 shadow-[0_14px_36px_var(--shadow)]">
                   <p className="text-xs font-semibold uppercase tracking-[0.32em] text-[var(--accent)]">
                     Operational review console
                   </p>
@@ -85,20 +85,20 @@ export function AppShell({
                   </p>
                   <div className="mt-4 flex flex-wrap gap-2">
                     <Link
-                      className="rounded-full bg-[var(--ink)] px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-[var(--accent-strong)]"
+                      className="rounded-xl bg-[var(--accent)] px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-[var(--accent-strong)]"
                       href="/report"
                     >
                       Open system report
                     </Link>
                     <Link
-                      className="rounded-full border border-[var(--line-strong)] bg-white/85 px-4 py-2 text-sm font-semibold text-[var(--ink)] transition-colors hover:border-[var(--accent)] hover:text-[var(--accent)]"
+                      className="rounded-xl border border-[var(--line-strong)] bg-white/85 px-4 py-2 text-sm font-semibold text-[var(--ink)] transition-colors hover:border-[var(--accent)] hover:text-[var(--accent)]"
                       href="/attribution"
                     >
                       Inspect blast radius
                     </Link>
                   </div>
                 </div>
-                <div className="rounded-[28px] border border-[var(--line)] bg-[rgba(255,255,255,0.76)] px-6 py-5 shadow-[0_18px_50px_var(--shadow)]">
+                <div className="rounded-[20px] border border-[var(--line)] bg-[rgba(255,255,255,0.76)] px-6 py-5 shadow-[0_14px_36px_var(--shadow)]">
                   <div className="flex items-start justify-between gap-4">
                     <div>
                       <p className="text-xs font-semibold uppercase tracking-[0.28em] text-[var(--muted)]">
@@ -123,10 +123,10 @@ export function AppShell({
                   </div>
                 </div>
               </div>
-              <nav className="flex flex-wrap gap-2 rounded-full border border-[var(--line)] bg-[rgba(255,255,255,0.68)] p-2 shadow-[0_10px_30px_var(--shadow)]">
+              <nav className="flex flex-wrap gap-2 rounded-[18px] border border-[var(--line)] bg-[rgba(255,255,255,0.68)] p-2 shadow-[0_10px_24px_var(--shadow)]">
                 {navItems.map((item) => (
                   <Link
-                    className="rounded-full border border-transparent bg-white/76 px-4 py-2 text-sm font-medium text-[var(--ink)] transition-colors hover:border-[var(--accent-soft)] hover:bg-white hover:text-[var(--accent)]"
+                    className="rounded-xl border border-transparent bg-white/76 px-4 py-2 text-sm font-medium text-[var(--ink)] transition-colors hover:border-[var(--accent-soft)] hover:bg-white hover:text-[var(--accent)]"
                     href={item.href}
                     key={item.href}
                   >

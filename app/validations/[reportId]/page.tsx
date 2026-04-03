@@ -33,7 +33,7 @@ export default async function ValidationDetailPage({
             <div className="space-y-3">
               <Badge tone={decisionTone(report.decision)}>{report.decision ?? "Unknown decision"}</Badge>
               <p className="text-sm leading-7 text-[var(--muted)]">
-                Mode {report.validation_mode ?? "unknown"} • {formatDate(report.run_timestamp)}
+                Mode {report.validation_mode ?? "unknown"} | {formatDate(report.run_timestamp)}
               </p>
               <p className="text-sm leading-7 text-[var(--muted)]">
                 {report.passed}/{report.total_checks} checks passed with {report.failed} failures.
@@ -58,7 +58,9 @@ export default async function ValidationDetailPage({
         </SurfaceCard>
         <SurfaceCard>
           <p className="text-xs uppercase tracking-[0.2em] text-[var(--muted)]">Profiled rows</p>
-          <p className="mt-3 font-display text-2xl text-[var(--ink)]">{formatNumber(report.profiled_row_count ?? null)}</p>
+          <p className="mt-3 font-display text-2xl text-[var(--ink)]">
+            {formatNumber(report.profiled_row_count ?? null)}
+          </p>
         </SurfaceCard>
       </div>
 
@@ -94,15 +96,22 @@ export default async function ValidationDetailPage({
                       <Badge tone={severityTone(result.severity)}>{result.severity ?? "Unknown"}</Badge>
                     </td>
                     <td className="px-6 py-5 text-sm leading-6 text-[var(--muted)]">
-                      <p>Actual: {result.actual_value ?? "—"}</p>
-                      <p>Expected: {result.expected ?? "—"}</p>
+                      <p>Actual: {result.actual_value ?? "--"}</p>
+                      <p>Expected: {result.expected ?? "--"}</p>
                     </td>
                     <td className="px-6 py-5 text-sm leading-6 text-[var(--ink)]">
-                      <p>{formatNumber(result.records_failing ?? null)} of {formatNumber(result.records_total ?? null)}</p>
-                      <p className="text-[var(--muted)]">{formatPercent(result.failing_percent ?? null, 2)}</p>
+                      <p>
+                        {formatNumber(result.records_failing ?? null)} of{" "}
+                        {formatNumber(result.records_total ?? null)}
+                      </p>
+                      <p className="text-[var(--muted)]">
+                        {formatPercent(result.failing_percent ?? null, 2)}
+                      </p>
                     </td>
                     <td className="px-6 py-5 text-sm leading-6 text-[var(--muted)]">
-                      {result.sample_failing?.length ? result.sample_failing.join(" • ") : "No sample values recorded"}
+                      {result.sample_failing?.length
+                        ? result.sample_failing.join(" | ")
+                        : "No sample values recorded"}
                     </td>
                   </tr>
                 ))}
