@@ -3,6 +3,9 @@ TRP1 Challenge Week 7_ Data Contract Enforcer.md
 .env
 .venv
 .tmp/
+.tmp_test_runs/
 node_modules/
 .next/
 reports/
+
+tests
