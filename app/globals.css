@@ -1,26 +1,32 @@
 @import "tailwindcss";
 
 :root {
-  --background: #f6efe5;
-  --paper: #fff8ef;
-  --card: rgba(255, 253, 248, 0.9);
-  --ink: #13253a;
-  --muted: #645f59;
-  --accent: #b85c2d;
-  --accent-soft: #f3d5c5;
-  --line: #e6d9ca;
-  --success: #1f6c57;
-  --success-bg: rgba(31, 108, 87, 0.1);
-  --success-soft: rgba(31, 108, 87, 0.25);
-  --warning: #996022;
-  --warning-bg: rgba(153, 96, 34, 0.12);
-  --warning-soft: rgba(153, 96, 34, 0.28);
-  --danger: #a7372e;
-  --danger-bg: rgba(167, 55, 46, 0.12);
-  --danger-soft: rgba(167, 55, 46, 0.26);
-  --info: #1e616d;
-  --info-bg: rgba(30, 97, 109, 0.12);
-  --info-soft: rgba(30, 97, 109, 0.26);
+  --background: #f4efe7;
+  --paper: #fffaf4;
+  --paper-strong: #fffdf9;
+  --card: rgba(255, 252, 246, 0.82);
+  --card-strong: rgba(255, 255, 255, 0.92);
+  --ink: #112235;
+  --muted: #5d635f;
+  --accent: #b45d34;
+  --accent-strong: #8a3f1d;
+  --accent-soft: #efd7c7;
+  --accent-wash: rgba(180, 93, 52, 0.1);
+  --line: #dfd5c8;
+  --line-strong: #cfc1af;
+  --shadow: rgba(20, 32, 47, 0.1);
+  --success: #156754;
+  --success-bg: rgba(21, 103, 84, 0.1);
+  --success-soft: rgba(21, 103, 84, 0.24);
+  --warning: #97601f;
+  --warning-bg: rgba(151, 96, 31, 0.12);
+  --warning-soft: rgba(151, 96, 31, 0.26);
+  --danger: #aa3a31;
+  --danger-bg: rgba(170, 58, 49, 0.12);
+  --danger-soft: rgba(170, 58, 49, 0.26);
+  --info: #1d6774;
+  --info-bg: rgba(29, 103, 116, 0.12);
+  --info-soft: rgba(29, 103, 116, 0.26);
 }
 
 * {
@@ -34,13 +40,41 @@ html {
 body {
   margin: 0;
   min-height: 100vh;
-  background: var(--background);
+  background:
+    radial-gradient(circle at top left, rgba(180, 93, 52, 0.12), transparent 24%),
+    radial-gradient(circle at top right, rgba(29, 103, 116, 0.11), transparent 28%),
+    linear-gradient(180deg, #fcf8f1 0%, var(--background) 38%, #f1ebe1 100%);
   color: var(--ink);
-  font-family: "Trebuchet MS", "Gill Sans", "Segoe UI", sans-serif;
+  font-family: "Aptos", "Segoe UI", "Trebuchet MS", "Gill Sans", sans-serif;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+body::before {
+  content: "";
+  pointer-events: none;
+  position: fixed;
+  inset: 0;
+  background-image:
+    linear-gradient(rgba(17, 34, 53, 0.024) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(17, 34, 53, 0.024) 1px, transparent 1px);
+  background-size: 28px 28px;
+  mask-image: linear-gradient(180deg, rgba(0, 0, 0, 0.35), transparent 78%);
+  z-index: -2;
+}
+
+body::after {
+  content: "";
+  pointer-events: none;
+  position: fixed;
+  inset: auto 0 0 0;
+  height: 36vh;
+  background: linear-gradient(180deg, transparent, rgba(255, 255, 255, 0.48));
+  z-index: -1;
 }
 
 .font-display {
-  font-family: Georgia, "Palatino Linotype", "Book Antiqua", serif;
+  font-family: "Iowan Old Style", "Palatino Linotype", "Book Antiqua", Georgia, serif;
 }
 
 a {

@@ -240,6 +240,30 @@ Current AI findings:
 
 - Week 4 lineage is now canonical and useful, but it still does not expose a clean explicit Week 3 consumer path, so lineage specificity is weaker than registry-based impact analysis.
 
+## Optional frontend
+
+The repository also includes an optional read-only Next.js frontend for demos and reviewer walkthroughs. It reads the generated artifact files locally and does not replace the CLI pipeline.
+
+Run it with:
+
+```powershell
+npm install
+npm run dev
+```
+
+Then open:
+
+- `http://localhost:3000/`
+- `http://localhost:3000/attribution`
+- `http://localhost:3000/report`
+
+If you want a production-style run instead:
+
+```powershell
+npm run build
+npm run start
+```
+
 ## Best current truth sources
 
 If you want the current repo-wide truth rather than historical phase snapshots, start with:

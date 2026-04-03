@@ -25,11 +25,12 @@ export function Badge({
   return (
     <span
       className={cn(
-        "inline-flex items-center rounded-full border px-2.5 py-1 text-[11px] font-semibold uppercase tracking-[0.18em]",
+        "inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-[11px] font-semibold uppercase tracking-[0.18em]",
         toneClasses[tone],
         className,
       )}
     >
+      <span className="h-1.5 w-1.5 rounded-full bg-current opacity-70" />
       {children}
     </span>
   );
@@ -45,10 +46,11 @@ export function SurfaceCard({
   return (
     <section
       className={cn(
-        "rounded-[28px] border border-[var(--line)] bg-[var(--card)]/92 p-6 shadow-[0_24px_60px_rgba(14,27,42,0.08)] backdrop-blur-sm",
+        "relative overflow-hidden rounded-[30px] border border-[var(--line)] bg-[var(--card)] p-6 shadow-[0_24px_70px_var(--shadow)] backdrop-blur-xl",
         className,
       )}
     >
+      <div className="pointer-events-none absolute inset-x-0 top-0 h-px bg-[linear-gradient(90deg,transparent,rgba(180,93,52,0.55),transparent)]" />
       {children}
     </section>
   );
@@ -68,7 +70,7 @@ export function MetricCard({
   href?: string;
 }) {
   const body = (
-    <SurfaceCard className="h-full p-5">
+    <SurfaceCard className="h-full p-5 transition-transform duration-200 hover:-translate-y-1 hover:shadow-[0_28px_80px_var(--shadow)]">
       <div className="mb-4 flex items-center justify-between gap-3">
         <p className="text-xs font-semibold uppercase tracking-[0.24em] text-[var(--muted)]">
           {label}
@@ -113,7 +115,7 @@ export function PageHeader({
         <h1 className="font-display text-4xl leading-tight text-[var(--ink)] sm:text-5xl">
           {title}
         </h1>
-        <div className="text-base leading-7 text-[var(--muted)]">{description}</div>
+        <div className="max-w-3xl text-base leading-7 text-[var(--muted)]">{description}</div>
       </div>
       {aside ? <div className="w-full max-w-md">{aside}</div> : null}
     </div>

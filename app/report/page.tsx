@@ -20,17 +20,20 @@ export default async function ReportPage() {
   const schemaSummary = (reportData.schema_evolution_summary as Record<string, unknown> | undefined) ?? {};
   const aiSummary = (reportData.ai_risk_summary as Record<string, unknown> | undefined) ?? {};
   const recommendedActions = (reportData.recommended_actions as string[] | undefined) ?? [];
-  const knownLimitations = (((reportData.artifact_state as Record<string, unknown> | undefined)?.known_limitations as string[] | undefined) ?? []);
+  const knownLimitations =
+    (((reportData.artifact_state as Record<string, unknown> | undefined)?.known_limitations as
+      | string[]
+      | undefined) ?? []);
 
   return (
     <div className="space-y-8">
       <PageHeader
         eyebrow="Client walkthrough report"
-        title="Explain the system without opening the CLI"
+        title="Explain the system in plain English"
         description={
           <p>
             This page renders the generated enforcer report in business language. It is still grounded in the
-            actual machine-readable artifact, but it prioritizes stakeholder clarity over raw file structure.
+            machine-readable artifact, but it prioritizes stakeholder clarity over raw file structure.
           </p>
         }
         aside={
@@ -40,7 +43,11 @@ export default async function ReportPage() {
               {formatNumber((reportData.data_health_score as number | undefined) ?? null)}
             </p>
             <p className="mt-3 text-sm leading-7 text-[var(--muted)]">
-              Submission ready: {String(((reportData.artifact_state as Record<string, unknown> | undefined)?.submission_ready as boolean | undefined) ?? false)}
+              Submission ready:{" "}
+              {String(
+                ((reportData.artifact_state as Record<string, unknown> | undefined)
+                  ?.submission_ready as boolean | undefined) ?? false,
+              )}
             </p>
           </SurfaceCard>
         }
@@ -50,13 +57,22 @@ export default async function ReportPage() {
         <SurfaceCard>
           <p className="text-xs uppercase tracking-[0.2em] text-[var(--muted)]">Baseline status</p>
           <p className="mt-3 font-display text-2xl text-[var(--ink)]">
-            {String(((validationSummary.baseline as Record<string, unknown> | undefined)?.decision as string | undefined) ?? "Unknown")}
+            {String(
+              ((validationSummary.baseline as Record<string, unknown> | undefined)?.decision as
+                | string
+                | undefined) ?? "Unknown",
+            )}
           </p>
         </SurfaceCard>
         <SurfaceCard>
           <p className="text-xs uppercase tracking-[0.2em] text-[var(--muted)]">Injected failures</p>
           <p className="mt-3 font-display text-2xl text-[var(--ink)]">
-            {formatNumber(Number(((reportData.violations_summary as Record<string, unknown> | undefined)?.injected_validation_failures ?? 0)))}
+            {formatNumber(
+              Number(
+                ((reportData.violations_summary as Record<string, unknown> | undefined)
+                  ?.injected_validation_failures ?? 0),
+              ),
+            )}
           </p>
         </SurfaceCard>
         <SurfaceCard>
@@ -75,18 +91,106 @@ export default async function ReportPage() {
 
       <div className="grid gap-6 xl:grid-cols-[1.15fr_0.85fr]">
         <SurfaceCard>
-          <SectionLabel title="What broke?" subtitle="The top validation failures surfaced in the final report artifact." />
+          <SectionLabel
+            title="What broke?"
+            subtitle="The most important failed checks surfaced by the final report artifact."
+          />
           <div className="mt-5 space-y-4">
-            {((((validationSummary.injected_violation as Record<string, unknown> | undefined)?.key_failures as Array<Record<string, unknown>> | undefined) ?? [])).map(
-              (failure) => (
-                <div className="rounded-3xl border border-[var(--line)] bg-white/75 p-5" key={String(failure.check_id)}>
+            {(
+              (((validationSummary.injected_violation as Record<string, unknown> | undefined)?.key_failures as
+                | Array<Record<string, unknown>>
+                | undefined) ?? [])
+            ).map((failure) => (
+              <div
+                className="rounded-3xl border border-[var(--line)] bg-white/75 p-5"
+                key={String(failure.check_id)}
+              >
+                <div className="flex flex-wrap items-center gap-2">
+                  <Badge tone={severityTone(String(failure.severity ?? ""))}>
+                    {String(failure.severity ?? "Unknown")}
+                  </Badge>
+                  <Badge tone="neutral">{String(failure.check_id ?? "Unknown check")}</Badge>
+                </div>
+                <p className="mt-4 text-sm leading-7 text-[var(--muted)]">
+                  {String(failure.message ?? "No message recorded.")}
+                </p>
+                <p className="mt-3 text-sm font-semibold text-[var(--ink)]">
+                  Failing rows: {formatPercent(Number(failure.failing_percent ?? 0), 2)}
+                </p>
+              </div>
+            ))}
+          </div>
+        </SurfaceCard>
+
+        <SurfaceCard>
+          <SectionLabel
+            title="Why it matters"
+            subtitle="Business-level risk framing pulled from the generated report."
+          />
+          <div className="mt-5 space-y-4 text-sm leading-7 text-[var(--muted)]">
+            <p>
+              Blast radius primary source:{" "}
+              <span className="font-semibold text-[var(--ink)]">
+                {String(
+                  ((reportData.architecture as Record<string, unknown> | undefined)
+                    ?.blast_radius_primary_source ?? "Unknown"),
+                )}
+              </span>
+            </p>
+            <p>
+              Lineage role:{" "}
+              <span className="font-semibold text-[var(--ink)]">
+                {String(
+                  ((reportData.architecture as Record<string, unknown> | undefined)?.lineage_role ??
+                    "Unknown"),
+                )}
+              </span>
+            </p>
+            <p>
+              AI risk summary:{" "}
+              <span className="font-semibold text-[var(--ink)]">
+                {String(aiSummary.overall_status ?? "Unknown")}
+              </span>
+            </p>
+            <p>
+              Top candidate file:{" "}
+              <span className="font-semibold text-[var(--ink)]">
+                {String(blastRadius.top_candidate_file ?? "Unknown")}
+              </span>
+            </p>
+            <p>
+              Schema recommendation:{" "}
+              <span className="font-semibold text-[var(--ink)]">
+                {String(schemaSummary.recommendation ?? "No recommendation recorded.")}
+              </span>
+            </p>
+          </div>
+        </SurfaceCard>
+      </div>
+
+      <div className="grid gap-6 xl:grid-cols-[0.95fr_1.05fr]">
+        <SurfaceCard>
+          <SectionLabel
+            title="Who is affected?"
+            subtitle="Direct audience from the contract registry, which is the primary blast-radius source."
+          />
+          <div className="mt-5 space-y-4">
+            {(((blastRadius.affected_subscribers as Array<Record<string, unknown>> | undefined) ?? [])).map(
+              (subscriber) => (
+                <div
+                  className="rounded-3xl border border-[var(--line)] bg-white/75 p-5"
+                  key={String(subscriber.subscriber_id)}
+                >
                   <div className="flex flex-wrap items-center gap-2">
-                    <Badge tone={severityTone(String(failure.severity ?? ""))}>{String(failure.severity ?? "Unknown")}</Badge>
-                    <Badge tone="neutral">{String(failure.check_id ?? "Unknown check")}</Badge>
+                    <p className="font-semibold text-[var(--ink)]">{String(subscriber.subscriber_id)}</p>
+                    <Badge tone="info">{String(subscriber.validation_mode ?? "mode unavailable")}</Badge>
                   </div>
-                  <p className="mt-4 text-sm leading-7 text-[var(--muted)]">{String(failure.message ?? "No message recorded.")}</p>
-                  <p className="mt-3 text-sm font-semibold text-[var(--ink)]">
-                    Failing rows: {formatPercent(Number(failure.failing_percent ?? 0), 2)}
+                  <p className="mt-2 text-sm leading-6 text-[var(--muted)]">
+                    {String((subscriber.contact as Record<string, unknown> | undefined)?.owner ?? "Unknown owner")}
+                  </p>
+                  <p className="mt-3 text-sm leading-6 text-[var(--muted)]">
+                    Fields consumed:{" "}
+                    {((subscriber.fields_consumed as string[] | undefined) ?? []).join(", ") || "Not documented"}
                   </p>
                 </div>
               ),
@@ -95,50 +199,10 @@ export default async function ReportPage() {
         </SurfaceCard>
 
         <SurfaceCard>
-          <SectionLabel title="How bad is it?" subtitle="Business-level risk summary pulled from the generated report." />
-          <div className="mt-5 space-y-4 text-sm leading-7 text-[var(--muted)]">
-            <p>
-              Blast radius primary source: <span className="font-semibold text-[var(--ink)]">{String(((reportData.architecture as Record<string, unknown> | undefined)?.blast_radius_primary_source ?? "Unknown"))}</span>
-            </p>
-            <p>
-              Lineage role: <span className="font-semibold text-[var(--ink)]">{String(((reportData.architecture as Record<string, unknown> | undefined)?.lineage_role ?? "Unknown"))}</span>
-            </p>
-            <p>
-              AI risk summary: <span className="font-semibold text-[var(--ink)]">{String(aiSummary.overall_status ?? "Unknown")}</span>
-            </p>
-            <p>
-              Top candidate file: <span className="font-semibold text-[var(--ink)]">{String(blastRadius.top_candidate_file ?? "Unknown")}</span>
-            </p>
-            <p>
-              Schema recommendation: <span className="font-semibold text-[var(--ink)]">{String(schemaSummary.recommendation ?? "No recommendation recorded.")}</span>
-            </p>
-          </div>
-        </SurfaceCard>
-      </div>
-
-      <div className="grid gap-6 xl:grid-cols-[0.95fr_1.05fr]">
-        <SurfaceCard>
-          <SectionLabel title="Who is affected?" subtitle="Primary audience from the contract registry." />
-          <div className="mt-5 space-y-4">
-            {(((blastRadius.affected_subscribers as Array<Record<string, unknown>> | undefined) ?? [])).map((subscriber) => (
-              <div className="rounded-3xl border border-[var(--line)] bg-white/75 p-5" key={String(subscriber.subscriber_id)}>
-                <div className="flex flex-wrap items-center gap-2">
-                  <p className="font-semibold text-[var(--ink)]">{String(subscriber.subscriber_id)}</p>
-                  <Badge tone="info">{String(subscriber.validation_mode ?? "mode unavailable")}</Badge>
-                </div>
-                <p className="mt-2 text-sm leading-6 text-[var(--muted)]">
-                  {String((subscriber.contact as Record<string, unknown> | undefined)?.owner ?? "Unknown owner")}
-                </p>
-                <p className="mt-3 text-sm leading-6 text-[var(--muted)]">
-                  Fields consumed: {((subscriber.fields_consumed as string[] | undefined) ?? []).join(", ") || "Not documented"}
-                </p>
-              </div>
-            ))}
-          </div>
-        </SurfaceCard>
-
-        <SurfaceCard>
-          <SectionLabel title="What should we do?" subtitle="Recommended actions surfaced by the generated report." />
+          <SectionLabel
+            title="What should we do next?"
+            subtitle="Recommended actions surfaced by the generated report."
+          />
           <ol className="mt-5 space-y-3">
             {recommendedActions.map((action, index) => (
               <li className="flex gap-3" key={action}>
@@ -153,7 +217,10 @@ export default async function ReportPage() {
       </div>
 
       <SurfaceCard>
-        <SectionLabel title="Real artifact anchors" subtitle="Useful file paths for a reviewer or client walkthrough." />
+        <SectionLabel
+          title="Real artifact anchors"
+          subtitle="Useful file paths to show during a reviewer or client walkthrough."
+        />
         <div className="mt-5 grid gap-3 md:grid-cols-2">
           {[
             "generated_contracts/week3_extractions.yaml",
@@ -179,6 +246,52 @@ export default async function ReportPage() {
           </div>
         ) : null}
       </SurfaceCard>
+
+      <div className="grid gap-6 xl:grid-cols-[1fr_1fr]">
+        <SurfaceCard>
+          <SectionLabel
+            title="Plain-English summary"
+            subtitle="A short narrative you can use live without reading raw JSON."
+          />
+          <div className="mt-5 space-y-4 text-sm leading-7 text-[var(--muted)]">
+            <p>
+              The system is healthy overall, but it is designed to catch high-impact contract breaks before
+              they quietly spread into downstream consumers.
+            </p>
+            <p>
+              In the main test case, a confidence field stayed numeric but changed meaning. The validator
+              caught that, the registry identified who would feel it, and attribution narrowed the likely
+              cause down to a producer-side file and commit.
+            </p>
+            <p>
+              That is the main value of the platform: it turns inter-system data exchange from an implicit
+              assumption into an explicit promise with evidence, impact analysis, and next actions.
+            </p>
+          </div>
+        </SurfaceCard>
+
+        <SurfaceCard>
+          <SectionLabel
+            title="How to present this page"
+            subtitle="A simple walkthrough order for a reviewer, client, or non-technical stakeholder."
+          />
+          <ol className="mt-5 space-y-3 text-sm leading-7 text-[var(--muted)]">
+            <li>
+              Start with the health score and baseline status so the audience sees the system is grounded in
+              a stable clean run.
+            </li>
+            <li>
+              Show the top failure cards so the audience understands what broke and why type checks alone were
+              not enough.
+            </li>
+            <li>Move to affected subscribers to explain who needs attention first.</li>
+            <li>
+              Finish on recommended actions so the conversation ends with a decision path, not just an
+              incident description.
+            </li>
+          </ol>
+        </SurfaceCard>
+      </div>
     </div>
   );
 }

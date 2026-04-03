@@ -23,8 +23,9 @@ export default async function AttributionPage() {
         title="Registry first, lineage second"
         description={
           <p>
-            This page makes the updated architecture explicit. Registered consumers are the primary blast-radius
-            source. Lineage is still useful, but only as enrichment after the subscribed audience is known.
+            This page makes the updated architecture explicit. Registered consumers are the primary
+            blast-radius source. Lineage is still useful, but only as enrichment after the subscribed
+            audience is known.
           </p>
         }
         aside={
@@ -61,10 +62,16 @@ export default async function AttributionPage() {
                       Producer system: <span className="font-semibold text-[var(--ink)]">{entry.producer_system}</span>
                     </p>
                     <p className="mt-2">
-                      Failing rows: <span className="font-semibold text-[var(--ink)]">{formatNumber(entry.records_failing ?? null)}</span>
+                      Failing rows:{" "}
+                      <span className="font-semibold text-[var(--ink)]">
+                        {formatNumber(entry.records_failing ?? null)}
+                      </span>
                     </p>
                     <p className="mt-2">
-                      Sample values: <span className="font-semibold text-[var(--ink)]">{entry.sample_failing?.join(" • ") || "None captured"}</span>
+                      Sample values:{" "}
+                      <span className="font-semibold text-[var(--ink)]">
+                        {entry.sample_failing?.join(" | ") || "None captured"}
+                      </span>
                     </p>
                   </div>
                 </div>
@@ -77,16 +84,22 @@ export default async function AttributionPage() {
                     />
                     <div className="mt-5 space-y-4">
                       {registrySubscribers.map((subscriber) => (
-                        <div className="rounded-2xl border border-[var(--line)] bg-white/80 p-4" key={subscriber.subscriber_id}>
+                        <div
+                          className="rounded-2xl border border-[var(--line)] bg-white/80 p-4"
+                          key={subscriber.subscriber_id}
+                        >
                           <div className="flex flex-wrap items-center gap-2">
                             <p className="font-semibold text-[var(--ink)]">{subscriber.subscriber_id}</p>
                             <Badge tone="info">{subscriber.validation_mode ?? "mode unavailable"}</Badge>
                           </div>
                           <p className="mt-2 text-sm leading-6 text-[var(--muted)]">
-                            {(subscriber.contact?.owner ?? "Unknown owner")} • {(subscriber.contact?.role ?? "Unknown role")}
+                            {(subscriber.contact?.owner ?? "Unknown owner")} |{" "}
+                            {(subscriber.contact?.role ?? "Unknown role")}
                           </p>
                           <p className="mt-3 text-sm leading-6 text-[var(--muted)]">
-                            Breaking fields: {(subscriber.breaking_fields ?? []).map((item) => item.field).join(", ") || "Not documented"}
+                            Breaking fields:{" "}
+                            {(subscriber.breaking_fields ?? []).map((item) => item.field).join(", ") ||
+                              "Not documented"}
                           </p>
                         </div>
                       ))}
@@ -100,13 +113,22 @@ export default async function AttributionPage() {
                     />
                     <div className="mt-5 space-y-4 text-sm leading-7 text-[var(--muted)]">
                       <p>
-                        Matched nodes: <span className="font-semibold text-[var(--ink)]">{formatNumber(enrichment?.matched_nodes?.length ?? 0)}</span>
+                        Matched nodes:{" "}
+                        <span className="font-semibold text-[var(--ink)]">
+                          {formatNumber(enrichment?.matched_nodes?.length ?? 0)}
+                        </span>
                       </p>
                       <p>
-                        Downstream nodes: <span className="font-semibold text-[var(--ink)]">{formatNumber(enrichment?.downstream_nodes?.length ?? 0)}</span>
+                        Downstream nodes:{" "}
+                        <span className="font-semibold text-[var(--ink)]">
+                          {formatNumber(enrichment?.downstream_nodes?.length ?? 0)}
+                        </span>
                       </p>
                       <p>
-                        Confidence: <span className="font-semibold text-[var(--ink)]">{enrichment?.confidence ?? "Not available"}</span>
+                        Confidence:{" "}
+                        <span className="font-semibold text-[var(--ink)]">
+                          {enrichment?.confidence ?? "Not available"}
+                        </span>
                       </p>
                       <p>{enrichment?.summary ?? "No lineage enrichment summary was recorded."}</p>
                     </div>
@@ -115,7 +137,10 @@ export default async function AttributionPage() {
 
                 <SurfaceCard className="overflow-hidden p-0">
                   <div className="border-b border-[var(--line)] px-6 py-5">
-                    <SectionLabel title="Blame chain" subtitle="Likely producer-side files ranked by explainable confidence." />
+                    <SectionLabel
+                      title="Blame chain"
+                      subtitle="Likely producer-side files ranked by explainable confidence."
+                    />
                   </div>
                   <div className="overflow-x-auto">
                     <table className="min-w-full divide-y divide-[var(--line)]">
@@ -130,7 +155,10 @@ export default async function AttributionPage() {
                       </thead>
                       <tbody className="divide-y divide-[var(--line)] bg-white/70">
                         {(entry.blame_chain ?? []).map((candidate) => (
-                          <tr className="align-top" key={`${entry.violation_id}:${candidate.rank}:${candidate.file_path}`}>
+                          <tr
+                            className="align-top"
+                            key={`${entry.violation_id}:${candidate.rank}:${candidate.file_path}`}
+                          >
                             <td className="px-6 py-5">
                               <div className="space-y-2">
                                 <div className="flex flex-wrap items-center gap-2">
@@ -141,7 +169,9 @@ export default async function AttributionPage() {
                               </div>
                             </td>
                             <td className="px-6 py-5 text-sm leading-6 text-[var(--muted)]">
-                              <p className="font-semibold text-[var(--ink)]">{shortHash(candidate.commit_hash ?? "")}</p>
+                              <p className="font-semibold text-[var(--ink)]">
+                                {shortHash(candidate.commit_hash ?? "")}
+                              </p>
                               <p>{formatDate(candidate.commit_timestamp)}</p>
                               <p>{candidate.commit_message}</p>
                             </td>
@@ -156,7 +186,9 @@ export default async function AttributionPage() {
                               <p>Path relevance: {formatPercent((candidate.path_relevance ?? 0) * 100, 1)}</p>
                               <p>Blame hits: {formatNumber(candidate.line_blame_hits ?? null)}</p>
                             </td>
-                            <td className="px-6 py-5 text-sm leading-7 text-[var(--muted)]">{candidate.rationale}</td>
+                            <td className="px-6 py-5 text-sm leading-7 text-[var(--muted)]">
+                              {candidate.rationale}
+                            </td>
                           </tr>
                         ))}
                       </tbody>
@@ -168,9 +200,10 @@ export default async function AttributionPage() {
                   <div className="rounded-[28px] border border-[var(--line)] bg-[linear-gradient(135deg,rgba(255,255,255,0.9),rgba(236,228,218,0.95))] p-6">
                     <p className="text-xs uppercase tracking-[0.2em] text-[var(--muted)]">Headline takeaway</p>
                     <p className="mt-3 text-lg leading-8 text-[var(--ink)]">
-                      The strongest current explanation is that <strong>{topCandidate.file_path}</strong> introduced or
-                      persisted the field behavior that triggered this contract break. The direct impact audience is{" "}
-                      <strong>{formatNumber(registrySubscribers.length)}</strong> registered consumers.
+                      The strongest current explanation is that <strong>{topCandidate.file_path}</strong>{" "}
+                      introduced or persisted the field behavior that triggered this contract break. The
+                      direct impact audience is <strong>{formatNumber(registrySubscribers.length)}</strong>{" "}
+                      registered consumers.
                     </p>
                   </div>
                 ) : null}

@@ -33,7 +33,10 @@ export default async function ValidationsPage() {
         }
         aside={
           <SurfaceCard>
-            <SectionLabel title={`${reports.length} runs captured`} subtitle="Read-only view of the machine-generated report files." />
+            <SectionLabel
+              title={`${reports.length} runs captured`}
+              subtitle="Read-only view of the machine-generated validation evidence."
+            />
             <div className="mt-4 flex flex-wrap gap-2">
               <Badge tone="success">{formatNumber(reports.filter((report) => report.failed === 0).length)} clean</Badge>
               <Badge tone="warning">{formatNumber(totalFailed)} failed checks</Badge>

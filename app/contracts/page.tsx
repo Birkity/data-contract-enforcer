@@ -21,7 +21,7 @@ export default async function ContractsPage() {
     <div className="space-y-8">
       <PageHeader
         eyebrow="Contracts"
-        title="Generated contract inventory"
+        title="Contract inventory"
         description={
           <p>
             Each row comes from the real generated contract YAML files and is enriched with registry
@@ -32,7 +32,7 @@ export default async function ContractsPage() {
           <SurfaceCard>
             <SectionLabel
               title={`${contracts.length} live contracts`}
-              subtitle="Bitol-style contracts with dbt-compatible counterparts where available."
+              subtitle="Bitol-style contracts with dbt-compatible counterparts and real subscriber context."
             />
             <div className="mt-4 flex flex-wrap gap-2">
               <Badge tone="info">Registry-aware</Badge>

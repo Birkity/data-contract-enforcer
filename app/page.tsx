@@ -24,32 +24,40 @@ export default async function DashboardPage() {
     <div className="space-y-8">
       <PageHeader
         eyebrow="Executive overview"
-        title="See the system in one pass"
+        title="See what changed, what matters, and what to do next"
         description={
           <p>
-            This dashboard is the presentation layer over the real Week 7 artifacts. It answers the core
-            reviewer questions quickly: what contracts exist, what broke, who is affected, and what should
-            happen next.
+            This dashboard is a reviewer-friendly view over the real Week 7 artifacts. It is designed to
+            answer four questions quickly: what contracts exist, what broke, who is affected, and what the
+            next action should be.
           </p>
         }
         aside={
-          <SurfaceCard className="bg-[linear-gradient(145deg,rgba(255,255,255,0.92),rgba(244,227,211,0.9))]">
+          <SurfaceCard className="bg-[linear-gradient(145deg,rgba(255,255,255,0.94),rgba(244,229,214,0.88))]">
             <div className="space-y-4">
-              <Badge tone="success">Data health score</Badge>
+              <div className="flex items-center justify-between gap-3">
+                <Badge tone="success">Data health score</Badge>
+                <Badge tone="neutral">Machine-generated</Badge>
+              </div>
               <div className="flex items-end justify-between gap-4">
                 <div>
                   <p className="font-display text-6xl leading-none text-[var(--ink)]">
                     {formatNumber((reportData?.data_health_score as number | undefined) ?? null)}
                   </p>
                   <p className="mt-2 text-sm text-[var(--muted)]">
-                    Generated {formatDate(typeof reportData?.generated_at === "string" ? reportData.generated_at : null)}
+                    Generated{" "}
+                    {formatDate(typeof reportData?.generated_at === "string" ? reportData.generated_at : null)}
                   </p>
                 </div>
-                <div className="w-24 rounded-full border border-[var(--line)] bg-white/80 p-2 text-center">
+                <div className="w-28 rounded-[24px] border border-[var(--line)] bg-white/85 p-3 text-center shadow-[0_10px_24px_var(--shadow)]">
                   <p className="text-xs uppercase tracking-[0.22em] text-[var(--muted)]">Status</p>
                   <p className="mt-2 font-semibold text-[var(--success)]">Ready</p>
                 </div>
               </div>
+              <p className="text-sm leading-7 text-[var(--muted)]">
+                The score rolls up validation health, blast radius, schema safety, AI checks, and readiness
+                signals from the final report artifact.
+              </p>
             </div>
           </SurfaceCard>
         }
@@ -91,7 +99,7 @@ export default async function DashboardPage() {
           <div className="space-y-5">
             <SectionLabel
               title="Severity posture"
-              subtitle="These counts come from the current violation log, not invented demo numbers."
+              subtitle="These counts come from the current violation log. The dashboard does not invent or smooth them."
             />
             <div className="grid gap-4 sm:grid-cols-3">
               {(["CRITICAL", "HIGH", "MEDIUM"] as const).map((severity) => (
@@ -109,7 +117,9 @@ export default async function DashboardPage() {
             <div className="rounded-[24px] border border-[var(--line)] bg-[var(--paper)]/85 p-5">
               <div className="flex flex-wrap items-center gap-2">
                 <Badge tone="info">Latest injected failures</Badge>
-                <p className="text-sm text-[var(--muted)]">These are the top failures surfaced in the final report.</p>
+                <p className="text-sm text-[var(--muted)]">
+                  These are the highest-signal failures surfaced by the final machine-generated report.
+                </p>
               </div>
               <div className="mt-4 space-y-3">
                 {topFailures.map((failure) => (
@@ -121,7 +131,9 @@ export default async function DashboardPage() {
                       <Badge tone={severityTone(String(failure.severity ?? ""))}>
                         {String(failure.severity ?? "Unknown")}
                       </Badge>
-                      <p className="font-semibold text-[var(--ink)]">{String(failure.check_id ?? "Unknown check")}</p>
+                      <p className="font-semibold text-[var(--ink)]">
+                        {String(failure.check_id ?? "Unknown check")}
+                      </p>
                     </div>
                     <p className="mt-2 text-sm leading-7 text-[var(--muted)]">
                       {String(failure.message ?? "No failure message was captured.")}
@@ -140,7 +152,7 @@ export default async function DashboardPage() {
           <SurfaceCard>
             <SectionLabel
               title="Top actions"
-              subtitle="Straight from the generated enforcer report so the frontend stays grounded in the CLI outputs."
+              subtitle="Pulled directly from the generated enforcer report so the UI stays grounded in the CLI outputs."
             />
             <ol className="mt-5 space-y-3">
               {recommendedActions.map((action, index) => (
@@ -156,18 +168,18 @@ export default async function DashboardPage() {
 
           <SurfaceCard>
             <SectionLabel
-              title="Quick walkthrough"
-              subtitle="These routes follow the reviewer conversation from “what happened?” to “what do we do?”"
+              title="Suggested walkthrough"
+              subtitle='These routes follow the reviewer conversation from "what happened?" to "what do we do next?"'
             />
             <div className="mt-5 grid gap-3">
               {[
-                { href: "/contracts", label: "Contracts", detail: "See contract coverage, risky fields, and subscribers." },
+                { href: "/contracts", label: "Contracts", detail: "Review contract coverage, risky fields, and subscribed consumers." },
                 { href: "/validations", label: "Validations", detail: "Compare clean and violated runs side by side." },
-                { href: "/attribution", label: "Attribution", detail: "See registry-first blast radius and blame chain evidence." },
-                { href: "/report", label: "Report", detail: "Use the final executive summary for a client walkthrough." },
+                { href: "/attribution", label: "Attribution", detail: "Show registry-first blast radius and ranked blame evidence." },
+                { href: "/report", label: "Report", detail: "Use the business-facing summary during a client walkthrough." },
               ].map((item) => (
                 <Link
-                  className="rounded-2xl border border-[var(--line)] bg-white/70 px-4 py-4 transition-colors hover:border-[var(--accent)]"
+                  className="rounded-2xl border border-[var(--line)] bg-white/70 px-4 py-4 transition-colors hover:border-[var(--accent)] hover:bg-white/90"
                   href={item.href}
                   key={item.href}
                 >
@@ -184,7 +196,7 @@ export default async function DashboardPage() {
         <SurfaceCard className="xl:col-span-2">
           <SectionLabel
             title="Architecture snapshot"
-            subtitle="The generated report already captures the updated Week 7 design, and the UI mirrors it exactly."
+            subtitle="The frontend mirrors the updated Week 7 design instead of introducing a second interpretation."
           />
           <div className="mt-5 grid gap-4 md:grid-cols-3">
             {Object.entries((reportData?.architecture as Record<string, string> | undefined) ?? {}).map(
@@ -200,13 +212,15 @@ export default async function DashboardPage() {
         <SurfaceCard>
           <SectionLabel
             title="Latest attribution"
-            subtitle="Registry-first blast radius and the strongest producer-side candidate."
+            subtitle="Registry-first blast radius plus the strongest producer-side candidate."
           />
           {attribution.attributions?.[0] ? (
             <div className="mt-5 space-y-4">
               <div>
                 <p className="text-xs uppercase tracking-[0.2em] text-[var(--muted)]">Violating field</p>
-                <p className="mt-2 font-display text-2xl text-[var(--ink)]">{attribution.attributions[0].field}</p>
+                <p className="mt-2 font-display text-2xl text-[var(--ink)]">
+                  {attribution.attributions[0].field}
+                </p>
               </div>
               <div className="rounded-2xl border border-[var(--line)] bg-white/75 p-4">
                 <p className="text-xs uppercase tracking-[0.2em] text-[var(--muted)]">Top candidate</p>
@@ -217,6 +231,10 @@ export default async function DashboardPage() {
                   {attribution.attributions[0].blame_chain?.[0]?.rationale ?? "No rationale available."}
                 </p>
               </div>
+              <p className="text-sm leading-7 text-[var(--muted)]">
+                The direct impact audience still comes from the registry first. Lineage helps explain
+                possible propagation after that.
+              </p>
             </div>
           ) : (
             <p className="mt-5 text-sm text-[var(--muted)]">No attribution artifacts were available.</p>

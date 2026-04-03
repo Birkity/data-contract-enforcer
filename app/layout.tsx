@@ -5,9 +5,12 @@ import "@/app/globals.css";
 import { loadReportData } from "@/lib/data/artifacts";
 
 export const metadata: Metadata = {
-  title: "TRP Week 7 Data Contract Enforcer",
+  title: {
+    default: "TRP Week 7 Data Contract Enforcer",
+    template: "%s | TRP Week 7 Data Contract Enforcer",
+  },
   description:
-    "Optional read-only dashboard over the generated artifacts of the TRP Week 7 Data Contract Enforcer.",
+    "Read-only reviewer dashboard over the real generated artifacts of the TRP Week 7 Data Contract Enforcer.",
 };
 
 export default async function RootLayout({
