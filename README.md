@@ -19,6 +19,17 @@ The implementation follows the updated architecture:
 - lineage is enrichment only
 - schema evolution acts as a producer-side CI gate
 
+## Submission snapshot
+
+The current repo state is ready for review:
+
+- Data health score: `100 / 100`
+- Clean validation: `38 / 38` checks passed
+- Injected confidence violation: correctly blocked in `WARN` and `ENFORCE`
+- AI contract metrics: `PASS`
+- dbt smoke verification: `PASS`
+- Main remaining limitation: lineage specificity is still weaker than registry-based blast radius
+
 ## Current artifact state
 
 ### Inputs
@@ -88,9 +99,9 @@ The current Week 4 lineage file is now canonical JSONL:
 
 Current limitation:
 
-- the file is structurally correct, but it still does not expose an explicit Week 3 extraction consumer path
-- the Week 7 consumer-side snapshot now has `38` nodes and `19` edges, but those consumer-side lineage nodes are still mostly dynamic file-I/O observations rather than a clean explicit Week 3 contract edge
-- external downstream enrichment is therefore better than before, but still weaker than registry-based blast radius
+- the file is structurally correct, but it still does not expose a clean explicit Week 3 extraction consumer path
+- the Week 7 consumer-side snapshot now has `38` nodes and `19` edges, but those consumer-side lineage nodes are still mostly dynamic file-I/O observations rather than a contract-level edge
+- downstream enrichment is therefore useful, but still weaker than registry-based blast radius
 
 ### Week 5
 
@@ -109,6 +120,11 @@ The current trace export contains:
 - a cleaned contract-source file at `outputs/traces/runs.jsonl`
 - a preserved raw backup at `outputs/traces/runs_raw.jsonl`
 - a canonical consumer-boundary file at `outputs/traces/runs_contract_boundary.jsonl` with `153` normalized rows
+
+This means the repo now keeps both:
+
+- the original raw trace export for forensic reference
+- the cleaned contract-facing trace input used by Week 7 checks
 
 ## How to rerun the full flow
 
